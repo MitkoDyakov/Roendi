@@ -1,0 +1,10 @@
+usbd_composit.c:603:17:USBD_COMPOSIT_DeInit	16	static
+usbd_composit.c:728:17:USBD_COMPOSIT_EP0_RxReady	8	static
+usbd_composit.c:750:18:USBD_COMPOSIT_GetFSCfgDesc	0	static
+usbd_composit.c:763:18:USBD_COMPOSIT_GetHSCfgDesc	0	static
+usbd_composit.c:776:18:USBD_COMPOSIT_GetOtherSpeedCfgDesc	0	static
+usbd_composit.c:788:11:USBD_COMPOSIT_GetDeviceQualifierDescriptor	0	static
+usbd_composit.c:571:17:USBD_COMPOSIT_Init	16	static
+usbd_composit.c:620:17:USBD_COMPOSIT_Setup	4	static
+usbd_composit.c:673:17:USBD_COMPOSIT_DataIn	0	static
+usbd_composit.c:701:17:USBD_COMPOSIT_DataOut	0	static

@@ -1,0 +1,3 @@
+crc.c:30:6:MX_CRC_Init	8	static
+crc.c:56:6:HAL_CRC_MspInit	8	static
+crc.c:72:6:HAL_CRC_MspDeInit	0	static

@@ -1,0 +1,991 @@
+{
+  "Application": {
+    "Screens": [
+      {
+        "Components": [
+          {
+            "Type": "Image",
+            "RelativeFilename": "bac.png",
+            "Alpha": 255,
+            "Name": "image1",
+            "X": 1,
+            "Y": 1,
+            "Width": 240,
+            "Height": 240,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          },
+          {
+            "Type": "Circle",
+            "FileNameImage": "",
+            "Color": {
+              "Red": 161,
+              "Green": 85,
+              "Blue": 0
+            },
+            "CenterX": 61,
+            "CenterY": 120,
+            "Radius": 115,
+            "LineWidth": 10,
+            "StartAngle": -30,
+            "EndAngle": 30,
+            "CapPrecision": "Butt",
+            "Alpha": 255,
+            "Name": "circle1",
+            "X": 60,
+            "Y": 1,
+            "Width": 125,
+            "Height": 27,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          },
+          {
+            "Type": "Circle",
+            "FileNameImage": "",
+            "Color": {
+              "Red": 255,
+              "Green": 0,
+              "Blue": 111
+            },
+            "CenterX": 0,
+            "CenterY": 120,
+            "Radius": 115,
+            "LineWidth": 10,
+            "StartAngle": 30,
+            "EndAngle": 90,
+            "CapPrecision": "Butt",
+            "Alpha": 255,
+            "Name": "circle2",
+            "X": 121,
+            "Y": 1,
+            "Width": 120,
+            "Height": 120,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          },
+          {
+            "Type": "Circle",
+            "FileNameImage": "",
+            "Color": {
+              "Red": 30,
+              "Green": 181,
+              "Blue": 0
+            },
+            "CenterX": -53,
+            "CenterY": 0,
+            "Radius": 115,
+            "LineWidth": 10,
+            "StartAngle": 90,
+            "EndAngle": 150,
+            "CapPrecision": "Butt",
+            "Alpha": 255,
+            "Name": "circle3",
+            "X": 174,
+            "Y": 121,
+            "Width": 67,
+            "Height": 106,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          },
+          {
+            "Type": "Circle",
+            "FileNameImage": "",
+            "Color": {
+              "Red": 0,
+              "Green": 12,
+              "Blue": 235
+            },
+            "CenterX": 62,
+            "CenterY": -95,
+            "Radius": 115,
+            "LineWidth": 10,
+            "StartAngle": 150,
+            "EndAngle": 210,
+            "CapPrecision": "Butt",
+            "Alpha": 255,
+            "Name": "circle4",
+            "X": 59,
+            "Y": 216,
+            "Width": 122,
+            "Height": 25,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          },
+          {
+            "Type": "Circle",
+            "FileNameImage": "",
+            "Color": {
+              "Red": 229,
+              "Green": 255,
+              "Blue": 0
+            },
+            "CenterX": 120,
+            "CenterY": 0,
+            "Radius": 115,
+            "LineWidth": 10,
+            "StartAngle": 210,
+            "EndAngle": 270,
+            "CapPrecision": "Butt",
+            "Alpha": 255,
+            "Name": "circle5",
+            "X": 1,
+            "Y": 121,
+            "Width": 68,
+            "Height": 106,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          },
+          {
+            "Type": "Circle",
+            "FileNameImage": "",
+            "Color": {
+              "Red": 255,
+              "Green": 0,
+              "Blue": 238
+            },
+            "CenterX": 121,
+            "CenterY": 120,
+            "Radius": 115,
+            "LineWidth": 10,
+            "StartAngle": 270,
+            "EndAngle": 330,
+            "CapPrecision": "Butt",
+            "Alpha": 255,
+            "Name": "circle6",
+            "X": 0,
+            "Y": 1,
+            "Width": 71,
+            "Height": 120,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          },
+          {
+            "Type": "TextArea",
+            "TextId": "SingleUseId3",
+            "TextRotation": "270",
+            "Color": {
+              "Red": 0,
+              "Green": 0,
+              "Blue": 0
+            },
+            "Alpha": 255,
+            "AutoSize": false,
+            "LineSpacing": 0,
+            "Name": "textArea1",
+            "X": 107,
+            "Y": 12,
+            "Width": 27,
+            "Height": 87,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          }
+        ],
+        "Interactions": [
+          {
+            "InteractionName": "Interaction1",
+            "HasCompletedTrigger": false,
+            "Trigger": {
+              "Type": "TriggerNone"
+            },
+            "Action": {
+              "Type": "ActionGotoScreen",
+              "ScreenTransitionType": "ScreenTransitionNone",
+              "ActionComponent": "homeSchreen"
+            }
+          },
+          {
+            "InteractionName": "Interaction2",
+            "HasCompletedTrigger": false,
+            "Trigger": {
+              "Type": "TriggerNone"
+            },
+            "Action": {
+              "Type": "ActionGotoScreen",
+              "ScreenTransitionType": "ScreenTransitionNone",
+              "ActionComponent": "volumeDemo"
+            }
+          },
+          {
+            "InteractionName": "Interaction3",
+            "HasCompletedTrigger": false,
+            "Trigger": {
+              "Type": "TriggerNone"
+            },
+            "Action": {
+              "Type": "ActionGotoScreen",
+              "ScreenTransitionType": "ScreenTransitionNone",
+              "ActionComponent": "brightnessDemo"
+            }
+          },
+          {
+            "InteractionName": "Interaction4",
+            "HasCompletedTrigger": false,
+            "Trigger": {
+              "Type": "TriggerNone"
+            },
+            "Action": {
+              "Type": "ActionGotoScreen",
+              "ScreenTransitionType": "ScreenTransitionNone",
+              "ActionComponent": "Lock"
+            }
+          },
+          {
+            "InteractionName": "Interaction5",
+            "HasCompletedTrigger": false,
+            "Trigger": {
+              "Type": "TriggerNone"
+            },
+            "Action": {
+              "Type": "ActionGotoScreen",
+              "ScreenTransitionType": "ScreenTransitionNone",
+              "ActionComponent": "Temp"
+            }
+          },
+          {
+            "InteractionName": "Interaction6",
+            "HasCompletedTrigger": false,
+            "Trigger": {
+              "Type": "TriggerNone"
+            },
+            "Action": {
+              "Type": "ActionGotoScreen",
+              "ScreenTransitionType": "ScreenTransitionNone",
+              "ActionComponent": "Audio"
+            }
+          }
+        ],
+        "Name": "homeSchreen",
+        "OverrideDefaultBufferSize": false,
+        "CanvasBufferSize": 3600
+      },
+      {
+        "Components": [
+          {
+            "Type": "Image",
+            "RelativeFilename": "background.png",
+            "Alpha": 255,
+            "Name": "background",
+            "X": 0,
+            "Y": 0,
+            "Width": 240,
+            "Height": 240,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          },
+          {
+            "Type": "TextArea",
+            "TextId": "SingleUseId1",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "Alpha": 255,
+            "AutoSize": true,
+            "LineSpacing": 0,
+            "Name": "volumeValueText",
+            "X": 73,
+            "Y": 90,
+            "Width": 95,
+            "Height": 61,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          },
+          {
+            "Type": "TextArea",
+            "TextId": "SingleUseId2",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "Alpha": 255,
+            "AutoSize": true,
+            "LineSpacing": 0,
+            "Name": "volumeText",
+            "X": 78,
+            "Y": 178,
+            "Width": 81,
+            "Height": 27,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          },
+          {
+            "Type": "Circle",
+            "FileNameImage": "",
+            "Color": {
+              "Red": 20,
+              "Green": 29,
+              "Blue": 44
+            },
+            "CenterX": 120,
+            "CenterY": 120,
+            "Radius": 109,
+            "LineWidth": 21,
+            "StartAngle": 132,
+            "EndAngle": 224,
+            "CapPrecision": "Butt",
+            "Alpha": 255,
+            "Name": "volumeMask",
+            "X": 0,
+            "Y": 0,
+            "Width": 240,
+            "Height": 240,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          },
+          {
+            "Type": "Circle",
+            "FileNameImage": "",
+            "Color": {
+              "Red": 0,
+              "Green": 0,
+              "Blue": 0
+            },
+            "CenterX": 120,
+            "CenterY": 120,
+            "Radius": 146,
+            "LineWidth": 53,
+            "StartAngle": 0,
+            "EndAngle": 381,
+            "CapPrecision": "Butt",
+            "Alpha": 255,
+            "Name": "outterMask",
+            "X": 0,
+            "Y": 0,
+            "Width": 240,
+            "Height": 240,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          }
+        ],
+        "Interactions": [],
+        "Name": "volumeDemo",
+        "OverrideDefaultBufferSize": false,
+        "CanvasBufferSize": 3600
+      },
+      {
+        "Components": [
+          {
+            "Type": "Image",
+            "RelativeFilename": "homer.png",
+            "Alpha": 255,
+            "Name": "image1",
+            "X": 0,
+            "Y": 0,
+            "Width": 240,
+            "Height": 240,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          }
+        ],
+        "Interactions": [],
+        "Name": "brightnessDemo",
+        "OverrideDefaultBufferSize": false,
+        "CanvasBufferSize": 0
+      },
+      {
+        "Components": [
+          {
+            "Type": "Circle",
+            "FileNameImage": "",
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "CenterX": 120,
+            "CenterY": 120,
+            "Radius": 120,
+            "LineWidth": 0,
+            "StartAngle": 0,
+            "EndAngle": 360,
+            "CapPrecision": "Butt",
+            "Alpha": 255,
+            "Name": "circle1",
+            "X": 1,
+            "Y": 0,
+            "Width": 240,
+            "Height": 240,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          },
+          {
+            "Type": "Circle",
+            "FileNameImage": "",
+            "Color": {
+              "Red": 77,
+              "Green": 77,
+              "Blue": 77
+            },
+            "CenterX": 40,
+            "CenterY": 40,
+            "Radius": 30,
+            "LineWidth": 4,
+            "StartAngle": 180,
+            "EndAngle": 360,
+            "CapPrecision": "Butt",
+            "Alpha": 255,
+            "Name": "circle2",
+            "X": 12,
+            "Y": 92,
+            "Width": 40,
+            "Height": 80,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          },
+          {
+            "Type": "Circle",
+            "FileNameImage": "",
+            "Color": {
+              "Red": 77,
+              "Green": 77,
+              "Blue": 77
+            },
+            "CenterX": 2,
+            "CenterY": 40,
+            "Radius": 30,
+            "LineWidth": 4,
+            "StartAngle": 180,
+            "EndAngle": 0,
+            "CapPrecision": "Butt",
+            "Alpha": 255,
+            "Name": "circle2_1",
+            "X": 190,
+            "Y": 92,
+            "Width": 36,
+            "Height": 80,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          },
+          {
+            "Type": "Line",
+            "Color": {
+              "Red": 77,
+              "Green": 77,
+              "Blue": 77
+            },
+            "FileNameImage": "",
+            "Alpha": 255,
+            "StartX": 0,
+            "StartY": 2,
+            "EndX": 142,
+            "EndY": 2,
+            "LineWidth": 4,
+            "LineEndingStyle": "Butt",
+            "Name": "line1",
+            "X": 51,
+            "Y": 100,
+            "Width": 145,
+            "Height": 15,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          },
+          {
+            "Type": "Line",
+            "Color": {
+              "Red": 77,
+              "Green": 77,
+              "Blue": 77
+            },
+            "FileNameImage": "",
+            "Alpha": 255,
+            "StartX": 0,
+            "StartY": 2,
+            "EndX": 142,
+            "EndY": 2,
+            "LineWidth": 4,
+            "LineEndingStyle": "Butt",
+            "Name": "line1_1",
+            "X": 51,
+            "Y": 160,
+            "Width": 145,
+            "Height": 15,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          },
+          {
+            "Type": "TextArea",
+            "TextId": "SingleUseId4",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 77,
+              "Green": 77,
+              "Blue": 77
+            },
+            "Alpha": 255,
+            "AutoSize": true,
+            "LineSpacing": 0,
+            "Name": "textArea1",
+            "X": 56,
+            "Y": 100,
+            "Width": 32,
+            "Height": 61,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          },
+          {
+            "Type": "TextArea",
+            "TextId": "SingleUseId5",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 77,
+              "Green": 77,
+              "Blue": 77
+            },
+            "Alpha": 255,
+            "AutoSize": true,
+            "LineSpacing": 0,
+            "Name": "textArea1_1",
+            "X": 90,
+            "Y": 100,
+            "Width": 32,
+            "Height": 61,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          },
+          {
+            "Type": "TextArea",
+            "TextId": "SingleUseId6",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 77,
+              "Green": 77,
+              "Blue": 77
+            },
+            "Alpha": 255,
+            "AutoSize": true,
+            "LineSpacing": 0,
+            "Name": "textArea1_2",
+            "X": 124,
+            "Y": 100,
+            "Width": 32,
+            "Height": 61,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          },
+          {
+            "Type": "TextArea",
+            "TextId": "SingleUseId7",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 77,
+              "Green": 77,
+              "Blue": 77
+            },
+            "Alpha": 255,
+            "AutoSize": true,
+            "LineSpacing": 0,
+            "Name": "textArea1_3",
+            "X": 158,
+            "Y": 100,
+            "Width": 32,
+            "Height": 61,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          },
+          {
+            "Type": "TextArea",
+            "TextId": "SingleUseId8",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 0,
+              "Green": 0,
+              "Blue": 0
+            },
+            "Alpha": 255,
+            "AutoSize": true,
+            "LineSpacing": 0,
+            "Name": "textArea2",
+            "X": 60,
+            "Y": 55,
+            "Width": 120,
+            "Height": 27,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          }
+        ],
+        "Interactions": [],
+        "Name": "Lock",
+        "OverrideDefaultBufferSize": false,
+        "CanvasBufferSize": 3600
+      },
+      {
+        "Components": [
+          {
+            "Type": "Circle",
+            "FileNameImage": "",
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "CenterX": 120,
+            "CenterY": 120,
+            "Radius": 120,
+            "LineWidth": 0,
+            "StartAngle": 0,
+            "EndAngle": 360,
+            "CapPrecision": "Butt",
+            "Alpha": 255,
+            "Name": "circle1",
+            "X": 0,
+            "Y": 0,
+            "Width": 240,
+            "Height": 240,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          },
+          {
+            "Type": "Image",
+            "RelativeFilename": "temp.png",
+            "Alpha": 255,
+            "Name": "image1",
+            "X": 20,
+            "Y": 20,
+            "Width": 200,
+            "Height": 200,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          },
+          {
+            "Type": "Line",
+            "Color": {
+              "Red": 193,
+              "Green": 57,
+              "Blue": 43
+            },
+            "FileNameImage": "",
+            "Alpha": 255,
+            "StartX": 18,
+            "StartY": 15,
+            "EndX": 18,
+            "EndY": 124,
+            "LineWidth": 13,
+            "LineEndingStyle": "Round",
+            "Name": "line1",
+            "X": 99,
+            "Y": 41,
+            "Width": 33,
+            "Height": 116,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          }
+        ],
+        "Interactions": [],
+        "Name": "Temp",
+        "OverrideDefaultBufferSize": false,
+        "CanvasBufferSize": 3600
+      },
+      {
+        "Components": [
+          {
+            "Type": "Circle",
+            "FileNameImage": "",
+            "Color": {
+              "Red": 176,
+              "Green": 176,
+              "Blue": 176
+            },
+            "CenterX": 120,
+            "CenterY": 120,
+            "Radius": 120,
+            "LineWidth": 0,
+            "StartAngle": 0,
+            "EndAngle": 360,
+            "CapPrecision": "Butt",
+            "Alpha": 255,
+            "Name": "circle1",
+            "X": 0,
+            "Y": 0,
+            "Width": 240,
+            "Height": 240,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          },
+          {
+            "Type": "LineProgress",
+            "FileNameProgress": "",
+            "Color": {
+              "Red": 0,
+              "Green": 151,
+              "Blue": 255
+            },
+            "Alpha": 255,
+            "StartX": 10,
+            "StartY": 10,
+            "EndY": 10,
+            "EndX": 174,
+            "LineWidth": 16,
+            "LineEndingStyle": "Round",
+            "Style": "Style16",
+            "FileNameBackground": "__designer\\Blue_ProgressIndicators_bg_medium_progress_indicator_bg_round_0_degrees.png",
+            "IndicatorPositionX": 0,
+            "IndicatorPositionY": 0,
+            "IndicatorPositionWidth": 0,
+            "IndicatorPositionHeight": 0,
+            "ProgressRangeMin": 0,
+            "ProgressRangeMax": 100,
+            "ProgressRangeSteps": 0,
+            "ProgressRangeStepsMin": 0,
+            "ProgressInitialValue": 1,
+            "Name": "lineProgress1",
+            "X": 28,
+            "Y": 163,
+            "Width": 184,
+            "Height": 20,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          },
+          {
+            "Type": "TextArea",
+            "TextId": "SingleUseId9",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 0,
+              "Green": 0,
+              "Blue": 0
+            },
+            "Alpha": 255,
+            "AutoSize": true,
+            "LineSpacing": 0,
+            "Name": "textArea1",
+            "X": 87,
+            "Y": 195,
+            "Width": 66,
+            "Height": 27,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          },
+          {
+            "Type": "Image",
+            "RelativeFilename": "tumbnail.png",
+            "Alpha": 255,
+            "Name": "image1",
+            "X": 70,
+            "Y": 46,
+            "Width": 100,
+            "Height": 100,
+            "Visible": true,
+            "LockPosition": false,
+            "Draggable": false,
+            "Clickable": false,
+            "Fadeable": false,
+            "Moveable": false
+          }
+        ],
+        "Interactions": [],
+        "Name": "Audio",
+        "OverrideDefaultBufferSize": false,
+        "CanvasBufferSize": 3600
+      }
+    ],
+    "CustomContainerDefinitions": [],
+    "TextEntries": [
+      {
+        "TextEntryId": "SingleUseId2",
+        "IsResource": false
+      },
+      {
+        "TextEntryId": "SingleUseId1",
+        "IsResource": false
+      },
+      {
+        "TextEntryId": "SingleUseId3",
+        "IsResource": false
+      },
+      {
+        "TextEntryId": "SingleUseId4",
+        "IsResource": false
+      },
+      {
+        "TextEntryId": "SingleUseId5",
+        "IsResource": false
+      },
+      {
+        "TextEntryId": "SingleUseId6",
+        "IsResource": false
+      },
+      {
+        "TextEntryId": "SingleUseId7",
+        "IsResource": false
+      },
+      {
+        "TextEntryId": "SingleUseId8",
+        "IsResource": false
+      },
+      {
+        "TextEntryId": "SingleUseId9",
+        "IsResource": false
+      }
+    ],
+    "Name": "MyApplication",
+    "Resolution": {
+      "Width": 240,
+      "Height": 240
+    },
+    "SelectedColorDepth": 16,
+    "StartupScreenName": "homeSchreen",
+    "SelectedStartupLanguage": "GB",
+    "Skin": "Blue",
+    "TouchGfxPath": "../Middlewares/ST/touchgfx",
+    "UIPath": ".",
+    "AvailableColorDepths": [
+      16
+    ],
+    "AvailableLCDs": {
+      "16": "LCD16bpp"
+    },
+    "AvailableSections": [
+      "ExtFlashSection",
+      "IntFlashSection"
+    ],
+    "AvailableResolutions": [
+      {
+        "Width": 240,
+        "Height": 240
+      }
+    ],
+    "PhysicalButtons": [],
+    "FrameworkFeatures": {
+      "LCD16bpp": {
+        "Id": "LCD16bpp",
+        "IsEnabled": false
+      }
+    },
+    "GenerateAssetsCommand": "make -f simulator/gcc/Makefile assets -j8",
+    "PostGenerateCommand": "touchgfx update_project --project-file=simulator/msvs/Application.vcxproj",
+    "PostGenerateTargetCommand": "touchgfx update_project --project-file=../RotaryEncoderWithDisplay.ioc --platform=m4",
+    "CompileSimulatorCommand": "make -f simulator/gcc/Makefile -j8",
+    "RunSimulatorCommand": "build\\bin\\simulator.exe",
+    "LandscapeSkinX": 0,
+    "LandscapeSkinY": 0,
+    "PortraitSkinX": 0,
+    "PortraitSkinY": 0,
+    "DisplayOrientation": "Landscape",
+    "Family": "STM32L4"
+  },
+  "Version": "4.17.0"
+}

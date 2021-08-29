@@ -1,0 +1,12 @@
+HAL.hpp:112:17:static touchgfx::HAL* touchgfx::HAL::getInstance()	4	static
+OSWrappers.cpp:34:6:static void touchgfx::OSWrappers::initialize()	4	static
+OSWrappers.cpp:43:6:static void touchgfx::OSWrappers::takeFrameBufferSemaphore()	4	static
+OSWrappers.cpp:52:6:static void touchgfx::OSWrappers::giveFrameBufferSemaphore()	4	static
+OSWrappers.cpp:64:6:static void touchgfx::OSWrappers::tryTakeFrameBufferSemaphore()	4	static
+OSWrappers.cpp:76:6:static void touchgfx::OSWrappers::giveFrameBufferSemaphoreFromISR()	4	static
+OSWrappers.cpp:87:6:static void touchgfx::OSWrappers::signalVSync()	4	static
+OSWrappers.cpp:96:6:static void touchgfx::OSWrappers::signalRenderingDone()	4	static
+OSWrappers.cpp:110:6:static bool touchgfx::OSWrappers::isVSyncAvailable()	4	static
+OSWrappers.cpp:119:6:static void touchgfx::OSWrappers::waitForVSync()	8	static
+OSWrappers.cpp:141:6:static void touchgfx::OSWrappers::taskDelay(uint16_t)	16	static
+OSWrappers.cpp:156:6:static void touchgfx::OSWrappers::taskYield()	4	static
