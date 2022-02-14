@@ -1,0 +1,19 @@
+Types.hpp:78:5:touchgfx::colortype::colortype()	16	static
+DMA.hpp:61:13:touchgfx::DMA_Queue::~DMA_Queue()	16	static
+DMA.hpp:61:13:virtual touchgfx::DMA_Queue::~DMA_Queue()	16	static
+DMA.hpp:144:18:virtual void touchgfx::DMA_Interface::initialize()	16	static
+DMA.hpp:212:21:virtual touchgfx::DMAType touchgfx::DMA_Interface::getDMAType()	16	static
+DMA.hpp:218:13:touchgfx::DMA_Interface::~DMA_Interface()	16	static
+DMA.hpp:218:13:virtual touchgfx::DMA_Interface::~DMA_Interface()	16	static
+DMA.hpp:228:5:touchgfx::DMA_Interface::DMA_Interface(touchgfx::DMA_Queue&)	16	static
+STM32DMA.hpp:74:18:virtual void STM32DMA::signalDMAInterrupt()	16	static
+STM32DMA.hpp:84:18:virtual void STM32DMA::flush()	16	static
+BlitOp.hpp:46:8:touchgfx::BlitOp::BlitOp()	16	static
+STM32DMA.cpp:23:1:STM32DMA::STM32DMA()	16	static
+STM32DMA.cpp:28:26:virtual touchgfx::BlitOperations STM32DMA::getBlitCaps()	16	static
+STM32DMA.cpp:33:6:virtual void STM32DMA::setupDataCopy(const touchgfx::BlitOp&)	16	static
+STM32DMA.cpp:38:6:virtual void STM32DMA::setupDataFill(const touchgfx::BlitOp&)	16	static
+STM32DMA.hpp:32:7:STM32DMA::~STM32DMA()	16	static
+STM32DMA.hpp:32:7:virtual STM32DMA::~STM32DMA()	16	static
+DMA.hpp:87:7:touchgfx::LockFreeDMA_Queue::~LockFreeDMA_Queue()	16	static
+DMA.hpp:87:7:virtual touchgfx::LockFreeDMA_Queue::~LockFreeDMA_Queue()	16	static

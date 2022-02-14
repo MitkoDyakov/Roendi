@@ -1,0 +1,310 @@
+{
+  "Application": {
+    "Screens": [
+      {
+        "Name": "screen",
+        "CanvasBufferSize": 3600,
+        "Components": [
+          {
+            "Type": "Image",
+            "Name": "background",
+            "Width": 240,
+            "Height": 240,
+            "RelativeFilename": "background.png"
+          },
+          {
+            "Type": "Circle",
+            "Name": "pirple",
+            "Width": 240,
+            "Height": 240,
+            "Color": {
+              "Red": 189,
+              "Green": 126,
+              "Blue": 216
+            },
+            "CenterX": 120,
+            "CenterY": 120,
+            "Radius": 120,
+            "StartAngle": -45,
+            "EndAngle": -135,
+            "CapPrecision": "Butt"
+          },
+          {
+            "Type": "Circle",
+            "Name": "yello",
+            "Width": 240,
+            "Height": 240,
+            "Color": {
+              "Red": 254,
+              "Green": 201,
+              "Blue": 112
+            },
+            "CenterX": 120,
+            "CenterY": 120,
+            "Radius": 120,
+            "StartAngle": -45,
+            "EndAngle": 45,
+            "CapPrecision": "Butt"
+          },
+          {
+            "Type": "Circle",
+            "Name": "green",
+            "Width": 240,
+            "Height": 240,
+            "Color": {
+              "Red": 128,
+              "Green": 194,
+              "Blue": 184
+            },
+            "CenterX": 120,
+            "CenterY": 120,
+            "Radius": 120,
+            "StartAngle": 45,
+            "EndAngle": 135,
+            "CapPrecision": "Butt"
+          },
+          {
+            "Type": "Circle",
+            "Name": "red",
+            "Width": 240,
+            "Height": 240,
+            "Color": {
+              "Red": 237,
+              "Green": 113,
+              "Blue": 97
+            },
+            "CenterX": 120,
+            "CenterY": 120,
+            "Radius": 120,
+            "StartAngle": 135,
+            "EndAngle": 225,
+            "CapPrecision": "Butt"
+          },
+          {
+            "Type": "Circle",
+            "Name": "circle1",
+            "X": 45,
+            "Y": 45,
+            "Width": 150,
+            "Height": 150,
+            "Color": {
+              "Red": 101,
+              "Green": 104,
+              "Blue": 114
+            },
+            "CenterX": 75,
+            "CenterY": 75,
+            "Radius": 65,
+            "EndAngle": 360,
+            "CapPrecision": "Butt"
+          },
+          {
+            "Type": "Circle",
+            "Name": "selector_3",
+            "Width": 240,
+            "Height": 240,
+            "Color": {
+              "Red": 101,
+              "Green": 104,
+              "Blue": 114
+            },
+            "CenterX": 120,
+            "CenterY": 120,
+            "Radius": 63,
+            "LineWidth": 4,
+            "StartAngle": -133,
+            "EndAngle": -47,
+            "CapPrecision": "Round"
+          },
+          {
+            "Type": "Circle",
+            "Name": "selector_2",
+            "Width": 240,
+            "Height": 240,
+            "Color": {
+              "Red": 101,
+              "Green": 104,
+              "Blue": 114
+            },
+            "CenterX": 120,
+            "CenterY": 120,
+            "Radius": 63,
+            "LineWidth": 4,
+            "StartAngle": 137,
+            "EndAngle": 223,
+            "CapPrecision": "Round"
+          },
+          {
+            "Type": "Circle",
+            "Name": "selector_1",
+            "Width": 240,
+            "Height": 240,
+            "Color": {
+              "Red": 101,
+              "Green": 104,
+              "Blue": 114
+            },
+            "CenterX": 120,
+            "CenterY": 120,
+            "Radius": 63,
+            "LineWidth": 4,
+            "StartAngle": 47,
+            "EndAngle": 133,
+            "CapPrecision": "Round"
+          },
+          {
+            "Type": "Circle",
+            "Name": "selector",
+            "Width": 240,
+            "Height": 240,
+            "Color": {
+              "Red": 46,
+              "Green": 46,
+              "Blue": 46
+            },
+            "CenterX": 120,
+            "CenterY": 120,
+            "Radius": 63,
+            "LineWidth": 4,
+            "StartAngle": -43,
+            "EndAngle": 43,
+            "CapPrecision": "Round"
+          },
+          {
+            "Type": "TextArea",
+            "Name": "cancelText",
+            "X": 65,
+            "Y": 18,
+            "Width": 110,
+            "Height": 31,
+            "Visible": false,
+            "TextId": "__SingleUse_ZQ5H",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "AutoSize": true
+          },
+          {
+            "Type": "Image",
+            "Name": "image1",
+            "X": 4,
+            "Y": 95,
+            "Width": 50,
+            "Height": 50,
+            "RelativeFilename": "eraser.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "image2",
+            "X": 187,
+            "Y": 95,
+            "Width": 50,
+            "Height": 50,
+            "RelativeFilename": "printer.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "image3",
+            "X": 95,
+            "Y": 187,
+            "Width": 50,
+            "Height": 50,
+            "RelativeFilename": "pen-tool.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "image4",
+            "X": 85,
+            "Y": 85,
+            "Width": 70,
+            "Height": 70,
+            "Visible": false,
+            "RelativeFilename": "eraser_gray.png"
+          },
+          {
+            "Type": "TextArea",
+            "Name": "selectText",
+            "X": 69,
+            "Y": 18,
+            "Width": 103,
+            "Height": 31,
+            "TextId": "__SingleUse_QBEM",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "AutoSize": true
+          },
+          {
+            "Type": "Image",
+            "Name": "image5",
+            "X": 95,
+            "Y": 4,
+            "Width": 50,
+            "Height": 50,
+            "Visible": false,
+            "RelativeFilename": "color-palette.png"
+          }
+        ],
+        "Interactions": [],
+        "CustomActions": [
+          {
+            "Name": "action1"
+          }
+        ]
+      }
+    ],
+    "CustomContainerDefinitions": [],
+    "Name": "MyApplication",
+    "Resolution": {
+      "Width": 240,
+      "Height": 240
+    },
+    "SelectedColorDepth": 16,
+    "StartupScreenName": "screen",
+    "SelectedStartupLanguage": "GB",
+    "Skin": "Blue",
+    "TouchGfxPath": "../Middlewares/ST/touchgfx",
+    "UIPath": ".",
+    "AvailableColorDepths": [
+      16
+    ],
+    "AvailableLCDs": {
+      "16": "LCD16bpp"
+    },
+    "AvailableSections": [
+      "ExtFlashSection",
+      "IntFlashSection"
+    ],
+    "AvailableResolutions": [
+      {
+        "Width": 240,
+        "Height": 240
+      }
+    ],
+    "PhysicalButtons": [],
+    "FrameworkFeatures": {
+      "LCD16bpp": {
+        "Id": "LCD16bpp",
+        "IsEnabled": false
+      }
+    },
+    "GenerateAssetsCommand": "make -f simulator/gcc/Makefile assets -j8",
+    "PostGenerateCommand": "touchgfx update_project --project-file=simulator/msvs/Application.vcxproj",
+    "PostGenerateTargetCommand": "touchgfx update_project --project-file=../MenuDemo.ioc --platform=m4",
+    "CompileSimulatorCommand": "make -f simulator/gcc/Makefile -j8",
+    "RunSimulatorCommand": "build\\bin\\simulator.exe",
+    "LandscapeSkinX": 0,
+    "LandscapeSkinY": 0,
+    "PortraitSkinX": 0,
+    "PortraitSkinY": 0,
+    "DisplayOrientation": "Landscape",
+    "Family": "STM32L4"
+  },
+  "Version": "4.18.0"
+}

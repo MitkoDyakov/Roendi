@@ -1,0 +1,8 @@
+Font.hpp:167:13:touchgfx::Font::~Font()	16	static
+Font.hpp:167:13:virtual touchgfx::Font::~Font()	16	static
+ConstFont.hpp:35:7:touchgfx::ConstFont::~ConstFont()	16	static
+ConstFont.hpp:35:7:virtual touchgfx::ConstFont::~ConstFont()	16	static
+GeneratedFont.hpp:17:7:touchgfx::GeneratedFont::~GeneratedFont()	16	static
+GeneratedFont.hpp:17:7:virtual touchgfx::GeneratedFont::~GeneratedFont()	16	static
+Table_verdanab_25_4bpp.cpp:32:164:void __tcf_0()	8	static
+Table_verdanab_25_4bpp.cpp:30:26:touchgfx::GeneratedFont& getFont_verdanab_25_4bpp()	56	static

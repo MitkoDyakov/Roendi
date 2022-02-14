@@ -1,0 +1,20 @@
+Font.hpp:167:13:touchgfx::Font::~Font()	16	static
+Font.hpp:167:13:virtual touchgfx::Font::~Font()	16	static
+Font.hpp:198:30:virtual const touchgfx::GlyphNode* touchgfx::Font::getGlyph(touchgfx::Unicode::UnicodeChar) const	40	static
+Font.hpp:217:34:virtual touchgfx::Unicode::UnicodeChar touchgfx::Font::getFallbackChar() const	16	static
+Font.hpp:230:34:virtual touchgfx::Unicode::UnicodeChar touchgfx::Font::getEllipsisChar() const	16	static
+Font.hpp:319:44:virtual uint16_t touchgfx::Font::getFontHeight() const	16	static
+Font.hpp:331:44:virtual uint16_t touchgfx::Font::getMinimumTextHeight() const	16	static
+Font.hpp:341:43:virtual uint8_t touchgfx::Font::getBitsPerPixel() const	16	static
+Font.hpp:351:43:virtual uint8_t touchgfx::Font::getByteAlignRow() const	16	static
+Font.hpp:484:5:touchgfx::Font::Font(uint16_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, touchgfx::Unicode::UnicodeChar, touchgfx::Unicode::UnicodeChar)	16	static
+ApplicationFontProvider.hpp:33:39:static touchgfx::FlashDataReader* ApplicationFontProvider::getFlashReader()	4	static
+UnmappedDataFont.hpp:89:29:virtual const uint16_t* touchgfx::UnmappedDataFont::getGSUBTable() const	16	static
+UnmappedDataFont.hpp:99:45:virtual const touchgfx::FontContextualFormsTable* touchgfx::UnmappedDataFont::getContextualFormsTable() const	16	static
+UnmappedDataFont.cpp:12:1:touchgfx::UnmappedDataFont::UnmappedDataFont(const touchgfx::GlyphNode*, const uint16_t*, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, const uint8_t* const*, const touchgfx::KerningNode*, touchgfx::Unicode::UnicodeChar, touchgfx::Unicode::UnicodeChar, const uint16_t*, const touchgfx::FontContextualFormsTable*)	56	static
+UnmappedDataFont.cpp:24:18:virtual const touchgfx::GlyphNode* touchgfx::UnmappedDataFont::getGlyph(touchgfx::Unicode::UnicodeChar, const uint8_t*&, uint8_t&) const	40	static
+UnmappedDataFont.cpp:41:16:virtual const uint8_t* touchgfx::UnmappedDataFont::getPixelData(const touchgfx::GlyphNode*) const	24	static
+UnmappedDataFont.cpp:47:8:virtual int8_t touchgfx::UnmappedDataFont::getKerning(touchgfx::Unicode::UnicodeChar, const touchgfx::GlyphNode*) const	40	static
+UnmappedDataFont.cpp:69:5:int touchgfx::UnmappedDataFont::lookupUnicode(uint16_t) const	32	static
+UnmappedDataFont.hpp:19:7:touchgfx::UnmappedDataFont::~UnmappedDataFont()	16	static
+UnmappedDataFont.hpp:19:7:virtual touchgfx::UnmappedDataFont::~UnmappedDataFont()	16	static

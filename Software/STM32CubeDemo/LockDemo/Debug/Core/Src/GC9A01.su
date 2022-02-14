@@ -1,0 +1,14 @@
+GC9A01.c:19:6:GC9A01_set_reset	16	static
+GC9A01.c:24:6:GC9A01_set_data_command	16	static
+GC9A01.c:29:6:GC9A01_set_chip_select	16	static
+GC9A01.c:34:6:GC9A01_spi_tx	16	static
+GC9A01.c:39:6:GC9A01_delay	16	static
+GC9A01.c:43:6:GC9A01_write_command	16	static
+GC9A01.c:50:13:GC9A01_write_data	16	static
+GC9A01.c:57:20:GC9A01_write_byte	16	static
+GC9A01.c:61:6:GC9A01_sleep	8	static
+GC9A01.c:66:6:GC9A01_init	8	static
+GC9A01.c:321:6:GC9A01_set_frame	24	static
+GC9A01.c:340:6:GC9A01_write	16	static
+GC9A01.c:346:6:GC9A01_write_DMA	16	static
+GC9A01.c:353:6:GC9A01_write_continue	16	static

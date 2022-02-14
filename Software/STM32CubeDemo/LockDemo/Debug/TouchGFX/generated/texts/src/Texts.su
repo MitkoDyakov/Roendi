@@ -1,0 +1,19 @@
+Font.hpp:198:30:virtual const touchgfx::GlyphNode* touchgfx::Font::getGlyph(touchgfx::Unicode::UnicodeChar) const	40	static
+Font.hpp:217:34:virtual touchgfx::Unicode::UnicodeChar touchgfx::Font::getFallbackChar() const	16	static
+Font.hpp:230:34:virtual touchgfx::Unicode::UnicodeChar touchgfx::Font::getEllipsisChar() const	16	static
+Font.hpp:319:44:virtual uint16_t touchgfx::Font::getFontHeight() const	16	static
+Font.hpp:331:44:virtual uint16_t touchgfx::Font::getMinimumTextHeight() const	16	static
+Font.hpp:341:43:virtual uint8_t touchgfx::Font::getBitsPerPixel() const	16	static
+Font.hpp:351:43:virtual uint8_t touchgfx::Font::getByteAlignRow() const	16	static
+Font.hpp:388:20:virtual int8_t touchgfx::Font::getKerning(touchgfx::Unicode::UnicodeChar, const touchgfx::GlyphNode*) const	24	static
+Font.hpp:408:29:virtual const uint16_t* touchgfx::Font::getGSUBTable() const	16	static
+Font.hpp:418:45:virtual const touchgfx::FontContextualFormsTable* touchgfx::Font::getContextualFormsTable() const	16	static
+TypedText.hpp:153:17:static void touchgfx::TypedText::registerTypedTextDatabase(const touchgfx::TypedText::TypedTextData*, const touchgfx::Font* const*, uint16_t)	24	static
+Texts.cpp:13:10:) const	28	static
+Texts.cpp:22:10:) const	24	static
+Texts.cpp:31:32:touchgfx::Unicode::UnicodeChar touchgfx::TextProvider::getNextLigature(touchgfx::TextDirection)	48	static
+Texts.cpp:45:6:void touchgfx::TextProvider::initializeInternal()	16	static
+Texts.cpp:50:6:)	40	static
+Texts.cpp:87:6:static void touchgfx::Texts::setLanguage(touchgfx::LanguageId)	32	static
+Texts.cpp:117:6:static void touchgfx::Texts::setTranslation(touchgfx::LanguageId, const void*)	16	static
+Texts.cpp:122:39:const UnicodeChar* touchgfx::Texts::getText(touchgfx::TypedTextId) const	16	static

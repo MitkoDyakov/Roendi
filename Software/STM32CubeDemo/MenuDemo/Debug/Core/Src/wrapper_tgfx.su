@@ -1,0 +1,4 @@
+wrapper_tgfx.c:8:6:HAL_SPI_TxCpltCallback	16	static
+wrapper_tgfx.c:19:5:touchgfxDisplayDriverTransmitActive	4	static
+wrapper_tgfx.c:24:13:ConvHL	24	static
+wrapper_tgfx.c:38:6:touchgfxDisplayDriverTransmitBlock	40	static

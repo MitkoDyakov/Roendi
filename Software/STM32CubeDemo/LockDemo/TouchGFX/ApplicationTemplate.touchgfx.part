@@ -1,0 +1,22 @@
+
+{
+  "Application": {
+    "Name": "LockDemo",
+    "TouchGfxPath": "../Middlewares/ST/touchgfx",
+    "AvailableColorDepths": [ 16 ],
+    "AvailableLCDs":
+    {
+      "16": "LCD16bpp"
+    },
+    "AvailableResolutions" : [
+      {
+        "Width": 240,
+        "Height": 240
+      }
+    ],
+    "PostGenerateTargetCommand" : "touchgfx update_project --project-file=../LockDemo.ioc --platform=m4",
+    "Family" : "STM32L4",
+    "SubFamily" : "STM32L4x3"
+  },
+  "Version": "4.18.0"
+}
