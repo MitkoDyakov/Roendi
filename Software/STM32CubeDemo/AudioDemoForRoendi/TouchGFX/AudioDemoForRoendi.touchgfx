@@ -1,0 +1,105 @@
+{
+  "Application": {
+    "Screens": [
+      {
+        "Name": "screen",
+        "CanvasBufferSize": 3600,
+        "Components": [
+          {
+            "Type": "Image",
+            "Name": "image1",
+            "X": -16,
+            "Y": -20,
+            "Width": 327,
+            "Height": 302,
+            "RelativeFilename": "pic3.png"
+          },
+          {
+            "Type": "Line",
+            "Name": "line1",
+            "Y": 19,
+            "Width": 240,
+            "Height": 50,
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "StartX": 60,
+            "StartY": 25,
+            "EndX": 190,
+            "EndY": 25,
+            "LineWidth": 10,
+            "LineEndingStyle": "Round"
+          },
+          {
+            "Type": "Line",
+            "Name": "line2",
+            "Y": 19,
+            "Width": 240,
+            "Height": 50,
+            "Color": {
+              "Red": 209,
+              "Green": 16,
+              "Blue": 68
+            },
+            "StartX": 60,
+            "StartY": 25,
+            "EndX": 61,
+            "EndY": 25,
+            "LineWidth": 8,
+            "LineEndingStyle": "Round"
+          }
+        ],
+        "Interactions": []
+      }
+    ],
+    "CustomContainerDefinitions": [],
+    "Name": "MyApplication",
+    "Resolution": {
+      "Width": 240,
+      "Height": 240
+    },
+    "SelectedColorDepth": 16,
+    "StartupScreenName": "screen",
+    "SelectedStartupLanguage": "GB",
+    "Skin": "Blue",
+    "TouchGfxPath": "../Middlewares/ST/touchgfx",
+    "UIPath": ".",
+    "AvailableColorDepths": [
+      16
+    ],
+    "AvailableLCDs": {
+      "16": "LCD16bpp"
+    },
+    "AvailableSections": [
+      "ExtFlashSection",
+      "IntFlashSection"
+    ],
+    "AvailableResolutions": [
+      {
+        "Width": 240,
+        "Height": 240
+      }
+    ],
+    "PhysicalButtons": [],
+    "FrameworkFeatures": {
+      "LCD16bpp": {
+        "Id": "LCD16bpp",
+        "IsEnabled": false
+      }
+    },
+    "GenerateAssetsCommand": "make -f simulator/gcc/Makefile assets -j8",
+    "PostGenerateCommand": "touchgfx update_project --project-file=simulator/msvs/Application.vcxproj",
+    "PostGenerateTargetCommand": "touchgfx update_project --project-file=../AudioDemoForRoendi.ioc --platform=m4",
+    "CompileSimulatorCommand": "make -f simulator/gcc/Makefile -j8",
+    "RunSimulatorCommand": "build\\bin\\simulator.exe",
+    "LandscapeSkinX": 0,
+    "LandscapeSkinY": 0,
+    "PortraitSkinX": 0,
+    "PortraitSkinY": 0,
+    "DisplayOrientation": "Landscape",
+    "Family": "STM32L4"
+  },
+  "Version": "4.18.0"
+}
