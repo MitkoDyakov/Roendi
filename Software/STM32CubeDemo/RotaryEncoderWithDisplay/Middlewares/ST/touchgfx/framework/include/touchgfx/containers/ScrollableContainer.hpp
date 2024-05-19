@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,11 +18,11 @@
 #ifndef TOUCHGFX_SCROLLABLECONTAINER_HPP
 #define TOUCHGFX_SCROLLABLECONTAINER_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/containers/Container.hpp>
 #include <touchgfx/events/ClickEvent.hpp>
 #include <touchgfx/events/DragEvent.hpp>
 #include <touchgfx/events/GestureEvent.hpp>
+#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/widgets/Box.hpp>
 
 namespace touchgfx
@@ -149,11 +149,24 @@ public:
 
     /**
      * Gets the area that contains all children added to the ScrollableContainer. The
-     * scrollbars are not considered in this operation.
+     * scrollbars are not considered in this operation. The area also includes the
+     * scrollableContainer itself.
      *
      * @return The contained area.
+     *
+     * @see getChildrenContainedArea
      */
     virtual Rect getContainedArea() const;
+
+    /**
+     * Gets the area that contains all children added to the ScrollableContainer. The
+     * container itself and scrollbars are not considered in this operation.
+     *
+     * @return The area containing only the children.
+     *
+     * @see getContainedArea
+     */
+    virtual Rect getChildrenContainedArea() const;
 
     /**
      * Used to signal that the size or position of one or more children have changed. This
@@ -173,6 +186,7 @@ public:
      * @copydoc Container::moveChildrenRelative
      *
      * @note Takes care not to move the scrollbars, which are also children.
+     * @note This function is scheduled to be deprecated. Use doScroll() instead.
      */
     virtual void moveChildrenRelative(int16_t deltaX, int16_t deltaY);
 
@@ -282,6 +296,22 @@ public:
      */
     uint16_t getScrollDurationSlowdown() const;
 
+    /**
+     * Method to actually scroll the container. Passing negative values will scroll the
+     * items in the ScrollableContainer up / left, whereas positive values will scroll items
+     * down / right.
+     *
+     * If the distance is larger than allowed, the deltas are adjusted down to make sure the
+     * contained items stay inside view.
+     *
+     * @param  deltaX The horizontal amount to scroll.
+     * @param  deltaY The vertical amount to scroll.
+     *
+     * @return did the container actually scroll. The call doScroll(0,0) will always return
+     *         false.
+     */
+    virtual bool doScroll(int16_t deltaX, int16_t deltaY);
+
 protected:
     uint8_t scrollbarPadding;                          ///< The amount of padding. The scrollbar will have a bit of space to the borders of the container.
     uint8_t scrollbarWidth;                            ///< The width of the scrollbar.
@@ -328,22 +358,6 @@ protected:
 
     /** Invalidate the scrollbars. */
     void invalidateScrollbars();
-
-    /**
-     * Method to actually scroll the container. Passing negative values will scroll the
-     * items in the ScrollableContainer up / left, whereas positive values will scroll items
-     * down / right.
-     *
-     * If the distance is larger than allowed, the deltas are adjusted down to make sure the
-     * contained items stay inside view.
-     *
-     * @param  deltaX The horizontal amount to scroll.
-     * @param  deltaY The vertical amount to scroll.
-     *
-     * @return did the container actually scroll. The call doScroll(0,0) will always return
-     *         false.
-     */
-    virtual bool doScroll(int16_t deltaX, int16_t deltaY);
 
     GestureEvent::GestureEventType accelDirection; ///< The current direction (horizontal or vertical) of scroll
 

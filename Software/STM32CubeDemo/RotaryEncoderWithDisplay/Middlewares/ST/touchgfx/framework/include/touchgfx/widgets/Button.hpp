@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,8 +18,8 @@
 #ifndef TOUCHGFX_BUTTON_HPP
 #define TOUCHGFX_BUTTON_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Bitmap.hpp>
+#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/widgets/AbstractButton.hpp>
 
 namespace touchgfx
@@ -79,6 +79,14 @@ public:
     Bitmap getCurrentlyDisplayedBitmap() const
     {
         return (pressed ? down : up);
+    }
+
+    virtual void invalidateContent() const
+    {
+        if (alpha > 0)
+        {
+            Widget::invalidateContent();
+        }
     }
 
 protected:

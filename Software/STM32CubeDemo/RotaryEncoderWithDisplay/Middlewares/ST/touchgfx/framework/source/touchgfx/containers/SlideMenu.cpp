@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -11,13 +11,7 @@
 *******************************************************************************/
 
 #include <touchgfx/Application.hpp>
-#include <touchgfx/Bitmap.hpp>
-#include <touchgfx/Callback.hpp>
-#include <touchgfx/EasingEquations.hpp>
-#include <touchgfx/containers/Container.hpp>
 #include <touchgfx/containers/SlideMenu.hpp>
-#include <touchgfx/mixins/MoveAnimator.hpp>
-#include <touchgfx/widgets/AbstractButton.hpp>
 
 namespace touchgfx
 {
@@ -95,8 +89,6 @@ void SlideMenu::setup(ExpandDirection newExpandDirection, const Bitmap& backgrou
 
         setVisiblePixelsWhenCollapsed(stateChangeButtonBMP.getWidth());
         break;
-    default:
-        break;
     }
 
     setup(newExpandDirection, backgroundBMP, stateChangeButtonBMP, stateChangeButtonPressedBMP, backgroundX, backgroundY, buttonX, buttonY);
@@ -109,7 +101,7 @@ void SlideMenu::setup(ExpandDirection newExpandDirection, const Bitmap& backgrou
     background.setBitmap(backgroundBMP);
     background.setXY(backgroundX, backgroundY);
 
-    Rect boundingRect = background.getRect();
+    const Rect boundingRect = background.getRect();
     // boundingRect.expandToFit(background.getRect());
 
     menuContainer.setWidth(boundingRect.right());
@@ -133,7 +125,7 @@ void SlideMenu::setup(ExpandDirection newExpandDirection, const Bitmap& backgrou
     stateChangeButton.setBitmaps(stateChangeButtonBMP, stateChangeButtonPressedBMP);
     stateChangeButton.setXY(stateChangeButtonX, stateChangeButtonY);
 
-    Rect boundingRect(0, 0, 0, 0);
+    Rect boundingRect;
     boundingRect.expandToFit(background.getRect());
     boundingRect.expandToFit(stateChangeButton.getRect());
 
@@ -357,9 +349,9 @@ int16_t SlideMenu::getCollapsedXCoordinate()
         return getWidth() - visiblePixelsWhenCollapsed;
     case SOUTH:
     case NORTH:
-    default:
-        return 0;
+        break;
     }
+    return 0;
 }
 
 int16_t SlideMenu::getCollapsedYCoordinate()
@@ -372,9 +364,9 @@ int16_t SlideMenu::getCollapsedYCoordinate()
         return getHeight() - visiblePixelsWhenCollapsed;
     case EAST:
     case WEST:
-    default:
-        return 0;
+        break;
     }
+    return 0;
 }
 
 int16_t SlideMenu::getExpandedXCoordinate()
@@ -387,9 +379,9 @@ int16_t SlideMenu::getExpandedXCoordinate()
         return hiddenPixelsWhenExpanded;
     case SOUTH:
     case NORTH:
-    default:
-        return 0;
+        break;
     }
+    return 0;
 }
 
 int16_t SlideMenu::getExpandedYCoordinate()
@@ -402,8 +394,8 @@ int16_t SlideMenu::getExpandedYCoordinate()
         return hiddenPixelsWhenExpanded;
     case EAST:
     case WEST:
-    default:
-        return 0;
+        break;
     }
+    return 0;
 }
 } // namespace touchgfx

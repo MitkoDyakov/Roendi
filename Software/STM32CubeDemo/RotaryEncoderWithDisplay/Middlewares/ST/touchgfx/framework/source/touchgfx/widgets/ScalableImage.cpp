@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -10,20 +10,17 @@
 *
 *******************************************************************************/
 
-#include <touchgfx/hal/Types.hpp>
-#include <touchgfx/Bitmap.hpp>
 #include <touchgfx/Drawable.hpp>
 #include <touchgfx/Utils.hpp>
 #include <touchgfx/hal/HAL.hpp>
 #include <touchgfx/lcd/LCD.hpp>
 #include <touchgfx/transforms/DisplayTransformation.hpp>
-#include <touchgfx/widgets/Image.hpp>
 #include <touchgfx/widgets/ScalableImage.hpp>
 
 namespace touchgfx
 {
-ScalableImage::ScalableImage(const Bitmap& bitmap /*= Bitmap() */)
-    : Image(bitmap),
+ScalableImage::ScalableImage(const Bitmap& bmp /*= Bitmap() */)
+    : Image(bmp),
       currentScalingAlgorithm(BILINEAR_INTERPOLATION)
 {
 }
@@ -77,18 +74,18 @@ void ScalableImage::drawQuad(const Rect& invalidatedArea, uint16_t* fb, const fl
     DisplayTransformation::transformDisplayToFrameBuffer(x3, y3, this->getRect());
 
     Point3D vertices[4];
-    Point3D point0 = { floatToFixed28_4(x0), floatToFixed28_4(y0), (float)(triangleZs[0]), (float)(triangleUs[0]), (float)(triangleVs[0]) };
-    Point3D point1 = { floatToFixed28_4(x1), floatToFixed28_4(y1), (float)(triangleZs[1]), (float)(triangleUs[1]), (float)(triangleVs[1]) };
-    Point3D point2 = { floatToFixed28_4(x2), floatToFixed28_4(y2), (float)(triangleZs[2]), (float)(triangleUs[2]), (float)(triangleVs[2]) };
-    Point3D point3 = { floatToFixed28_4(x3), floatToFixed28_4(y3), (float)(triangleZs[3]), (float)(triangleUs[3]), (float)(triangleVs[3]) };
+    const Point3D point0 = { floatToFixed28_4(x0), floatToFixed28_4(y0), (float)(triangleZs[0]), (float)(triangleUs[0]), (float)(triangleVs[0]) };
+    const Point3D point1 = { floatToFixed28_4(x1), floatToFixed28_4(y1), (float)(triangleZs[1]), (float)(triangleUs[1]), (float)(triangleVs[1]) };
+    const Point3D point2 = { floatToFixed28_4(x2), floatToFixed28_4(y2), (float)(triangleZs[2]), (float)(triangleUs[2]), (float)(triangleVs[2]) };
+    const Point3D point3 = { floatToFixed28_4(x3), floatToFixed28_4(y3), (float)(triangleZs[3]), (float)(triangleUs[3]), (float)(triangleVs[3]) };
 
     vertices[0] = point0;
     vertices[1] = point1;
     vertices[2] = point2;
     vertices[3] = point3;
 
-    DrawingSurface dest = { fb, HAL::FRAME_BUFFER_WIDTH };
-    TextureSurface src = { textmap, bitmap.getExtraData(), bitmap.getWidth(), bitmap.getHeight(), bitmap.getWidth() };
+    const DrawingSurface dest = { fb, HAL::FRAME_BUFFER_WIDTH };
+    const TextureSurface src = { textmap, bitmap.getExtraData(), bitmap.getWidth(), bitmap.getHeight(), bitmap.getWidth() };
 
     HAL::lcd().drawTextureMapQuad(dest, vertices, src, absoluteRect, dirtyAreaAbsolute, lookupRenderVariant(), alpha, 0xFFFF);
 }
@@ -121,14 +118,14 @@ void ScalableImage::draw(const Rect& invalidatedArea) const
     float triangleUs[4];
     float triangleVs[4];
 
-    float imageX0 = 0;
-    float imageY0 = 0;
-    float imageX1 = imageX0 + getWidth();
-    float imageY1 = imageY0;
-    float imageX2 = imageX1;
-    float imageY2 = imageY0 + getHeight();
-    float imageX3 = imageX0;
-    float imageY3 = imageY2;
+    const float imageX0 = 0;
+    const float imageY0 = 0;
+    const float imageX1 = imageX0 + getWidth();
+    const float imageY1 = imageY0;
+    const float imageX2 = imageX1;
+    const float imageY2 = imageY0 + getHeight();
+    const float imageX3 = imageX0;
+    const float imageY3 = imageY2;
 
     triangleZs[0] = 100.f;
     triangleZs[1] = 100.f;
@@ -136,8 +133,8 @@ void ScalableImage::draw(const Rect& invalidatedArea) const
     triangleZs[3] = 100.f;
 
     // Setup texture coordinates
-    float right = (float)(bitmap.getWidth());
-    float bottom = (float)(bitmap.getHeight());
+    const float right = (float)(bitmap.getWidth());
+    const float bottom = (float)(bitmap.getHeight());
     float textureU0 = 0.0f;
     float textureV0 = 0.0f;
     float textureU1 = right;
@@ -181,16 +178,20 @@ void ScalableImage::draw(const Rect& invalidatedArea) const
 
 Rect ScalableImage::getSolidRect() const
 {
-    if (alpha < 255)
+    // If original image is completely solid the scaled image will also be
+    // Return the unscaled solid rect limited to the widget
+    // TextureMapper may not fill solid pixels in the whole widget due to antialiasing
+    if (alpha == 255)
     {
-        return Rect(0, 0, 0, 0);
+        const Rect bmpSolid = bitmap.getSolidRect();
+        if (bmpSolid.width == bitmap.getWidth() && bmpSolid.height == bitmap.getHeight())
+        {
+            const Rect widgetRect(0, 0, getWidth(), getHeight());
+            return bmpSolid & widgetRect;
+        }
     }
 
-    // If original image is completely solid the scaled image will also be
-    if ((bitmap.getSolidRect().width == bitmap.getWidth()) && (bitmap.getSolidRect().height == bitmap.getHeight()))
-    {
-        return bitmap.getSolidRect();
-    }
-    return Rect(0, 0, 0, 0);
+    // Return empty rect otherwise
+    return Rect();
 }
 } // namespace touchgfx

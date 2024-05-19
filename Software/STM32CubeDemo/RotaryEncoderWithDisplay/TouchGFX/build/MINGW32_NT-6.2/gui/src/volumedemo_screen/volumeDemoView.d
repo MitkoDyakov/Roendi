@@ -24,6 +24,15 @@ build/MINGW32_NT-6.2/gui/src/volumedemo_screen/volumeDemoView.o: \
  ../Middlewares/ST/touchgfx/framework/include/touchgfx/Screen.hpp \
  ../Middlewares/ST/touchgfx/framework/include/touchgfx/containers/Container.hpp \
  ../Middlewares/ST/touchgfx/framework/include/touchgfx/Drawable.hpp \
+ ../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/HAL.hpp \
+ ../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/BlitOp.hpp \
+ ../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/DMA.hpp \
+ ../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/Atomic.hpp \
+ ../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/FrameBufferAllocator.hpp \
+ ../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/Gestures.hpp \
+ ../Middlewares/ST/touchgfx/framework/include/platform/core/MCUInstrumentation.hpp \
+ ../Middlewares/ST/touchgfx/framework/include/platform/driver/button/ButtonController.hpp \
+ ../Middlewares/ST/touchgfx/framework/include/platform/driver/touch/TouchController.hpp \
  ../Middlewares/ST/touchgfx/framework/include/touchgfx/transitions/Transition.hpp \
  ../Middlewares/ST/touchgfx/framework/include/common/AbstractPartition.hpp \
  ../Middlewares/ST/touchgfx/framework/include/mvp/MVPHeap.hpp \
@@ -35,6 +44,7 @@ build/MINGW32_NT-6.2/gui/src/volumedemo_screen/volumeDemoView.o: \
  ../Middlewares/ST/touchgfx/framework/include/touchgfx/widgets/Box.hpp \
  ../Middlewares/ST/touchgfx/framework/include/touchgfx/widgets/Widget.hpp \
  ../Middlewares/ST/touchgfx/framework/include/touchgfx/widgets/Image.hpp \
+ ../Middlewares/ST/touchgfx/framework/include/touchgfx/widgets/TextAreaWithWildcard.hpp \
  ../Middlewares/ST/touchgfx/framework/include/touchgfx/widgets/TextArea.hpp \
  ../Middlewares/ST/touchgfx/framework/include/touchgfx/TypedText.hpp \
  ../Middlewares/ST/touchgfx/framework/include/touchgfx/Texts.hpp \
@@ -49,15 +59,6 @@ build/MINGW32_NT-6.2/gui/src/volumedemo_screen/volumeDemoView.o: \
  ../Middlewares/ST/touchgfx/framework/include/touchgfx/canvas_widget_renderer/Scanline.hpp \
  ../Middlewares/ST/touchgfx/framework/include/touchgfx/canvas_widget_renderer/CanvasWidgetRenderer.hpp \
  ../Middlewares/ST/touchgfx/framework/include/touchgfx/widgets/canvas/AbstractPainter.hpp \
- ../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/HAL.hpp \
- ../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/BlitOp.hpp \
- ../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/DMA.hpp \
- ../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/Atomic.hpp \
- ../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/FrameBufferAllocator.hpp \
- ../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/Gestures.hpp \
- ../Middlewares/ST/touchgfx/framework/include/platform/core/MCUInstrumentation.hpp \
- ../Middlewares/ST/touchgfx/framework/include/platform/driver/button/ButtonController.hpp \
- ../Middlewares/ST/touchgfx/framework/include/platform/driver/touch/TouchController.hpp \
  ../Middlewares/ST/touchgfx/framework/include/touchgfx/widgets/canvas/Canvas.hpp \
  ../Middlewares/ST/touchgfx/framework/include/touchgfx/widgets/canvas/CanvasWidget.hpp \
  ../Middlewares/ST/touchgfx/framework/include/touchgfx/widgets/canvas/PainterRGB565.hpp \
@@ -111,6 +112,24 @@ generated/gui_generated/include/gui_generated/common/FrontendApplicationBase.hpp
 
 ../Middlewares/ST/touchgfx/framework/include/touchgfx/Drawable.hpp:
 
+../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/HAL.hpp:
+
+../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/BlitOp.hpp:
+
+../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/DMA.hpp:
+
+../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/Atomic.hpp:
+
+../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/FrameBufferAllocator.hpp:
+
+../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/Gestures.hpp:
+
+../Middlewares/ST/touchgfx/framework/include/platform/core/MCUInstrumentation.hpp:
+
+../Middlewares/ST/touchgfx/framework/include/platform/driver/button/ButtonController.hpp:
+
+../Middlewares/ST/touchgfx/framework/include/platform/driver/touch/TouchController.hpp:
+
 ../Middlewares/ST/touchgfx/framework/include/touchgfx/transitions/Transition.hpp:
 
 ../Middlewares/ST/touchgfx/framework/include/common/AbstractPartition.hpp:
@@ -132,6 +151,8 @@ gui/include/gui/model/ModelListener.hpp:
 ../Middlewares/ST/touchgfx/framework/include/touchgfx/widgets/Widget.hpp:
 
 ../Middlewares/ST/touchgfx/framework/include/touchgfx/widgets/Image.hpp:
+
+../Middlewares/ST/touchgfx/framework/include/touchgfx/widgets/TextAreaWithWildcard.hpp:
 
 ../Middlewares/ST/touchgfx/framework/include/touchgfx/widgets/TextArea.hpp:
 
@@ -160,24 +181,6 @@ gui/include/gui/model/ModelListener.hpp:
 ../Middlewares/ST/touchgfx/framework/include/touchgfx/canvas_widget_renderer/CanvasWidgetRenderer.hpp:
 
 ../Middlewares/ST/touchgfx/framework/include/touchgfx/widgets/canvas/AbstractPainter.hpp:
-
-../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/HAL.hpp:
-
-../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/BlitOp.hpp:
-
-../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/DMA.hpp:
-
-../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/Atomic.hpp:
-
-../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/FrameBufferAllocator.hpp:
-
-../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/Gestures.hpp:
-
-../Middlewares/ST/touchgfx/framework/include/platform/core/MCUInstrumentation.hpp:
-
-../Middlewares/ST/touchgfx/framework/include/platform/driver/button/ButtonController.hpp:
-
-../Middlewares/ST/touchgfx/framework/include/platform/driver/touch/TouchController.hpp:
 
 ../Middlewares/ST/touchgfx/framework/include/touchgfx/widgets/canvas/Canvas.hpp:
 

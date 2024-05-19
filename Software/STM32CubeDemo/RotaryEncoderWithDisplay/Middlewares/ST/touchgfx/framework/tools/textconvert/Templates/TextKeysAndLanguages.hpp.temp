@@ -3,22 +3,18 @@
 
 #ifndef TOUCHGFX_TEXTKEYSANDLANGUAGES_HPP
 #define TOUCHGFX_TEXTKEYSANDLANGUAGES_HPP
-<%
-#ENUM OF LANGUAGES
-%>
+
 enum LANGUAGES
 {
-<% if !(countries.empty?) %>
-    <%= countries %>,
+<% get_languages.each do |language| %>
+    <%= language %>,
 <% end %>
     NUMBER_OF_LANGUAGES
 };
-<%
-#ENUM DEF OF TEXT_TYPES
-%>
+
 enum TEXTS
 {
-<% texts.each do |text| %>
+<% get_texts.each do |text| %>
     <%= text.upcase %>,
 <% end %>
     NUMBER_OF_TEXT_KEYS

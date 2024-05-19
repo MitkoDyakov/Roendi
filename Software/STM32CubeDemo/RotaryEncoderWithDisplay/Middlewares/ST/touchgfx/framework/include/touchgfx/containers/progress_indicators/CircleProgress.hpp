@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,8 +18,8 @@
 #ifndef TOUCHGFX_CIRCLEPROGRESS_HPP
 #define TOUCHGFX_CIRCLEPROGRESS_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/containers/progress_indicators/AbstractProgressIndicator.hpp>
+#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/widgets/canvas/AbstractPainter.hpp>
 #include <touchgfx/widgets/canvas/Circle.hpp>
 
@@ -123,30 +123,36 @@ public:
     }
 
     /**
-     * Sets start and end angle. By swapping end and start angles, circles can progress
-     * backwards.
+     * Sets start angle and end angle in degrees. By swapping end and start angles, circles can
+     * progress backwards.
      *
-     * @param  startAngle The start angle.
-     * @param  endAngle   The end angle.
+     * @param   startAngle  The start angle.
+     * @param   endAngle    The end angle.
+     *
+     * @note    Angles are given in degrees, so a full circle is 360.
      */
     virtual void setStartEndAngle(int startAngle, int endAngle);
 
     /**
-     * Gets start angle.
+     * Gets start angle in degrees.
      *
-     * @return The start angle.
+     * @return  The start angle.
      *
      * @see setStartEndAngle, getEndAngle
+     *
+     * @note    Angles are given in degrees, so a full circle is 360.
      */
     virtual int getStartAngle() const;
 
     /**
-     * Gets end angle. Beware that the value returned is not related to the current progress
-     * of the circle but rather the end point of the circle when it is at 100%.
+     * Gets end angle in degrees. Beware that the value returned is not related to the current
+     * progress of the circle but rather the end point of the circle when it is at 100%.
      *
-     * @return The end angle.
+     * @return  The end angle.
      *
      * @see setStartEndAngle
+     *
+     * @note    Angles are given in degrees, so a full circle is 360.
      */
     virtual int getEndAngle() const;
 

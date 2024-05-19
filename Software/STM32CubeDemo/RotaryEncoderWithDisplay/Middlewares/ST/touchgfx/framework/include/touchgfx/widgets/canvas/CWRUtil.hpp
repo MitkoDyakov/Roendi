@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,9 +18,9 @@
 #ifndef TOUCHGFX_CWRUTIL_HPP
 #define TOUCHGFX_CWRUTIL_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Utils.hpp>
 #include <touchgfx/canvas_widget_renderer/Rasterizer.hpp>
+#include <touchgfx/hal/Types.hpp>
 
 namespace touchgfx
 {
@@ -81,7 +81,7 @@ struct CWRUtil
          * @see Q10
          */
         Q5(const Q10 q10)
-            : v(int(q10) / Rasterizer::POLY_BASE_SIZE)
+            : v((int)q10 / Rasterizer::POLY_BASE_SIZE)
         {
         }
 
@@ -118,6 +118,19 @@ struct CWRUtil
         }
 
         /**
+         * Addition operator.
+         *
+         * @param  q5 The Q5 to add to this.
+         *
+         * @return The result of the operation.
+         */
+        Q5& operator+=(const Q5& q5)
+        {
+            v += q5.v;
+            return *this;
+        }
+
+        /**
          * Subtraction operator.
          *
          * @param  q5 The Q5 to subtract from this.
@@ -127,6 +140,19 @@ struct CWRUtil
         Q5 operator-(const Q5& q5) const
         {
             return Q5(v - q5.v);
+        }
+
+        /**
+         * Subtraction operator.
+         *
+         * @param  q5 The Q5 to subtract from this.
+         *
+         * @return The result of the operation.
+         */
+        Q5& operator-=(const Q5& q5)
+        {
+            v -= q5.v;
+            return *this;
         }
 
         /**
@@ -157,7 +183,7 @@ struct CWRUtil
         Q5 operator*(const Q15& q15) const
         {
             int32_t remainder;
-            return Q5(muldiv(v, int(q15), Rasterizer::POLY_BASE_SIZE* Rasterizer::POLY_BASE_SIZE* Rasterizer::POLY_BASE_SIZE, remainder));
+            return Q5(muldiv(v, (int)q15, Rasterizer::POLY_BASE_SIZE * Rasterizer::POLY_BASE_SIZE * Rasterizer::POLY_BASE_SIZE, remainder));
         }
 
         /**
@@ -200,6 +226,31 @@ struct CWRUtil
         }
 
         /**
+         * Modulus operator.
+         *
+         * @param  q5 The Q5 to modulus this by.
+         *
+         * @return The result of the operation.
+         */
+        Q5 operator%(const Q5 q5) const
+        {
+            return Q5(v % q5.v);
+        }
+
+        /**
+         * Modulus operator.
+         *
+         * @param  q5 The Q5 to modulus this by.
+         *
+         * @return The result of the operation.
+         */
+        Q5& operator%=(const Q5 q5)
+        {
+            v %= q5.v;
+            return *this;
+        }
+
+        /**
          * Convert the Q5 value to an integer by removing the 5 bits used for the fraction, or
          * to a floating point value by dividing by 32, depending on the type specified as T.
          *
@@ -216,10 +267,25 @@ struct CWRUtil
         }
 
         /**
-         * Convert the Q5 value to an integer by removing the 5 bits used for the fraction. The
-         * number is rounded up to the nearest integer.
+         * Convert the Q5 value to an integer by removing the 5 bits used for the fraction. The number
+         * is rounded down to the nearest integer.
          *
-         * @return The first integer value higher than (or equal to) the Q5 value.
+         * @return  The first integer value higher than (or equal to) the Q5 value.
+         *
+         * @see ceil
+         */
+        int floor() const
+        {
+            return to<int>();
+        }
+
+        /**
+         * Convert the Q5 value to an integer by removing the 5 bits used for the fraction. The number
+         * is rounded up to the nearest integer.
+         *
+         * @return  The first integer value higher than (or equal to) the Q5 value.
+         *
+         * @see floor
          */
         int ceil() const
         {
@@ -310,7 +376,7 @@ struct CWRUtil
          */
         Q15 operator*(const Q5& q5) const
         {
-            return Q15(v * int(q5));
+            return Q15(v * (int)q5);
         }
 
         /**
@@ -322,7 +388,7 @@ struct CWRUtil
          */
         Q5 operator/(const Q5& q5) const
         {
-            return Q5(v / int(q5));
+            return Q5(v / (int)q5);
         }
 
         /**
@@ -410,7 +476,7 @@ struct CWRUtil
          */
         Q10 operator/(const Q5& q5) const
         {
-            return Q10(v / int(q5));
+            return Q10(v / (int)q5);
         }
 
     private:
@@ -447,7 +513,7 @@ struct CWRUtil
 #endif
     static Q5 toQ5(T value)
     {
-        return Q5(int(value * Rasterizer::POLY_BASE_SIZE));
+        return Q5((int)(value * Rasterizer::POLY_BASE_SIZE));
     }
 
     /**
@@ -468,7 +534,7 @@ struct CWRUtil
 #endif
     static Q10 toQ10(T value)
     {
-        return Q10(int(value * Rasterizer::POLY_BASE_SIZE * Rasterizer::POLY_BASE_SIZE));
+        return Q10((int)(value * Rasterizer::POLY_BASE_SIZE * Rasterizer::POLY_BASE_SIZE));
     }
 
     /**
@@ -495,7 +561,11 @@ struct CWRUtil
             0x7848, 0x7907, 0x79BC, 0x7A68, 0x7B0B, 0x7BA3, 0x7C33, 0x7CB8, 0x7D34, 0x7DA6,
             0x7E0E, 0x7E6D, 0x7EC1, 0x7F0C, 0x7F4C, 0x7F83, 0x7FB0, 0x7FD3, 0x7FEC, 0x7FFB, 0x8000
         };
-        i = ((i % 360) + 360) % 360;
+        i %= 360;
+        if (i < 0)
+        {
+            i += 360;
+        }
         if (i <= 90)
         {
             return Q15(sineTable[i]);
@@ -528,7 +598,11 @@ struct CWRUtil
     static Q15 sine(Q5 i)
     {
         Q5 _360 = toQ5<int>(360);
-        i = Q5(((i % _360) + _360) % _360);
+        i %= _360;
+        if (i < 0)
+        {
+            i += _360;
+        }
         int16_t fraction = i % Rasterizer::POLY_BASE_SIZE;
         Q15 sineLow = sine(i.to<int>());
         if (fraction == 0)
@@ -537,7 +611,7 @@ struct CWRUtil
         }
         Q15 sineHigh = sine(i.to<int>() + 1);
         int32_t remainder;
-        return Q15(muldiv(int(sineHigh - sineLow), fraction, Rasterizer::POLY_BASE_SIZE, remainder)) + sineLow;
+        return Q15(muldiv((int)(sineHigh - sineLow), fraction, Rasterizer::POLY_BASE_SIZE, remainder)) + sineLow;
     }
 
     /**
@@ -598,11 +672,11 @@ struct CWRUtil
             return 0; // error
         }
         // sqrt(1/2) as Q10 is "724" so if q10>724 calculate 90-arcsine(sqrt(1-q10^2))
-        if (int(q10) > 724)
+        if ((int)q10 > 724)
         {
-            return 90 - arcsine(Q10(isqrt((1 << (Rasterizer::POLY_BASE_SHIFT * 4)) - int(q10) * int(q10))));
+            return 90 - arcsine(Q10(isqrt((1 << (Rasterizer::POLY_BASE_SHIFT * 4)) - (int)q10 * (int)q10)));
         }
-        int q7 = (int(q10) + 3) >> 3; // Round Q10 to nearest Q7
+        int q7 = ((int)q10 + 3) >> 3; // Round Q10 to nearest Q7
         return arcsineTable[q7];
     }
 
@@ -673,10 +747,8 @@ struct CWRUtil
             {
                 return 90 + _angle(x, y, d);
             }
-            else // y < 0
-            {
-                return 90 - _angle(x, -y, d);
-            }
+            // y < 0
+            return 90 - _angle(x, -y, d);
         }
         // x < 0
         if (y >= 0)
@@ -699,7 +771,7 @@ struct CWRUtil
      */
     static Q5 sqrtQ10(Q10 value)
     {
-        return Q5(isqrt(uint32_t(int(value))));
+        return Q5(isqrt(uint32_t((int)value)));
     }
 
     /**
@@ -740,7 +812,7 @@ struct CWRUtil
      */
     static Q5 muldivQ5(Q5 factor1, Q5 factor2, Q5 divisor)
     {
-        return Q5(muldiv(int(factor1), int(factor2), int(divisor)));
+        return Q5(muldiv((int)factor1, (int)factor2, (int)divisor));
     }
 
     /**
@@ -777,7 +849,7 @@ struct CWRUtil
     static Q5 muldivQ10(Q10 factor1, Q10 factor2, Q10 divisor)
     {
         int32_t remainder;
-        return Q5(muldiv(int(factor1), int(factor2), int(divisor), remainder) / Rasterizer::POLY_BASE_SIZE);
+        return Q5(muldiv((int)factor1, (int)factor2, (int)divisor, remainder) / Rasterizer::POLY_BASE_SIZE);
     }
 
     /**
@@ -803,7 +875,7 @@ struct CWRUtil
      */
     static Q5 mulQ5(Q5 factor1, Q10 factor2)
     {
-        return muldivQ10(Q10(int(factor1) * Rasterizer::POLY_BASE_SIZE), factor2, toQ10<int>(1));
+        return muldivQ10(Q10((int)factor1 * Rasterizer::POLY_BASE_SIZE), factor2, toQ10<int>(1));
     }
 
 private:
@@ -823,7 +895,7 @@ private:
             return 0; // Error
         }
         int32_t remainder;
-        Q10 dy = Q10(muldiv(int(y), int(_1 * _1), int(d), remainder));
+        Q10 dy = Q10(muldiv((int)y, (int)(_1 * _1), (int)d, remainder));
         return arcsine(dy);
     }
 

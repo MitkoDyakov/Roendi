@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -42,14 +42,14 @@ public:
     }
 
     /**
-     * Binds an instance of a specific Presenter type (subclass) to the View instance. This
-     * function is called automatically when a new presenter/view pair is activated.
+     * Binds an instance of a specific Presenter type (subclass) to the View instance. This function
+     * is called automatically when a new presenter/view pair is activated.
      *
-     * @param [in] presenter The specific Presenter to be associated with the View.
+     * @param [in] newPresenter The specific Presenter to be associated with the View.
      */
-    void bind(T& presenter)
+    void bind(T& newPresenter)
     {
-        this->presenter = &presenter;
+        presenter = &newPresenter;
     }
 
 protected:

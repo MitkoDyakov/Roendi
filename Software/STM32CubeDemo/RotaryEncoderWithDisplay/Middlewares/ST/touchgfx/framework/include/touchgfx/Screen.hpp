@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,11 +18,12 @@
 #ifndef TOUCHGFX_SCREEN_HPP
 #define TOUCHGFX_SCREEN_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/containers/Container.hpp>
 #include <touchgfx/events/ClickEvent.hpp>
 #include <touchgfx/events/DragEvent.hpp>
 #include <touchgfx/events/GestureEvent.hpp>
+#include <touchgfx/hal/HAL.hpp>
+#include <touchgfx/hal/Types.hpp>
 
 namespace touchgfx
 {
@@ -152,6 +153,7 @@ public:
      */
     virtual void handleKeyEvent(uint8_t key)
     {
+        (void)key; // Unused variable
     }
 
     /**
@@ -188,7 +190,7 @@ public:
      */
     int16_t getScreenWidth() const
     {
-        return container.getWidth();
+        return HAL::DISPLAY_WIDTH;
     }
 
     /**
@@ -198,7 +200,7 @@ public:
      */
     int16_t getScreenHeight() const
     {
-        return container.getHeight();
+        return HAL::DISPLAY_HEIGHT;
     }
 
 protected:
@@ -239,14 +241,18 @@ protected:
     }
 
     /**
-     * Request that a region of this screen is redrawn. See Container::invalidateRect.
+     * Request that a region of this root container on the screen is redrawn. See
+     * Container::invalidateRect.
      *
      * To invalidate the entire Screen, use invalidate()
      *
-     * @param [in] invalidatedArea The area of this drawable to redraw expressed in relative
-     *                             coordinates.
+     * @param [in]  invalidatedArea The area of this drawable to redraw expressed in coordinates
+     *                              relative to the root container.
      *
      * @see Container::invalidateRect
+     *
+     * @note    The invalidatedArea position is relative to the root container, which is usually the
+     *          same as the Screen coordinates.
      */
     void invalidateRect(Rect& invalidatedArea) const
     {

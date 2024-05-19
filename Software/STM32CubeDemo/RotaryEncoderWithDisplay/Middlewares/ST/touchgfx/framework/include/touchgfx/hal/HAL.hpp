@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,17 +18,17 @@
 #ifndef TOUCHGFX_HAL_HPP
 #define TOUCHGFX_HAL_HPP
 
-#include <touchgfx/hal/Types.hpp>
+#include <platform/core/MCUInstrumentation.hpp>
+#include <platform/driver/button/ButtonController.hpp>
+#include <platform/driver/touch/TouchController.hpp>
 #include <touchgfx/Bitmap.hpp>
 #include <touchgfx/Drawable.hpp>
 #include <touchgfx/hal/BlitOp.hpp>
 #include <touchgfx/hal/DMA.hpp>
 #include <touchgfx/hal/FrameBufferAllocator.hpp>
 #include <touchgfx/hal/Gestures.hpp>
+#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/lcd/LCD.hpp>
-#include <platform/core/MCUInstrumentation.hpp>
-#include <platform/driver/button/ButtonController.hpp>
-#include <platform/driver/touch/TouchController.hpp>
 
 namespace touchgfx
 {
@@ -71,6 +71,7 @@ public:
           frameBufferUpdatedThisFrame(false),
           auxiliaryLCD(0),
           partialFrameBufferRect(),
+          useAuxiliaryLCD(false),
           listener(0),
           lastX(0),
           lastY(0),
@@ -86,16 +87,13 @@ public:
           cc_begin(0),
           requestedOrientation(ORIENTATION_LANDSCAPE),
           displayOrientationChangeRequested(false),
-          useAuxiliaryLCD(false),
           useDMAAcceleration(true),
           lastRenderMethod(HARDWARE)
     {
         instance = this;
-        DISPLAY_WIDTH = width;
-        DISPLAY_HEIGHT = height;
+        FRAME_BUFFER_WIDTH = DISPLAY_WIDTH = width;
+        FRAME_BUFFER_HEIGHT = DISPLAY_HEIGHT = height;
         DISPLAY_ROTATION = rotate0;
-        FRAME_BUFFER_WIDTH = DISPLAY_WIDTH;
-        FRAME_BUFFER_HEIGHT = DISPLAY_HEIGHT;
         nativeDisplayOrientation = ((width >= height) ? ORIENTATION_LANDSCAPE : ORIENTATION_PORTRAIT);
     }
 
@@ -141,10 +139,25 @@ public:
         {
             return nativeDisplayOrientation;
         }
-        else
-        {
-            return (nativeDisplayOrientation == ORIENTATION_LANDSCAPE ? ORIENTATION_PORTRAIT : ORIENTATION_LANDSCAPE);
-        }
+        return (nativeDisplayOrientation == ORIENTATION_LANDSCAPE ? ORIENTATION_PORTRAIT : ORIENTATION_LANDSCAPE);
+    }
+
+    /**
+     * Sets framebuffer size. By default the display size and the framebuffer size are the same, but
+     * in some hardware configurations, the hardware may have a width of e.g. 832 pixels even though
+     * the display is only 800 pixels wide. First set the display width and height using
+     * touchgfx_generic_init() and the update the framebuffer size using setFrameBufferSize().
+     *
+     * @param   width   The width of the framebuffer.
+     * @param   height  The height of the framebuffer.
+     *
+     * @see touchgfx_generic_init
+     */
+    virtual void setFrameBufferSize(uint16_t width, uint16_t height)
+    {
+        assert(width >= DISPLAY_WIDTH && height >= DISPLAY_HEIGHT && "Framebuffer cannot be smaller than display");
+        FRAME_BUFFER_WIDTH = width;
+        FRAME_BUFFER_HEIGHT = height;
     }
 
     /** Notify the framework that a DMA interrupt has occurred. */
@@ -202,8 +215,9 @@ public:
     virtual void flushDMA();
 
     /**
-     * Waits for the framebuffer to become available for use (i.e. not used by DMA
-     * transfers).
+     * Waits for the framebuffer to become available for use (i.e. not
+     * used by DMA transfers). Calls the InvalidateCache virtual if
+     * previous operation was hardware based.
      *
      * @return A pointer to the beginning of the currently used framebuffer.
      *
@@ -211,6 +225,27 @@ public:
      *       unlockFrameBuffer() when framebuffer operation has completed.
      */
     virtual uint16_t* lockFrameBuffer();
+
+    /**
+     * A list of rendering methods.
+     *
+     * @see setRenderingMethod
+     */
+    enum RenderingMethod
+    {
+        SOFTWARE, ///< Transition to this method will invalidate the D-Cache, if enabled
+        HARDWARE  ///< Transition to this method will flush the D-Cache, if enabled
+    };
+
+    /**
+     * Locks the framebuffer and sets rendering method for correct
+     * cache management.
+     *
+     * @param method The rendering method to be used.
+     *
+     * @return A pointer to the beginning of the currently used framebuffer.
+     */
+    uint16_t* lockFrameBufferForRenderingMethod(RenderingMethod method);
 
     /**
      * Unlocks the framebuffer (MUST be called exactly once for each call to
@@ -288,10 +323,7 @@ public:
         {
             return dma.getBlitCaps();
         }
-        else
-        {
-            return static_cast<BlitOperations>(0);
-        }
+        return static_cast<BlitOperations>(0);
     }
 
     /**
@@ -327,11 +359,13 @@ public:
      *                              format)
      * @param  dstFormat            The destination buffer color format (default is the
      *                              framebuffer format)
+     * @param  replaceBgAlpha       Replace the background buffer per pixel alpha value
+     *                              with 255 = solid.
      *
      * @note Alpha=255 is assumed "solid" and shall be used if HAL does not support
      *       BLIT_OP_COPY_WITH_ALPHA.
      */
-    virtual void blitCopy(const uint16_t* pSrc, const uint8_t* pClut, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t srcWidth, uint8_t alpha, bool hasTransparentPixels, uint16_t dstWidth, Bitmap::BitmapFormat srcFormat, Bitmap::BitmapFormat dstFormat);
+    virtual void blitCopy(const uint16_t* pSrc, const uint8_t* pClut, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t srcWidth, uint8_t alpha, bool hasTransparentPixels, uint16_t dstWidth, Bitmap::BitmapFormat srcFormat, Bitmap::BitmapFormat dstFormat, bool replaceBgAlpha);
 
     /**
      * Blits a 2D source-array to the framebuffer performing alpha-blending as specified.
@@ -352,11 +386,13 @@ public:
      *                              format)
      * @param  dstFormat            The destination buffer color format (default is the
      *                              framebuffer format)
+     * @param  replaceBgAlpha       Replace the background buffer per pixel alpha value
+     *                              with 255 = solid.
      *
      * @note Alpha=255 is assumed "solid" and shall be used if HAL does not support
      *       BLIT_OP_COPY_WITH_ALPHA.
      */
-    virtual void blitCopy(const uint16_t* pSrc, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t srcWidth, uint8_t alpha, bool hasTransparentPixels, uint16_t dstWidth, Bitmap::BitmapFormat srcFormat, Bitmap::BitmapFormat dstFormat);
+    virtual void blitCopy(const uint16_t* pSrc, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t srcWidth, uint8_t alpha, bool hasTransparentPixels, uint16_t dstWidth, Bitmap::BitmapFormat srcFormat, Bitmap::BitmapFormat dstFormat, bool replaceBgAlpha);
 
     /**
      * Blits a 2D source-array to the framebuffer performing alpha-blending as specified using
@@ -372,11 +408,13 @@ public:
      * @param  alpha                The alpha value to use for blending (255 = solid, no blending)
      * @param  hasTransparentPixels If true, this data copy contains transparent pixels and
      *                              require hardware support for that to be enabled.
+     * @param  replaceBgAlpha       Replace the background buffer per pixel alpha value
+     *                              with 255 = solid.
      *
      * @note Alpha=255 is assumed "solid" and shall be used if HAL does not support
      *       BLIT_OP_COPY_WITH_ALPHA.
      */
-    virtual void blitCopy(const uint16_t* pSrc, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t srcWidth, uint8_t alpha, bool hasTransparentPixels);
+    virtual void blitCopy(const uint16_t* pSrc, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t srcWidth, uint8_t alpha, bool hasTransparentPixels, bool replaceBgAlpha);
 
     /**
      * Blits a 2D source-array to the framebuffer using 16-bit copy
@@ -418,67 +456,88 @@ public:
     /**
      * Blits a 2D source-array to the framebuffer performing per-pixel alpha blending.
      *
-     * @param  pSrc     The source-array pointer (points to first value to copy)
-     * @param  x        The destination x coordinate on the framebuffer.
-     * @param  y        The destination y coordinate on the framebuffer.
-     * @param  width    The width desired area of the source 2D array.
-     * @param  height   The height of desired area of the source 2D array.
-     * @param  srcWidth The distance (in elements) from first value of first line, to first
-     *                  value of second line (the source 2D array width)
-     * @param  alpha    The alpha value to use for blending. This is applied on every pixel,
-     *                  in addition to the per-pixel alpha value (255 = solid, no blending)
+     * @param  pSrc                 The source-array pointer (points to first value to copy)
+     * @param  x                    The destination x coordinate on the framebuffer.
+     * @param  y                    The destination y coordinate on the framebuffer.
+     * @param  width                The width desired area of the source 2D array.
+     * @param  height               The height of desired area of the source 2D array.
+     * @param  srcWidth             The distance (in elements) from first value of first line, to first
+     *                              value of second line (the source 2D array width)
+     * @param  alpha                The alpha value to use for blending. This is applied on every pixel,
+     *                              in addition to the per-pixel alpha value (255 = solid, no blending)
+     * @param  replaceBgAlpha       Replace the background buffer per pixel alpha value with 255 = solid.
+     *
      */
-    virtual void blitCopyARGB8888(const uint16_t* pSrc, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t srcWidth, uint8_t alpha);
+    virtual void blitCopyARGB8888(const uint16_t* pSrc, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t srcWidth, uint8_t alpha, bool replaceBgAlpha);
 
     /**
      * Blits a 4bpp or 8bpp glyph - maybe use the same method and supply additional color
      * mode arg.
      *
-     * @param  pSrc      The source-array pointer (points to first value to copy)
-     * @param  x         The destination x coordinate on the framebuffer.
-     * @param  y         The destination y coordinate on the framebuffer.
-     * @param  width     The width desired area of the source 2D array.
-     * @param  height    The height of desired area of the source 2D array.
-     * @param  srcWidth  The distance (in elements) from first value of first line, to first
-     *                   value of second line (the source 2D array width)
-     * @param  color     Color of the text.
-     * @param  alpha     The alpha value to use for blending (255 = solid, no blending)
-     * @param  operation The operation type to use for blit copy.
+     * @param  pSrc                 The source-array pointer (points to first value to copy)
+     * @param  x                    The destination x coordinate on the framebuffer.
+     * @param  y                    The destination y coordinate on the framebuffer.
+     * @param  width                The width desired area of the source 2D array.
+     * @param  height               The height of desired area of the source 2D array.
+     * @param  srcWidth             The distance (in elements) from first value of first line, to first
+     *                              value of second line (the source 2D array width)
+     * @param  color                Color of the text.
+     * @param  alpha                The alpha value to use for blending (255 = solid, no blending)
+     * @param  operation            The operation type to use for blit copy.
+     * @param  replaceBgAlpha       Replace the background buffer per pixel alpha value
+     *                              with 255 = solid.
      */
-    virtual void blitCopyGlyph(const uint8_t* pSrc, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t srcWidth, colortype color, uint8_t alpha, BlitOperations operation);
+    virtual void blitCopyGlyph(const uint8_t* pSrc, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t srcWidth, colortype color, uint8_t alpha, BlitOperations operation, bool replaceBgAlpha);
 
     /**
      * Blits a color value to the framebuffer performing alpha-blending as specified.
      *
-     * @param  color     The desired fill-color.
-     * @param  x         The destination x coordinate on the framebuffer.
-     * @param  y         The destination y coordinate on the framebuffer.
-     * @param  width     The width desired area of the source 2D array.
-     * @param  height    The height of desired area of the source 2D array.
-     * @param  alpha     The alpha value to use for blending (255 = solid, no blending)
-     * @param  dstWidth  The distance (in elements) from first value of first line, to first value
-     *                   of second line (the destination 2D array width)
-     * @param  dstFormat The destination buffer color format (default is the framebuffer format)
+     * @param  color                The desired fill-color.
+     * @param  x                    The destination x coordinate on the framebuffer.
+     * @param  y                    The destination y coordinate on the framebuffer.
+     * @param  width                The width desired area of the source 2D array.
+     * @param  height               The height of desired area of the source 2D array.
+     * @param  alpha                The alpha value to use for blending (255 = solid, no blending)
+     * @param  dstWidth             The distance (in elements) from first value of first line, to first value
+     *                              of second line (the destination 2D array width)
+     * @param  dstFormat            The destination buffer color format (default is the framebuffer format)
+     * @param  replaceBgAlpha       Replace the background buffer per pixel alpha value
+     *                              with 255 = solid.
      *
      * @note Alpha=255 is assumed "solid" and shall be used if HAL does not support
      *       BLIT_OP_FILL_WITH_ALPHA.
      */
-    virtual void blitFill(colortype color, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t alpha, uint16_t dstWidth, Bitmap::BitmapFormat dstFormat);
+    virtual void blitFill(colortype color, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t alpha, uint16_t dstWidth, Bitmap::BitmapFormat dstFormat, bool replaceBgAlpha);
+
+    /**
+     * Copies a region of the currently displayed framebuffer to memory. Used for e.g.
+     * BlockTransition and for displaying pre-rendered drawables
+     * e.g. in animations where redrawing the drawable is not necessary.
+     *
+     * @param  region               The displayed framebuffer region to copy.
+     *
+     * @return A pointer to the memory address containing the copy of the framebuffer.
+     *
+     * @note Requires double framebuffer to be enabled.
+     */
+    virtual uint16_t* copyFromTFTToClientBuffer(Rect region);
 
     /**
      * Blits a color value to the framebuffer performing alpha-blending as specified.
      *
-     * @param  color  The desired fill-color.
-     * @param  x      The destination x coordinate on the framebuffer.
-     * @param  y      The destination y coordinate on the framebuffer.
-     * @param  width  The width desired area of the source 2D array.
-     * @param  height The height of desired area of the source 2D array.
-     * @param  alpha  The alpha value to use for blending (255 = solid, no blending)
+     * @param  color                The desired fill-color.
+     * @param  x                    The destination x coordinate on the framebuffer.
+     * @param  y                    The destination y coordinate on the framebuffer.
+     * @param  width                The width desired area of the source 2D array.
+     * @param  height               The height of desired area of the source 2D array.
+     * @param  alpha                The alpha value to use for blending (255 = solid, no blending)
+     * @param  replaceBgAlpha       Replace the background buffer per pixel alpha value
+     *                              with 255 = solid.
      *
      * @note Alpha=255 is assumed "solid" and shall be used if HAL does not support
      *       BLIT_OP_FILL_WITH_ALPHA.
      */
-    virtual void blitFill(colortype color, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t alpha);
+    virtual void blitFill(colortype color, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t alpha, bool replaceBgAlpha);
 
     /**
      * Registers an event handler implementation with the underlying event system. The
@@ -610,6 +669,7 @@ public:
      */
     virtual bool sampleKey(uint8_t& key)
     {
+        (void)key; // Unused variable
         return false;
     }
 
@@ -654,14 +714,29 @@ public:
      *                              buffering is disabled.
      * @param [in] animationStorage If non-null, the animation storage. If null animation storage
      *                              is disabled.
+     *
+     * @see setAnimationStorage
      */
     virtual void setFrameBufferStartAddresses(void* frameBuffer, void* doubleBuffer, void* animationStorage)
     {
         assert(frameBuffer != 0 && "A framebuffer address must be set");
         frameBuffer0 = reinterpret_cast<uint16_t*>(frameBuffer);
         frameBuffer1 = reinterpret_cast<uint16_t*>(doubleBuffer);
-        frameBuffer2 = reinterpret_cast<uint16_t*>(animationStorage);
         USE_DOUBLE_BUFFERING = doubleBuffer != 0;
+        setAnimationStorage(animationStorage);
+    }
+
+    /**
+     * Sets animation storage address.
+     *
+     * @param [in] animationStorage If non-null, the animation storage. If null animation storage
+     *                              is disabled.
+     *
+     * @see setFrameBufferStartAddresses
+     */
+    virtual void setAnimationStorage(void* animationStorage)
+    {
+        frameBuffer2 = reinterpret_cast<uint16_t*>(animationStorage);
         USE_ANIMATION_STORAGE = animationStorage != 0;
     }
 
@@ -887,7 +962,7 @@ public:
             refreshStrategy = s;
             return true;
         }
-        else if (s == REFRESH_STRATEGY_OPTIM_SINGLE_BUFFER_TFT_CTRL)
+        if (s == REFRESH_STRATEGY_OPTIM_SINGLE_BUFFER_TFT_CTRL)
         {
             // Perform sanity checks. This strategy requires
             //   - task delay function
@@ -1029,17 +1104,6 @@ public:
     }
 
     /**
-     * A list of rendering methods.
-     *
-     * @see setRenderingMethod
-     */
-    enum RenderingMethod
-    {
-        SOFTWARE,
-        HARDWARE
-    };
-
-    /**
      * Set current rendering method for cache maintenance.
      *
      * This function is used to keep track of previous rendering method and will determine if cache should be flush or invalidated depending on transition state.
@@ -1101,19 +1165,17 @@ protected:
         {
             if (DISPLAY_ROTATION == rotate0)
             {
-                FRAME_BUFFER_WIDTH = DISPLAY_WIDTH;
-                FRAME_BUFFER_HEIGHT = DISPLAY_HEIGHT;
-                DISPLAY_HEIGHT = FRAME_BUFFER_WIDTH;
-                DISPLAY_WIDTH = FRAME_BUFFER_HEIGHT;
+                const uint16_t tmp = DISPLAY_HEIGHT;
+                DISPLAY_HEIGHT = DISPLAY_WIDTH;
+                DISPLAY_WIDTH = tmp;
                 DISPLAY_ROTATION = rotate90;
             }
         }
         else if (DISPLAY_ROTATION != rotate0)
         {
-            FRAME_BUFFER_WIDTH = DISPLAY_HEIGHT;
-            FRAME_BUFFER_HEIGHT = DISPLAY_WIDTH;
-            DISPLAY_HEIGHT = FRAME_BUFFER_HEIGHT;
-            DISPLAY_WIDTH = FRAME_BUFFER_WIDTH;
+            const uint16_t tmp = DISPLAY_HEIGHT;
+            DISPLAY_HEIGHT = DISPLAY_WIDTH;
+            DISPLAY_WIDTH = tmp;
             DISPLAY_ROTATION = rotate0;
         }
     }
@@ -1157,6 +1219,7 @@ protected:
     bool frameBufferUpdatedThisFrame;            ///< True if something was drawn in the current frame.
     LCD* auxiliaryLCD;                           ///< Auxiliary LCD class used to render Drawables into dynamic bitmaps.
     Rect partialFrameBufferRect;                 ///< The region of the screen covered by the partial framebuffer.
+    bool useAuxiliaryLCD;                        ///< True if using another LCD than the hardware framebuffer
 
 private:
     UIEventListener* listener;
@@ -1175,7 +1238,6 @@ private:
     uint32_t cc_begin;
     DisplayOrientation requestedOrientation;
     bool displayOrientationChangeRequested;
-    bool useAuxiliaryLCD;
     bool useDMAAcceleration;
     RenderingMethod lastRenderMethod;
 

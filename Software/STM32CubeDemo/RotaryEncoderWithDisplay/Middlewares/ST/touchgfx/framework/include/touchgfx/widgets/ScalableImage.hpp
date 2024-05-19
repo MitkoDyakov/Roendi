@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,8 +18,8 @@
 #ifndef TOUCHGFX_SCALABLEIMAGE_HPP
 #define TOUCHGFX_SCALABLEIMAGE_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Bitmap.hpp>
+#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/widgets/Image.hpp>
 
 namespace touchgfx
@@ -47,15 +47,15 @@ public:
     };
 
     /**
-     * Constructs a new ScalableImage with a default alpha value of 255 (solid) and a
-     * default Bitmap (undefined) if none is specified. If a Bitmap is passed to the
-     * constructor, the width and height of this widget is set to those of the bitmap.
+     * Constructs a new ScalableImage with a default alpha value of 255 (solid) and a default Bitmap
+     * (undefined) if none is specified. If a Bitmap is passed to the constructor, the width and
+     * height of this widget is set to those of the bitmap.
      *
-     * @param  bitmap (Optional) The bitmap to display.
+     * @param   bmp (Optional) The bitmap to display.
      *
      * @see setBitmap
      */
-    ScalableImage(const Bitmap& bitmap = Bitmap());
+    ScalableImage(const Bitmap& bmp = Bitmap());
 
     /**
      * Sets the algorithm to be used. In short, there is currently a value for fast (nearest

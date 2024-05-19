@@ -14,7 +14,7 @@ uint16_t touchgfx::Font::getStringWidth(const touchgfx::Unicode::UnicodeChar* te
 {
     va_list pArg;
     va_start(pArg, text);
-    uint16_t width = getStringWidth<%= is_rtl ? 'RTL' : 'LTR' %>(TEXT_DIRECTION_LTR, text, pArg);
+    uint16_t width = getStringWidth<%= is_rtl? ? 'RTL' : 'LTR' %>(TEXT_DIRECTION_LTR, text, pArg);
     va_end(pArg);
     return width;
 }
@@ -23,18 +23,20 @@ uint16_t touchgfx::Font::getStringWidth(touchgfx::TextDirection textDirection, c
 {
     va_list pArg;
     va_start(pArg, text);
-    uint16_t width = getStringWidth<%= is_rtl ? 'RTL' : 'LTR' %>(textDirection, text, pArg);
+    uint16_t width = getStringWidth<%= is_rtl? ? 'RTL' : 'LTR' %>(textDirection, text, pArg);
     va_end(pArg);
     return width;
 }
 
 touchgfx::Unicode::UnicodeChar touchgfx::TextProvider::getNextLigature(TextDirection direction)
-{<% if is_rtl %>
-    nextCharacters.replaceAt0(unicodeConverter(direction));<% end %>
+{
+<% if is_rtl? %>
+    nextCharacters.replaceAt0(unicodeConverter(direction));
+<% end %>
     if (fontGsubTable && nextCharacters.peekChar())
     {
         substituteGlyphs();
-        if (nextCharacters.peekChar(1) == 0x093F) //Hindi I-matra
+        if (nextCharacters.peekChar(1) == 0x093F) // Hindi I-matra
         {
             nextCharacters.replaceAt1(nextCharacters.peekChar());
             nextCharacters.replaceAt0(0x093F);
@@ -45,61 +47,74 @@ touchgfx::Unicode::UnicodeChar touchgfx::TextProvider::getNextLigature(TextDirec
 
 void touchgfx::TextProvider::initializeInternal()
 {
-    fillInputBuffer();<% if is_rtl %>
-    unicodeConverterInit();<% end %>
+    fillInputBuffer();
+<% if is_rtl? %>
+    unicodeConverterInit();
+<% end %>
 }
 
 void touchgfx::LCD::drawString(touchgfx::Rect widgetArea, const touchgfx::Rect& invalidatedArea, const touchgfx::LCD::StringVisuals& stringVisuals, const touchgfx::Unicode::UnicodeChar* format, ...)
 {
     va_list pArg;
     va_start(pArg, format);
-    drawString<%= is_rtl ? 'RTL' : 'LTR' %>(widgetArea, invalidatedArea, stringVisuals, format, pArg);
+    drawString<%= is_rtl? ? 'RTL' : 'LTR' %>(widgetArea, invalidatedArea, stringVisuals, format, pArg);
     va_end(pArg);
 }
 
-//Default typed text database
+// Default TypedTextDatabase
 extern const touchgfx::TypedText::TypedTextData* const typedTextDatabaseArray[];
 
 <% if generate_binary_files? %>
 extern const touchgfx::Unicode::UnicodeChar EmptyLanguageTexts[];
-extern uint32_t const EmptyLanguageIndices[];
+extern const uint32_t EmptyLanguageIndices[];
+
 <% else %>
-<% if remap_strings? %>
+<%   if remap_global? %>
 TEXT_LOCATION_FLASH_PRAGMA
 KEEP extern const touchgfx::Unicode::UnicodeChar texts_all_languages[] TEXT_LOCATION_FLASH_ATTRIBUTE = {
-    <%= all_unicodes %>
+<%     substrings_and_offsets = get_substrings_and_offsets %>
+<%     if substrings_and_offsets.empty? %>
+    0 // No texts in application
+<%     else %>
+<%       substrings_and_offsets.each do |(unicode_array, offset, last)| %>
+    <%= unicode_array.map{|x|"0x%x"%x} * ', ' %><%= last ? '' : ',' %> // @<%= offset %> "<%= unicode_array_to_string(unicode_array) %>"
+<%       end %>
+<%     end %>
 };
-<% end %>
-<% countries.each do |lang| %>
+
+<%   end %>
+<%   get_capitalized_languages.each do |lang| %>
 TEXT_LOCATION_FLASH_PRAGMA
-KEEP extern uint32_t const indices<%= lang %>[] TEXT_LOCATION_FLASH_ATTRIBUTE;
-<% if not remap_strings? %>
+KEEP extern const uint32_t indices<%= lang %>[] TEXT_LOCATION_FLASH_ATTRIBUTE;
+
+<%     if !remap_global? %>
 TEXT_LOCATION_FLASH_PRAGMA
 KEEP extern const touchgfx::Unicode::UnicodeChar texts<%= lang %>[] TEXT_LOCATION_FLASH_ATTRIBUTE;
-<% end %>
-<% end %>
-<% end %>
 
-//array holding dynamically installed languages
+<%      end %>
+<%   end %>
+<% end %>
+// Array holding dynamically installed languages
 struct TranslationHeader
 {
     uint32_t offset_to_texts;
     uint32_t offset_to_indices;
     uint32_t offset_to_typedtext;
 };
-static const TranslationHeader* languagesArray[<%= countries.length > 0 ? countries.length : 1 %>] = { 0 };
+static const TranslationHeader* languagesArray[<%= has_languages? ? get_number_of_languages : 1 %>] = { 0 };
 
-//Compiled and linked in languages
+// Compiled and linked in languages
 static const uint32_t* const staticLanguageIndices[] = {
 <% if generate_binary_files? %>
     EmptyLanguageIndices
 <% else %>
-<% if countries.empty? %>
+<%   if !has_languages? %>
     0
-<% end %>
-<% countries.each_with_index do |lang, index| %>
-    indices<%= lang %><%= (index==countries.length-1) ? '': ',' %>
-<% end %>
+<%   else %>
+<%     get_capitalized_languages.each_with_index do |lang, index| %>
+    indices<%= lang %><%= (index == get_number_of_languages - 1) ? '': ',' %>
+<%     end %>
+<%   end %>
 <% end %>
 };
 <% if generate_binary_files? %>
@@ -107,16 +122,17 @@ static const touchgfx::Unicode::UnicodeChar* const staticLanguageTexts[] = {
     EmptyLanguageTexts
 };
 <% else %>
-<% if not remap_strings? %>
+<%   if not remap_global? %>
 static const touchgfx::Unicode::UnicodeChar* const staticLanguageTexts[] = {
-<% if countries.empty? %>
+<%     if !has_languages? %>
     0
-<% end %>
-<% countries.each_with_index do |lang, index| %>
-    texts<%= lang %><%= (index==countries.length-1) ? '': ',' %>
-<% end %>
+<%     else %>
+<%       get_capitalized_languages.each_with_index do |lang, index| %>
+    texts<%= lang %><%= (index == get_number_of_languages - 1) ? '': ',' %>
+<%       end %>
+<%     end %>
 };
-<% end %>
+<%   end %>
 <% end %>
 
 touchgfx::LanguageId touchgfx::Texts::currentLanguage = static_cast<touchgfx::LanguageId>(0);
@@ -126,11 +142,11 @@ static const uint32_t* currentLanguageIndices = 0;
 void touchgfx::Texts::setLanguage(touchgfx::LanguageId id)
 {
     const touchgfx::TypedText::TypedTextData* currentLanguageTypedText = 0;
-    if (id < <%= countries.length > 0 ? countries.length : 1 %>)
+    if (id < <%= has_languages? ? get_number_of_languages : 1 %>)
     {
         if (languagesArray[id] != 0)
         {
-            //dynamic translation is added
+            // Dynamic translation is added
             const TranslationHeader* translation = languagesArray[id];
             currentLanguagePtr = (const touchgfx::Unicode::UnicodeChar*)(((const uint8_t*)translation) + translation->offset_to_texts);
             currentLanguageIndices = (const uint32_t*)(((const uint8_t*)translation) + translation->offset_to_indices);
@@ -139,7 +155,7 @@ void touchgfx::Texts::setLanguage(touchgfx::LanguageId id)
 <% if generate_binary_files? %>
         else
         {
-            //compiled and linked empty texts and indices in typedTextData
+            // Compiled and linked empty texts and indices in typedTextData
             currentLanguagePtr = staticLanguageTexts[0];
             currentLanguageIndices = staticLanguageIndices[0];
             currentLanguageTypedText = typedTextDatabaseArray[0];
@@ -147,8 +163,8 @@ void touchgfx::Texts::setLanguage(touchgfx::LanguageId id)
 <% else %>
         else
         {
-            //compiled and linked in languages
-<% if remap_strings? %>
+            // Compiled and linked in languages
+<% if remap_global? %>
             currentLanguagePtr = texts_all_languages;
             currentLanguageIndices = staticLanguageIndices[id];
 <% else %>

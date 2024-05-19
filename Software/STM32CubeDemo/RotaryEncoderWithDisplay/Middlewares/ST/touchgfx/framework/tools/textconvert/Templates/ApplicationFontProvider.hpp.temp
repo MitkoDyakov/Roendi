@@ -13,17 +13,17 @@ class FlashDataReader;
 
 struct Typography
 {
-<% typographies.each_with_index do |typography, index| %>
+<% @typographies.each_with_index do |typography, index| %>
     static const touchgfx::FontId <%= typography.name.upcase %> = <%= index %>;
 <% end %>
 };
 
 struct TypographyFontIndex
 {
-<% typographies.each_with_index do |typography, index| %>
-    static const touchgfx::FontId <%= typography.name.upcase %> = <%= font_index(index) %>; <%= font_comment(index) %>
+<% @typographies.each_with_index do |typography, index| %>
+    static const touchgfx::FontId <%= typography.name.upcase %> = <%= get_font_index(index) %>; <%= get_font_comment_space(index) %>// <%= get_font_comment(index) %>
 <% end %>
-    static const uint16_t NUMBER_OF_FONTS = <%= max_font_index %>;
+    static const uint16_t NUMBER_OF_FONTS = <%= get_max_font_index %>;
 };
 
 class ApplicationFontProvider : public touchgfx::FontProvider
@@ -31,21 +31,24 @@ class ApplicationFontProvider : public touchgfx::FontProvider
 public:
     virtual touchgfx::Font* getFont(touchgfx::FontId typography);
 
-<% if save_flashreader %>
+<% if save_flashreader? %>
     static void setFlashReader(touchgfx::FlashDataReader* flashReader)
     {
         fontFlashReader = flashReader;
     }
+
     static touchgfx::FlashDataReader* getFlashReader()
     {
         return fontFlashReader;
     }
+
 private:
     static touchgfx::FlashDataReader* fontFlashReader;
 <% else %>
-    static void setFlashReader(touchgfx::FlashDataReader* /* flashReader */)
+    static void setFlashReader(touchgfx::FlashDataReader* /*flashReader*/)
     {
     }
+
     static touchgfx::FlashDataReader* getFlashReader()
     {
         return 0;

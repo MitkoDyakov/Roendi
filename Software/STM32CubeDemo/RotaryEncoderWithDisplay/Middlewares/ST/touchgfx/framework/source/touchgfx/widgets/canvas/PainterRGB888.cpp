@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -10,62 +10,20 @@
 *
 *******************************************************************************/
 
-#include <touchgfx/hal/Types.hpp>
+#include <touchgfx/hal/Paint.hpp>
 #include <touchgfx/lcd/LCD.hpp>
 #include <touchgfx/widgets/canvas/PainterRGB888.hpp>
 
 namespace touchgfx
 {
-void PainterRGB888::render(uint8_t* ptr, int x, int xAdjust, int /*y*/, unsigned count, const uint8_t* covers)
+void PainterRGB888::paint(uint8_t* destination, int16_t offset, int16_t /*widgetX*/, int16_t /*widgetY*/, int16_t count, uint8_t alpha) const
 {
-    uint8_t* p = ptr + (x + xAdjust) * 3;
-    const uint8_t* const p_lineend = p + 3 * count;
-    uint8_t pByte;
-    if (widgetAlpha == 0xFF)
-    {
-        do
-        {
-            const uint8_t alpha = *covers++;
-            if (alpha == 0xFF)
-            {
-                *p++ = painterBlue;
-                *p++ = painterGreen;
-                *p++ = painterRed;
-            }
-            else
-            {
-                const uint8_t ialpha = 0xFF - alpha;
-                pByte = *p;
-                *p++ = LCD::div255(painterBlue * alpha + pByte * ialpha);
-                pByte = *p;
-                *p++ = LCD::div255(painterGreen * alpha + pByte * ialpha);
-                pByte = *p;
-                *p++ = LCD::div255(painterRed * alpha + pByte * ialpha);
-            }
-        } while (p < p_lineend);
-    }
-    else
-    {
-        do
-        {
-            const uint8_t alpha = LCD::div255(*covers++ * widgetAlpha);
-            const uint8_t ialpha = 0xFF - alpha;
-            pByte = *p;
-            *p++ = LCD::div255(painterBlue * alpha + pByte * ialpha);
-            pByte = *p;
-            *p++ = LCD::div255(painterGreen * alpha + pByte * ialpha);
-            pByte = *p;
-            *p++ = LCD::div255(painterRed * alpha + pByte * ialpha);
-        } while (p < p_lineend);
-    }
+    uint8_t* RESTRICT framebuffer = destination + offset * 3;
+    paint::rgb888::lineFromColor(framebuffer, count, painterColor, alpha);
 }
 
-bool PainterRGB888::renderNext(uint8_t& red, uint8_t& green, uint8_t& blue, uint8_t& alpha)
+void PainterRGB888::tearDown() const
 {
-    red = painterRed;
-    green = painterGreen;
-    blue = painterBlue;
-    alpha = 0xFF;
-    return true;
+    paint::tearDown();
 }
 } // namespace touchgfx

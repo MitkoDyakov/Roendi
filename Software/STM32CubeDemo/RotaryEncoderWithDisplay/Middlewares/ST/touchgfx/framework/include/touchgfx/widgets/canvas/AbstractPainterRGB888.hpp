@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,9 +18,8 @@
 #ifndef TOUCHGFX_ABSTRACTPAINTERRGB888_HPP
 #define TOUCHGFX_ABSTRACTPAINTERRGB888_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Bitmap.hpp>
-#include <touchgfx/lcd/LCD.hpp>
+#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/widgets/canvas/AbstractPainter.hpp>
 
 namespace touchgfx
@@ -35,34 +34,10 @@ class AbstractPainterRGB888 : public AbstractPainter
 {
 public:
     AbstractPainterRGB888()
-        : AbstractPainter(), currentX(0), currentY(0)
+        : AbstractPainter()
     {
         assert(compatibleFramebuffer(Bitmap::RGB888) && "The chosen painter only works with RGB888 displays");
     }
-
-    virtual void render(uint8_t* ptr, int x, int xAdjust, int y, unsigned count, const uint8_t* covers);
-
-protected:
-    /**
-     * @copydoc AbstractPainterRGB565::renderInit()
-     */
-    virtual bool renderInit()
-    {
-        return true;
-    }
-
-    /**
-     * @copydoc AbstractPainterRGB565::renderNext(uint8_t&,uint8_t&,uint8_t&,uint8_t&)
-     */
-    virtual bool renderNext(uint8_t& red, uint8_t& green, uint8_t& blue, uint8_t& alpha) = 0;
-
-    /**
-     * @copydoc AbstractPainterRGB565::renderPixel(uint16_t*,uint8_t,uint8_t,uint8_t)
-     */
-    virtual void renderPixel(uint16_t* p, uint8_t red, uint8_t green, uint8_t blue);
-
-    int currentX; ///< Current x coordinate relative to the widget
-    int currentY; ///< Current y coordinate relative to the widget
 };
 
 } // namespace touchgfx

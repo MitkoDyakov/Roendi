@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,8 +18,8 @@
 #ifndef TOUCHGFX_UTILS_HPP
 #define TOUCHGFX_UTILS_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Bitmap.hpp>
+#include <touchgfx/hal/Types.hpp>
 
 #if defined(SIMULATOR) && !defined(__linux__)
 
@@ -104,11 +104,21 @@ RenderingVariant lookupBilinearRenderVariant(const Bitmap& bitmap);
 template <typename T>
 T abs(T d)
 {
-    if (d < 0)
-    {
-        return -d;
-    }
-    return d;
+    return (d < 0) ? -d : d;
+}
+
+/**
+ * Simple implementation of the standard sign function.
+ *
+ * @tparam T The type on which to perform the sign.
+ * @param  d The entity on which to perform the sign.
+ *
+ * @return -1, +1 or 0 depending on the sign of the given value of d.
+ */
+template <typename T>
+T sign(T d)
+{
+    return (d < 0) ? -1 : ((d > 0) ? 1 : 0);
 }
 
 /**

@@ -92,6 +92,7 @@ static uint8_t USBD_CUSTOM_HID_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum);
 static uint8_t USBD_CUSTOM_HID_DataOut(USBD_HandleTypeDef *pdev, uint8_t epnum);
 static uint8_t USBD_CUSTOM_HID_EP0_RxReady(USBD_HandleTypeDef  *pdev);
 
+
 static uint8_t *USBD_CUSTOM_HID_GetDeviceQualifierDesc(uint16_t *length);
 
 /**
@@ -118,6 +119,7 @@ USBD_ClassTypeDef  USBD_CUSTOM_HID =
   NULL,
   NULL,
   USBD_CUSTOM_HID_GetDeviceQualifierDesc,
+
 };
 
 /* USB CUSTOM_HID device Configuration Descriptor */
@@ -165,9 +167,7 @@ __ALIGN_BEGIN static uint8_t USBD_CUSTOM_HID_DeviceQualifierDesc[USB_LEN_DEV_QUA
   * @param  cfgidx: Configuration index
   * @retval status
   */
-
 USBD_CUSTOM_HID_HandleTypeDef usbd_custom_hid_handle;
-
 static uint8_t USBD_CUSTOM_HID_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx)
 {
   UNUSED(cfgidx);
@@ -410,6 +410,7 @@ uint8_t USBD_CUSTOM_HID_SendReport(USBD_HandleTypeDef *pdev,
     }
   }
   return (uint8_t)USBD_OK;
+
 }
 
 /**

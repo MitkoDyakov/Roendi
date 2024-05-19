@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,9 +18,10 @@
 #ifndef TOUCHGFX_PAINTERXRGB8888L8BITMAP_HPP
 #define TOUCHGFX_PAINTERXRGB8888L8BITMAP_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Bitmap.hpp>
+#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/widgets/canvas/AbstractPainterARGB8888.hpp>
+#include <touchgfx/widgets/canvas/AbstractPainterBitmap.hpp>
 
 namespace touchgfx
 {
@@ -32,39 +33,36 @@ namespace touchgfx
  *
  * @see AbstractPainter
  */
-class PainterXRGB8888L8Bitmap : public AbstractPainterARGB8888
+class PainterXRGB8888L8Bitmap : public AbstractPainterARGB8888, public AbstractPainterBitmap
 {
 public:
     /**
-     * Initializes a new instance of the PainterXRGB8888L8Bitmap class.
+     * Constructor.
      *
-     * @param  bmp   (Optional) The bitmap, default is #BITMAP_INVALID.
+     * @param  bmp (Optional) The bitmap to use in the painter.
      */
     PainterXRGB8888L8Bitmap(const Bitmap& bmp = Bitmap(BITMAP_INVALID))
-        : AbstractPainterARGB8888(), bitmapPointer(0), bitmapExtraPointer(0), bitmap(), bitmapRectToFrameBuffer()
+        : AbstractPainterARGB8888(), AbstractPainterBitmap(bmp)
     {
-        setBitmap(bmp);
     }
 
-    /**
-     * Sets a bitmap to be used when drawing the CanvasWidget.
-     *
-     * @param  bmp The bitmap.
-     */
-    void setBitmap(const Bitmap& bmp);
+    virtual void setBitmap(const Bitmap& bmp);
 
-    virtual void render(uint8_t* ptr, int x, int xAdjust, int y, unsigned count, const uint8_t* covers);
+    virtual bool setup(const Rect& widgetRect) const
+    {
+        if (!AbstractPainterARGB8888::setup(widgetRect))
+        {
+            return false;
+        }
+        updateBitmapOffsets(widgetWidth);
+        return bitmap.getId() != BITMAP_INVALID;
+    }
+
+    virtual void paint(uint8_t* destination, int16_t offset, int16_t widgetX, int16_t widgetY, int16_t count, uint8_t alpha) const;
 
 protected:
-    virtual bool renderInit();
-
-    virtual bool renderNext(uint8_t& red, uint8_t& green, uint8_t& blue, uint8_t& alpha);
-
-    const uint8_t* bitmapPointer;      ///< Pointer to the bitmap (L8)
-    const uint8_t* bitmapExtraPointer; ///< Pointer to the CLUT (L8)
-
-    Bitmap bitmap;                ///< The bitmap to be used when painting
-    Rect bitmapRectToFrameBuffer; ///< Bitmap rectangle translated to framebuffer coordinates
+    const uint8_t* bitmapCLUT;   ///< Pointer to the CLUT
+    Bitmap::ClutFormat l8format; ///< The l8format read from the bitmap extra data
 };
 
 } // namespace touchgfx

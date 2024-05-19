@@ -1,7 +1,7 @@
-# Copyright (c) 2018(-2021) STMicroelectronics.
+# Copyright (c) 2018(-2024) STMicroelectronics.
 # All rights reserved.
 #
-# This file is part of the TouchGFX 4.17.0 distribution.
+# This file is part of the TouchGFX 4.23.2 distribution.
 #
 # This software is licensed under terms that can be found in the LICENSE file in
 # the root directory of this software component.
@@ -11,16 +11,16 @@
 require 'json'
 
 class LanguagesBin
-  def initialize(text_entries, typographies, output_directory)
+  def initialize(text_entries, typographies, languages, output_directory)
     @text_entries = text_entries
     @typographies = typographies
+    @languages = languages
     @output_directory = output_directory
   end
   def run
     #remove_old_binary_files
-
-    @text_entries.languages.each do |language|
-      LanguageXxBin.new(@text_entries, @typographies, @output_directory, language).run
+    @languages.each do |language|
+      LanguageXxBin.new(@text_entries, @typographies, @output_directory, @languages, language).run
     end
   end
 
@@ -44,7 +44,8 @@ class LanguageXxBin < Template
   ALIGNMENT = { "LEFT" => 0, "CENTER" => 1, "RIGHT" => 2 }
   TEXT_DIRECTION = { "LTR" => 0, "RTL" => 1 }
 
-  def initialize(text_entries, typographies, output_directory, language)
+  def initialize(text_entries, typographies, output_directory, languages, language)
+    @languages = languages
     @language = language
     @typographies = typographies
     @text_entries = text_entries
@@ -53,7 +54,7 @@ class LanguageXxBin < Template
   end
 
   def cache_file
-    File.join(@output_directory, "cache/LanguageBin_#{@language}.cache")
+    File.join(@output_directory, "cache/LanguageBin_#{@language.capitalize}.cache")
   end
 
   def alignment_to_value(alignment)
@@ -79,7 +80,7 @@ class LanguageXxBin < Template
   end
 
   def entries_texts_const_initialization
-    entries.map { |entry| "    #{entry.text_id}_#{language}" }.join(",\n")
+    entries.map { |entry| "    #{entry.text_id}_#{language.capitalize}" }.join(",\n")
   end
 
   def input_path
@@ -87,16 +88,16 @@ class LanguageXxBin < Template
   end
 
   def output_path
-    "binary/Language#{language}.bin"
+    "binary/Language#{language.capitalize}.bin"
   end
 
   def typed_texts(language)
     text_entries.collect do |entry|
-        typography_name = entry.typographies[language] || entry.typography
-        typography = typographies.find { |t| t.name == typography_name }
-        alignment = entry.alignments[language] || entry.alignment
-        direction = entry.directions[language] || entry.direction
-        TypedTextPresenter.new(alignment, direction, typography);
+      typography_name = entry.typographies[language] || entry.default_typography
+      typography = typographies.find { |t| t.name == typography_name }
+      alignment = entry.alignments[language] || entry.default_alignment
+      direction = entry.directions[language] || entry.default_direction
+      TypedTextPresenter.new(alignment, direction, typography);
     end
   end
 
@@ -106,9 +107,13 @@ class LanguageXxBin < Template
   end
 
   def fonts
-   typographies.map{ |t| Typography.new("", t.font_file, t.font_size, t.bpp) }.uniq.collect do |f|
-      "getFont_#{f.cpp_name}_#{f.font_size}_#{f.bpp}bpp"
+    typographies.map{ |t| Typography.new("", t.font_file, t.font_size, t.bpp, t.is_vector) }.uniq.collect do |t|
+      get_getFont_name(t)
     end
+  end
+
+  def get_font_index(typography)
+    fontmap[get_getFont_name(typography)]
   end
 
   def fontmap
@@ -129,18 +134,18 @@ class LanguageXxBin < Template
     entries.each do |entry|
       nb_entries += 1
       entry.unicodes.split(', ').each { |c|
-          header_unicodes_size += 2
+        header_unicodes_size += 2
       }
     end
     offset_to_texts = header_struct_size
     offset_to_indices = ((offset_to_texts + header_unicodes_size + 3) &~ 0x3)
     offset_to_typedtext = ((offset_to_indices + (4 * nb_entries) + 3) &~ 0x3)
-    # puts "Number of Entries     = #{nb_entries}"
-    # puts "Header size           = #{header_struct_size}"
-    # puts "Unicodes size         = #{header_unicodes_size}"
-    # puts "Text Offset           = #{offset_to_texts}"
-    # puts "Indices Offset        = #{offset_to_indices}"
-    # puts "TypedText Offset      = #{offset_to_typedtext}"
+    #puts "Number of Entries     = #{nb_entries}"
+    #puts "Header size           = #{header_struct_size}"
+    #puts "Unicodes size         = #{header_unicodes_size}"
+    #puts "Text Offset           = #{offset_to_texts}"
+    #puts "Indices Offset        = #{offset_to_indices}"
+    #puts "TypedText Offset      = #{offset_to_typedtext}"
     LanguageHeader.new('0x' + offset_to_texts.to_s(16), '0x' + offset_to_indices.to_s(16), '0x' + offset_to_typedtext.to_s(16))
   end
 
@@ -149,10 +154,10 @@ class LanguageXxBin < Template
   end
 
   def run
-   #build cache dictionary
+    #build cache dictionary
     @cache["typographies"] = typographies.collect{|t| [t.name, t.font_file, t.font_size, t.bpp] }
     @cache["language"] = @language
-    @cache["language_index"] = @text_entries.languages.index(@language)
+    @cache["language_index"] = @languages.index(@language)
     list = [] #list of index,textid
     entries.each_with_index do |entry, index|
       list[index] = [entry.unicodes, entry.text_id]
@@ -163,9 +168,9 @@ class LanguageXxBin < Template
     if not File::exists?(cache_file)
       new_cache_file = true
     else
-        #cache file exists, compare data with cache file
-        old_cache = JSON.parse(File.read(cache_file))
-        new_cache_file = (old_cache != @cache)
+      #cache file exists, compare data with cache file
+      old_cache = JSON.parse(File.read(cache_file))
+      new_cache_file = (old_cache != @cache)
     end
 
     if new_cache_file
@@ -173,7 +178,7 @@ class LanguageXxBin < Template
       FileIO.write_file_silent(cache_file, @cache.to_json)
     end
 
-    if (!File::exists?(output_filename)) || new_cache_file
+    if !File::exists?(output_filename) || new_cache_file
       #generate LanguageXX.bin
       FileUtils.mkdir_p(File.dirname(input_path))
       callingPath = Pathname.new($calling_path)
@@ -186,7 +191,7 @@ class LanguageXxBin < Template
         # Writing Language Header
         lang_header = header(entries)
         lang_header.each { |c|
-            f.write [c.to_i(16)].pack("L")
+          f.write [c.to_i(16)].pack("L")
         }
 
         # Writing Texts data
@@ -196,8 +201,8 @@ class LanguageXxBin < Template
         entries.each do |entry|
           #puts "All Unicodes #{entry.unicodes}"
           entry.unicodes.split(', ').each { |c|
-              f.write [c.to_i(16)].pack("S")
-              nb_data_in_entry += 1
+            f.write [c.to_i(16)].pack("S")
+            nb_data_in_entry += 1
           }
           indices_arr << nb_data_in_entry #populate the indices array
         end
@@ -227,17 +232,17 @@ class LanguageXxBin < Template
         # Create and Fill TypedTextsData Array
         typed_text_arr = []
         if typed_texts(language).empty?
-          # puts "    { #{0}, #{alignment_to_value("LEFT")}, #{text_direction_to_value("LTR")} }"
+          #puts "    { #{0}, #{alignment_to_value("LEFT")}, #{text_direction_to_value("LTR")} }"
           typed_text_arr << 0 << alignment_to_value("LEFT") << text_direction_to_value("LTR")
         else
           typed_texts(language).map do |typed_text|
-            fontIdx = fontmap["getFont_#{typed_text.typography.cpp_name}_#{typed_text.typography.font_size}_#{typed_text.typography.bpp}bpp"]
+            fontIdx = get_font_index(typed_text.typography)
             alignment = alignment_to_value(typed_text.alignment.upcase)
             direction = text_direction_to_value(typed_text.direction.upcase)
-            # puts "Font Index     --> #{fontIdx}"
-            # puts "Alignment      --> #{typed_text.alignment.upcase}"
-            # puts "Text Direction --> #{typed_text.direction.upcase}"
-            # puts "    { #{fontIdx}, #{alignment_to_value(typed_text.alignment.upcase)}, #{text_direction_to_value(typed_text.direction.upcase)} }"
+            #puts "Font Index     --> #{fontIdx}"
+            #puts "Alignment      --> #{typed_text.alignment.upcase}"
+            #puts "Text Direction --> #{typed_text.direction.upcase}"
+            #puts "    { #{fontIdx}, #{alignment_to_value(typed_text.alignment.upcase)}, #{text_direction_to_value(typed_text.direction.upcase)} }"
             combined = direction.to_s(2).to_i(2) * 4 + alignment.to_s(2).to_i(2)
             typed_text_arr << fontIdx << combined
           end
@@ -245,12 +250,12 @@ class LanguageXxBin < Template
 
         # Writing TypedTextsData
         typed_text_arr.each do |idx|
-            f.write [idx].pack("C")
+          f.write [idx].pack("C")
         end
 
         # # Add padding to align the binary file size on word size
         loop do
-          if ((f.pos & 0x3) == 0)
+          if (f.pos & 0x3) == 0
             break
           end
           f.write ["0x00".to_i(16)].pack("C")
@@ -263,9 +268,9 @@ class LanguageXxBin < Template
 
   def handle_no_entries(entries, text)
     if entries.empty?
-       empty_entry = TextEntry.new(text, "typography")
-       empty_entry.add_translation(language, "")
-       [empty_entry]
+      empty_entry = TextEntry.new(text, "typography", "left", "ltr")
+      empty_entry.add_translation(language, "")
+      [empty_entry]
     else
       entries
     end
@@ -273,7 +278,7 @@ class LanguageXxBin < Template
 
   def present(entries)
     entries.map do |entry|
-      Presenter.new(entry.cpp_text_id, ( entry.translation_in(language).unicodes.map { |u| '0x' + u.to_s(16) } << '0x0' ) .join(', ') )
+      Presenter.new(entry.cpp_text_id, ( entry.translation_in(language).unicodes.map { |u| '0x' + u.to_s(16) } ).join(', ') )
     end
   end
 end

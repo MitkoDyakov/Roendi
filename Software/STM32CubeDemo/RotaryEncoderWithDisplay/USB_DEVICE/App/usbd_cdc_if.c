@@ -32,7 +32,8 @@
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-
+extern uint32_t volume;
+extern uint8_t updateFromPC;
 /* USER CODE END PV */
 
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
@@ -178,6 +179,13 @@ static int8_t CDC_DeInit_FS(void)
   * @param  length: Number of data to be sent (in bytes)
   * @retval Result of the operation: USBD_OK if all operations are OK else USBD_FAIL
   */
+USBD_CDC_LineCodingTypeDef LineCoding = {
+										  115200,                       /* baud rate */
+										  0x00,                         /* stop bits-1 */
+										  0x00,                         /* parity - none */
+										  0x08                          /* nb. of bits 8 */
+										};
+
 static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
 {
   /* USER CODE BEGIN 5 */
@@ -221,12 +229,21 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
   /* 6      | bDataBits  |   1   | Number Data bits (5, 6, 7, 8 or 16).          */
   /*******************************************************************************/
     case CDC_SET_LINE_CODING:
-
-    break;
+        LineCoding.bitrate    = (uint32_t) (pbuf[0] | (pbuf[1] << 8) | (pbuf[2] << 16) | (pbuf[3] << 24));
+        LineCoding.format     = pbuf[4];
+        LineCoding.paritytype = pbuf[5];
+        LineCoding.datatype   = pbuf[6];
+        break;
 
     case CDC_GET_LINE_CODING:
-
-    break;
+    	pbuf[0] = (uint8_t) (LineCoding.bitrate);
+		pbuf[1] = (uint8_t) (LineCoding.bitrate >> 8);
+		pbuf[2] = (uint8_t) (LineCoding.bitrate >> 16);
+		pbuf[3] = (uint8_t) (LineCoding.bitrate >> 24);
+		pbuf[4] = LineCoding.format;
+		pbuf[5] = LineCoding.paritytype;
+		pbuf[6] = LineCoding.datatype;
+    	break;
 
     case CDC_SET_CONTROL_LINE_STATE:
 
@@ -264,6 +281,8 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   /* USER CODE BEGIN 6 */
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
+  volume = Buf[0];
+  updateFromPC = 1;
   return (USBD_OK);
   /* USER CODE END 6 */
 }

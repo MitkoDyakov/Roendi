@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,8 +18,8 @@
 #ifndef TOUCHGFX_IMAGE_HPP
 #define TOUCHGFX_IMAGE_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Bitmap.hpp>
+#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/widgets/Widget.hpp>
 
 namespace touchgfx
@@ -40,28 +40,28 @@ class Image : public Widget
 public:
     /**
      * Constructs a new Image with a default alpha value of 255 (solid) and a default Bitmap
-     * (undefined) if none is specified. If a Bitmap is passed to the constructor, the width
-     * and height of this widget is set to those of the bitmap.
+     * (undefined) if none is specified. If a Bitmap is passed to the constructor, the width and
+     * height of this widget is set to those of the bitmap.
      *
-     * @param  bitmap (Optional) The bitmap to display.
+     * @param   bmp (Optional) The bitmap to display.
      *
      * @see setBitmap
      */
-    Image(const Bitmap& bitmap = Bitmap())
-        : Widget(), bitmap(bitmap), alpha(255)
+    Image(const Bitmap& bmp = Bitmap())
+        : Widget(), bitmap(bmp), alpha(255)
     {
-        Image::setBitmap(bitmap);
+        Image::setBitmap(bmp);
     }
 
     /**
-     * Sets the bitmap for this Image and updates the width and height of this widget to
-     * match those of the Bitmap.
+     * Sets the bitmap for this Image and updates the width and height of this widget to match those
+     * of the Bitmap.
      *
-     * @param  bitmap The bitmap instance.
+     * @param   bmp The bitmap instance.
      *
-     * @note The user code must call invalidate() in order to update the image on the display.
+     * @note    The user code must call invalidate() in order to update the image on the display.
      */
-    virtual void setBitmap(const Bitmap& bitmap);
+    virtual void setBitmap(const Bitmap& bmp);
 
     /**
      * Sets the opacity (alpha value). This can be used to fade it away by gradually
@@ -114,6 +114,14 @@ public:
     }
 
     virtual Rect getSolidRect() const;
+
+    virtual void invalidateContent() const
+    {
+        if (alpha > 0)
+        {
+            Widget::invalidateContent();
+        }
+    }
 
 protected:
     Bitmap bitmap; ///< The Bitmap to display.

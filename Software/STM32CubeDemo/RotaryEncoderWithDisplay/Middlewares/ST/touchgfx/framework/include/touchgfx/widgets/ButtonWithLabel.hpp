@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,8 +18,8 @@
 #ifndef TOUCHGFX_BUTTONWITHLABEL_HPP
 #define TOUCHGFX_BUTTONWITHLABEL_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/TypedText.hpp>
+#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/widgets/Button.hpp>
 
 namespace touchgfx
@@ -58,7 +58,7 @@ public:
      *
      * @return The text used for the label.
      */
-    TypedText getLabelText() const
+    const TypedText& getLabelText() const
     {
         return typedText;
     }
@@ -100,16 +100,16 @@ public:
      * Sets the rotation of the text on the label. The text can be rotated in steps of 90
      * degrees.
      *
-     * @param  rotation The rotation of the text. Default is TEXT_ROTATE_0.
+     * @param  textRotation The rotation of the text. Default is TEXT_ROTATE_0.
      *
      * @see TextArea::setRotation
      *
      * @note that this will not rotate the bitmap of the label, only the text.
      * @note The user code must call invalidate() in order to update the button on the display.
      */
-    void setLabelRotation(TextRotation rotation)
+    void setLabelRotation(TextRotation textRotation)
     {
-        this->rotation = rotation;
+        rotation = textRotation;
     }
 
     /**
@@ -135,7 +135,7 @@ public:
         {
             const Font* f = typedText.getFont();
             const Unicode::UnicodeChar* s = typedText.getText();
-            textHeightIncludingSpacing = f->getMaxTextHeight(s) * f->getNumberOfLines(s) + f->getSpacingAbove(s);
+            textHeightIncludingSpacing = f->getHeight() * f->getNumberOfLines(s) + f->getSpacingAbove(s);
         }
         else
         {
@@ -150,7 +150,7 @@ protected:
     colortype color;                    ///< The color used for the label when the button is in the released, normal state.
     colortype colorPressed;             ///< The color used for the label when the button is in the pressed state.
     TextRotation rotation;              ///< The rotation used for the label.
-    uint8_t textHeightIncludingSpacing; ///< Total height of the label (text height + spacing).
+    int16_t textHeightIncludingSpacing; ///< Total height of the label (text height + spacing).
 };
 
 } // namespace touchgfx

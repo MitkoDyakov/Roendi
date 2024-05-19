@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,12 +18,12 @@
 #ifndef TOUCHGFX_SLIDER_HPP
 #define TOUCHGFX_SLIDER_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Bitmap.hpp>
 #include <touchgfx/Callback.hpp>
 #include <touchgfx/containers/Container.hpp>
 #include <touchgfx/events/ClickEvent.hpp>
 #include <touchgfx/events/DragEvent.hpp>
+#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/widgets/Image.hpp>
 
 namespace touchgfx
@@ -139,7 +139,7 @@ public:
      * @note The x and y position of the Slider will either be the left/top of the background or
      *       the left/top of the indicator in its minimum x coordinate.
      */
-    virtual void setupHorizontalSlider(uint16_t backgroundX, uint16_t backgroundY, uint16_t indicatorY, uint16_t indicatorMinX, uint16_t indicatorMaxX);
+    virtual void setupHorizontalSlider(int16_t backgroundX, int16_t backgroundY, int16_t indicatorY, int16_t indicatorMinX, int16_t indicatorMaxX);
 
     /**
      * Sets up the slider in vertical mode with the range going from the bottom to top.
@@ -167,7 +167,7 @@ public:
      * @note The x and y position of the Slider will either be the left/top of the background or
      *       the left/top of the indicator in its minimum y coordinate.
      */
-    virtual void setupVerticalSlider(uint16_t backgroundX, uint16_t backgroundY, uint16_t indicatorX, uint16_t indicatorMinY, uint16_t indicatorMaxY);
+    virtual void setupVerticalSlider(int16_t backgroundX, int16_t backgroundY, int16_t indicatorX, int16_t indicatorMinY, int16_t indicatorMaxY);
 
     /**
      * Gets indicator minimum previously set using setupHorizontalSlider() or
@@ -177,7 +177,7 @@ public:
      *
      * @see setupHorizontalSlider, setupVerticalSlider, getIndicatorMax
      */
-    virtual uint16_t getIndicatorMin() const
+    virtual int16_t getIndicatorMin() const
     {
         return indicatorMinPosition;
     }
@@ -190,7 +190,7 @@ public:
      *
      * @see setupHorizontalSlider, setupVerticalSlider, getIndicatorMin
      */
-    virtual uint16_t getIndicatorMax() const
+    virtual int16_t getIndicatorMax() const
     {
         return indicatorMaxPosition;
     }
@@ -208,7 +208,7 @@ public:
      * @note If the range is larger than the number of pixels specified for the indicator min and
      *       max some values will not be represented by the slider.
      */
-    virtual void setValueRange(int minValue, int maxValue, int newValue);
+    virtual void setValueRange(int16_t minValue, int16_t maxValue, int16_t newValue);
 
     /**
      * Gets the minimum value previously set using setValueRange().
@@ -217,7 +217,7 @@ public:
      *
      * @see setValueRange, getMaxValue
      */
-    virtual uint16_t getMinValue() const
+    virtual int16_t getMinValue() const
     {
         return valueRangeMin;
     }
@@ -229,7 +229,7 @@ public:
      *
      * @see setValueRange, getMinValue
      */
-    virtual uint16_t getMaxValue() const
+    virtual int16_t getMaxValue() const
     {
         return valueRangeMax;
     }
@@ -247,7 +247,7 @@ public:
      * @note If the range is larger than the number of pixels specified for the indicator min and
      *       indicator max, some values will not be represented by the slider.
      */
-    virtual void setValueRange(int minValue, int maxValue);
+    virtual void setValueRange(int16_t minValue, int16_t maxValue);
 
     /**
      * Places the indicator at the specified value relative to the specified value range.
@@ -263,7 +263,7 @@ public:
      *       thus is not possible to set with this method. In this case the value will be
      *       rounded to the nearest value that is represented in the current setting.
      */
-    virtual void setValue(int value);
+    virtual void setValue(int16_t value);
 
     /**
      * Gets the current value represented by the indicator.
@@ -289,10 +289,10 @@ protected:
 
     SliderOrientation sliderOrientation; ///< The selected slider orientation
 
-    int currentValue; ///< The current value represented by the slider
+    int16_t currentValue; ///< The current value represented by the slider
 
-    int valueRangeMin; ///< The value range min
-    int valueRangeMax; ///< The value range max
+    int16_t valueRangeMin; ///< The value range min
+    int16_t valueRangeMax; ///< The value range max
 
     Image background;                     ///< The background image
     Image backgroundSelected;             ///< The backgroundSelected image
@@ -340,7 +340,7 @@ protected:
      *
      * @return The the indicator radius.
      */
-    virtual uint16_t getIndicatorRadius() const;
+    virtual int16_t getIndicatorRadius() const;
 
     /**
      * Gets the indicator position range, i.e. the difference between max and min for the

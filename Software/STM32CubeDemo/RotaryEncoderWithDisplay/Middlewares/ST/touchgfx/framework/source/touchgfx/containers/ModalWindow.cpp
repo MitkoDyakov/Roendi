@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -10,11 +10,9 @@
 *
 *******************************************************************************/
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Bitmap.hpp>
 #include <touchgfx/Color.hpp>
 #include <touchgfx/Drawable.hpp>
-#include <touchgfx/containers/Container.hpp>
 #include <touchgfx/containers/ModalWindow.hpp>
 #include <touchgfx/hal/HAL.hpp>
 
@@ -28,8 +26,8 @@ ModalWindow::ModalWindow()
 {
     ModalWindow::setWidthHeight(HAL::DISPLAY_WIDTH, HAL::DISPLAY_HEIGHT);
 
-    int defaultShadeAlpha = 96;
-    colortype defaultShadeColor = Color::getColorFrom24BitRGB(0x0, 0x0, 0x0);
+    const int defaultShadeAlpha = 96;
+    const colortype defaultShadeColor = Color::getColorFromRGB(0x0, 0x0, 0x0);
 
     backgroundShade.setPosition(0, 0, getWidth(), getHeight());
     backgroundShade.setColor(defaultShadeColor);
@@ -106,7 +104,7 @@ void ModalWindow::show()
 
 void ModalWindow::hide()
 {
-    setVisible(false);
     invalidate();
+    setVisible(false);
 }
 } // namespace touchgfx

@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -10,7 +10,6 @@
 *
 *******************************************************************************/
 
-#include <touchgfx/Bitmap.hpp>
 #include <touchgfx/Drawable.hpp>
 #include <touchgfx/hal/HAL.hpp>
 #include <touchgfx/lcd/LCD.hpp>
@@ -20,7 +19,7 @@ namespace touchgfx
 {
 void Button::draw(const Rect& invalidatedArea) const
 {
-    Bitmap bmp(pressed ? down : up);
+    const Bitmap bmp(pressed ? down : up);
     Rect dirty(0, 0, bmp.getWidth(), bmp.getHeight());
     dirty &= invalidatedArea;
     if ((bmp.getId() != BITMAP_INVALID) && !dirty.isEmpty())
@@ -44,7 +43,7 @@ Rect Button::getSolidRect() const
 {
     if (alpha < 255)
     {
-        return Rect(0, 0, 0, 0);
+        return Rect();
     }
 
     return (pressed ? down.getSolidRect() : up.getSolidRect());

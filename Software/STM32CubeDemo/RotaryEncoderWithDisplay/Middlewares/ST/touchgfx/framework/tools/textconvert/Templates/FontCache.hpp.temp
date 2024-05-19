@@ -18,6 +18,7 @@ public:
     virtual ~FontDataReader()
     {
     }
+
     virtual void open() = 0;
     virtual void close() = 0;
     virtual void setPosition(uint32_t position) = 0;
@@ -36,6 +37,7 @@ public:
     bool cacheLigatures(CachedFont* font, TypedText t, const Unicode::UnicodeChar* string);
 
     const GlyphNode* getGlyph(Unicode::UnicodeChar unicode, FontId font) const;
+
     uint32_t getMemoryUsage()
     {
         return memorySize - (gsubStart - top);
@@ -46,8 +48,9 @@ public:
 
     static inline const uint8_t* getPixelData(const GlyphNode* glyph)
     {
-        return ((const uint8_t*)glyph) + SizeGlyphNode + 4;
+        return ((const uint8_t*)glyph) + SizeGlyphNode + sizeof(void*);
     }
+
     static inline bool isCached(const GlyphNode* g)
     {
         return g->dataOffset == 0xFFFFFFFF;
@@ -57,10 +60,10 @@ private:
     static const uint32_t SizeGlyphNode = 16;
 
     bool contains(Unicode::UnicodeChar unicode, FontId font) const;
-    void insert(Unicode::UnicodeChar unicode, FontId font, uint32_t bpp, bool& outOfMemory);
-    uint8_t* copyGlyph(uint8_t* top, Unicode::UnicodeChar unicode, FontId font, uint32_t bpp, bool& outOfMemory);
+    void insert(Unicode::UnicodeChar unicode, FontId font, bool& outOfMemory);
+    uint8_t* copyGlyph(uint8_t* top, Unicode::UnicodeChar unicode, FontId font, bool& outOfMemory);
 
-    void cacheData(uint32_t bpp, GlyphNode* first);
+    void cacheData(GlyphNode* first);
     bool cacheSortedString(TypedText t);
     bool createSortedString(const Unicode::UnicodeChar* string);
     bool createSortedLigatures(CachedFont* font, TypedText t, const Unicode::UnicodeChar* string, ...);
@@ -69,26 +72,39 @@ private:
     void setPosition(uint32_t position);
     void readData(void* out, uint32_t numberOfBytes);
 
+    uint32_t getGlyphSize(const GlyphNode* gn)
+    {
+        if (byteAlignRow)
+        {
+            // Round up line width to byte boundary and multiply by height
+            return (gn->width() * bpp + 7) / 8 * gn->height();
+        }
+        // Calculate number of pixels and round up to byte bounday
+        return (gn->width() * gn->height() * bpp + 7) / 8;
+    }
+
     struct
     {
-        uint8_t* first; //first glyphnode, glyph in cache;
-        uint8_t* last;  //last glyphnode, glyph in cache;
+        uint8_t* first; // First GlyphNode, glyph in cache;
+        uint8_t* last;  // Last GlyphNode, glyph in cache;
     } fontTable[MAX(TypographyFontIndex::NUMBER_OF_FONTS, 1)];
 
     uint32_t memorySize;
-    uint8_t* memory;    //start of memory
-    uint8_t* top;       //first unused byte
-    uint8_t* gsubStart; //first address of GSUB tables, allocated in the end of the cache
+    uint8_t* memory;    // Start of memory
+    uint8_t* top;       // First unused byte
+    uint8_t* gsubStart; // First address of GSUB tables, allocated in the end of the cache
 
     FontDataReader* reader;
 
     Unicode::UnicodeChar* sortedString;
-    //Must be bigger than BinaryFontData
+    // Must be bigger than BinaryFontData
     static const uint32_t MAX_BUFFER_SIZE = 64;
     char buffer[MAX_BUFFER_SIZE];
     uint32_t glyphDataOffset;
     uint16_t numGlyphs;
     uint16_t currentFileGlyphNumber;
+    uint8_t bpp;
+    uint8_t byteAlignRow;
     GlyphNode currentFileGlyphNode;
 };
 } // namespace touchgfx

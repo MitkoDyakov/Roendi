@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -41,27 +41,26 @@ public:
      *
      * @param  width       The width.
      * @param  height      The height.
-     * @param  color       The color.
-     * @param  borderColor The border color.
-     * @param  borderSize  Size of the border.
-     * @param  alpha       (Optional) The alpha.
+     * @param  colorMiddle The color of the middle of the box.
+     * @param  colorBorder The border color.
+     * @param  borderWidth Size (width) of the border.
+     * @param  boxAlpha    (Optional) The alpha of the box and the border.
      */
-    BoxWithBorder(uint16_t width, uint16_t height, colortype color, colortype borderColor, uint16_t borderSize, uint8_t alpha = 255)
-        : Box(width, height, color, alpha), borderColor(borderColor), borderSize(borderSize)
+    BoxWithBorder(uint16_t width, uint16_t height, colortype colorMiddle, colortype colorBorder, uint16_t borderWidth, uint8_t boxAlpha = 255)
+        : Box(width, height, colorMiddle, boxAlpha), borderColor(colorBorder), borderSize(borderWidth)
     {
-        rect.width = width;
-        rect.height = height;
     }
 
     /**
      * Sets the color of the border drawn along the edge of the BoxWithBorder.
      *
-     * @param  color The color of the border.
-     * @see setColor, getBorderColor, Color::getColorFrom24BitRGB
+     * @param  colorBorder The color of the border.
+     *
+     * @see setColor, getBorderColor, Color::getColorFromRGB
      */
-    void setBorderColor(colortype color)
+    void setBorderColor(colortype colorBorder)
     {
-        borderColor = color;
+        borderColor = colorBorder;
     }
 
     /**

@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -10,32 +10,27 @@
 *
 *******************************************************************************/
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/widgets/graph/GraphScroll.hpp>
 
 namespace touchgfx
 {
-DataGraphScroll::DataGraphScroll(int16_t capacity, int* values)
-    : AbstractDataGraphWithY(capacity, values), current(0)
-{
-}
 
-void DataGraphScroll::clear()
+void GraphScrollData::clear()
 {
-    AbstractDataGraphWithY::clear();
+    DynamicDataGraph::clear();
     current = 0;
 }
 
-int32_t DataGraphScroll::indexToGlobalIndex(int16_t index) const
+int32_t GraphScrollData::indexToGlobalIndex(int16_t index) const
 {
     if (usedCapacity < maxCapacity)
     {
-        return realIndex(index);
+        return dataIndex(index);
     }
     return (dataCounter - maxCapacity) + index;
 }
 
-void DataGraphScroll::beforeAddValue()
+void GraphScrollData::beforeAddValue()
 {
     if (usedCapacity == maxCapacity)
     {
@@ -43,7 +38,7 @@ void DataGraphScroll::beforeAddValue()
     }
 }
 
-int16_t DataGraphScroll::addValue(int value)
+int16_t GraphScrollData::addValue(int value)
 {
     const bool graphFull = usedCapacity == maxCapacity;
     const int16_t index = current++;
@@ -63,16 +58,6 @@ int16_t DataGraphScroll::addValue(int value)
         invalidateGraphPointAt(index);
     }
     return index;
-}
-
-int16_t DataGraphScroll::realIndex(int16_t index) const
-{
-    return usedCapacity < maxCapacity ? index : (index + current) % maxCapacity;
-}
-
-CWRUtil::Q5 DataGraphScroll::indexToXQ5(int16_t index) const
-{
-    return CWRUtil::toQ5(index);
 }
 
 } // namespace touchgfx

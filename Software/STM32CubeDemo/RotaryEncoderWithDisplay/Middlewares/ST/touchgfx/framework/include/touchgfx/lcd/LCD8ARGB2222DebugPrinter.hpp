@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -19,7 +19,7 @@
 #define TOUCHGFX_LCD8ARGB2222DEBUGPRINTER_HPP
 
 #include <touchgfx/hal/Types.hpp>
-#include <touchgfx/lcd/LCD82222DebugPrinterBase.hpp>
+#include <touchgfx/lcd/LCD8DebugPrinterBase.hpp>
 
 namespace touchgfx
 {
@@ -29,7 +29,7 @@ namespace touchgfx
  *
  * @see DebugPrinter
  */
-class LCD8ARGB2222DebugPrinter : public LCD82222DebugPrinterBase
+class LCD8ARGB2222DebugPrinter : public LCD8DebugPrinterBase
 {
 public:
     virtual void draw(const Rect& rect) const;

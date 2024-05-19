@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,8 +18,8 @@
 #ifndef TOUCHGFX_ABSTRACTPAINTERRGB565_HPP
 #define TOUCHGFX_ABSTRACTPAINTERRGB565_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Bitmap.hpp>
+#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/lcd/LCD.hpp>
 #include <touchgfx/widgets/canvas/AbstractPainter.hpp>
 
@@ -39,12 +39,10 @@ public:
     static const uint16_t BMASK = 0x001F; ///< Mask for blue  (0000000000011111)
 
     AbstractPainterRGB565()
-        : AbstractPainter(), currentX(0), currentY(0)
+        : AbstractPainter()
     {
         assert(compatibleFramebuffer(Bitmap::RGB565) && "The chosen painter only works with RGB565 displays");
     }
-
-    virtual void render(uint8_t* ptr, int x, int xAdjust, int y, unsigned count, const uint8_t* covers);
 
     /**
      * Mix colors from a new pixel and a buffer pixel with the given alpha applied to the
@@ -56,9 +54,9 @@ public:
      *
      * @return The result of blending the two colors into a new color.
      */
-    FORCE_INLINE_FUNCTION uint16_t mixColors(uint16_t newpix, uint16_t bufpix, uint8_t alpha)
+    FORCE_INLINE_FUNCTION uint16_t alphaBlend(uint16_t newpix, uint16_t bufpix, uint8_t alpha) const
     {
-        return mixColors(newpix & RMASK, newpix & GMASK, newpix & BMASK, bufpix, alpha);
+        return alphaBlend(newpix & RMASK, newpix & GMASK, newpix & BMASK, bufpix, alpha);
     }
 
     /**
@@ -73,50 +71,13 @@ public:
      *
      * @return The result of blending the two colors into a new color.
      */
-    FORCE_INLINE_FUNCTION uint16_t mixColors(uint16_t R, uint16_t G, uint16_t B, uint16_t bufpix, uint8_t alpha)
+    FORCE_INLINE_FUNCTION uint16_t alphaBlend(uint16_t R, uint16_t G, uint16_t B, uint16_t bufpix, uint8_t alpha) const
     {
         const uint8_t ialpha = 0xFF - alpha;
         return (((R * alpha + (bufpix & RMASK) * ialpha) / 255) & RMASK) |
                (((G * alpha + (bufpix & GMASK) * ialpha) / 255) & GMASK) |
                (((B * alpha + (bufpix & BMASK) * ialpha) / 255) & BMASK);
     }
-
-protected:
-    /**
-     * Initialize rendering of a single scan line of pixels for the render. If renderInit
-     * returns false, the scanline will not be rendered.
-     *
-     * @return true if it succeeds, false if it fails.
-     */
-    virtual bool renderInit()
-    {
-        return true;
-    }
-
-    /**
-     * Get the color of the next pixel in the scan line to blend into the framebuffer.
-     *
-     * @param [out] red   The red.
-     * @param [out] green The green.
-     * @param [out] blue  The blue.
-     * @param [out] alpha The alpha.
-     *
-     * @return true if the pixel should be painted, false otherwise.
-     */
-    virtual bool renderNext(uint8_t& red, uint8_t& green, uint8_t& blue, uint8_t& alpha) = 0;
-
-    /**
-     * Renders (writes) the specified color into the framebuffer.
-     *
-     * @param [in] p     pointer into the framebuffer where the given color should be written.
-     * @param      red   The red color.
-     * @param      green The green color.
-     * @param      blue  The blue color.
-     */
-    virtual void renderPixel(uint16_t* p, uint8_t red, uint8_t green, uint8_t blue);
-
-    int currentX; ///< Current x coordinate relative to the widget
-    int currentY; ///< Current y coordinate relative to the widget
 };
 
 } // namespace touchgfx

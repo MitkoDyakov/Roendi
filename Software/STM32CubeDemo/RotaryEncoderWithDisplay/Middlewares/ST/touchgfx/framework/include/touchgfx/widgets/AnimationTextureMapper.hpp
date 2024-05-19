@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,9 +18,9 @@
 #ifndef TOUCHGFX_ANIMATIONTEXTUREMAPPER_HPP
 #define TOUCHGFX_ANIMATIONTEXTUREMAPPER_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Callback.hpp>
 #include <touchgfx/EasingEquations.hpp>
+#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/widgets/TextureMapper.hpp>
 
 namespace touchgfx
@@ -98,7 +98,7 @@ public:
     virtual void startAnimation();
 
     /**
-     * Cancel move animation. Stops any running animation at the current position regardless
+     * Cancel the animation. Stops any running animation at the current position regardless
      * of the progress made so far. Disables all animation parameters set using
      * setupAnimation and mark the animation as stopped.
      */

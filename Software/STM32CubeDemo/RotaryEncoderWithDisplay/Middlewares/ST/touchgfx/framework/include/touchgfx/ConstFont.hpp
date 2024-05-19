@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,9 +18,9 @@
 #ifndef TOUCHGFX_CONSTFONT_HPP
 #define TOUCHGFX_CONSTFONT_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Font.hpp>
 #include <touchgfx/Unicode.hpp>
+#include <touchgfx/hal/Types.hpp>
 
 namespace touchgfx
 {
@@ -38,20 +38,21 @@ public:
     /**
      * Initializes a new instance of the ConstFont class.
      *
-     * @param  list         The array of glyphs known to this font.
-     * @param  size         The number of glyphs in list.
-     * @param  height       The height in pixels of the highest character in this font.
-     * @param  pixBelowBase The maximum number of pixels that can be drawn below the baseline in
-     *                      this font.
-     * @param  bitsPerPixel The number of bits per pixel in this font.
-     * @param  byteAlignRow The glyphs are saved with each row byte aligned.
-     * @param  maxLeft      The maximum a character extends to the left.
-     * @param  maxRight     The maximum a character extends to the right.
-     * @param  fallbackChar The fallback character for the typography in case no glyph is
-     *                      available.
+     * @param  glyphs         The array of glyphs known to this font.
+     * @param  numGlyphs      The number of glyphs in list.
+     * @param  height         The height of the font.
+     * @param  baseline       The pixel position of the baseline.
+     * @param  pixAboveTop    The maximum number of pixels above the top of the text.
+     * @param  pixBelowBottom The maximum number of pixels that can be drawn below the baseline in
+     *                        this font.
+     * @param  bitsPerPixel   The number of bits per pixel in this font.
+     * @param  byteAlignRow   The glyphs are saved with each row byte aligned.
+     * @param  maxLeft        The maximum a character extends to the left.
+     * @param  maxRight       The maximum a character extends to the right.
+     * @param  fallbackChar   The fallback character for the typography in case no glyph is available.
      * @param  ellipsisChar The ellipsis character used for truncating long texts.
      */
-    ConstFont(const GlyphNode* list, uint16_t size, uint16_t height, uint8_t pixBelowBase, uint8_t bitsPerPixel, uint8_t byteAlignRow, uint8_t maxLeft, uint8_t maxRight, const Unicode::UnicodeChar fallbackChar, const Unicode::UnicodeChar ellipsisChar);
+    ConstFont(const GlyphNode* glyphs, uint16_t numGlyphs, uint16_t height, uint16_t baseline, uint8_t pixAboveTop, uint8_t pixBelowBottom, uint8_t bitsPerPixel, uint8_t byteAlignRow, uint8_t maxLeft, uint8_t maxRight, const Unicode::UnicodeChar fallbackChar, const Unicode::UnicodeChar ellipsisChar);
 
     using Font::getGlyph;
 
@@ -83,7 +84,7 @@ protected:
 
 private:
     ConstFont()
-        : Font(0, 0, 0, 0, 0, 0, 0, 0), glyphList(0), listSize(0)
+        : Font(0, 0, 0, 0, 0, 0, 0, 0, 0, 0), glyphList(0), listSize(0)
     {
     }
 };

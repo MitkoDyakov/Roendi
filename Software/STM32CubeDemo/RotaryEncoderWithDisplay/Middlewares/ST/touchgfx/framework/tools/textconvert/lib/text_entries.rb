@@ -1,7 +1,7 @@
-# Copyright (c) 2018(-2021) STMicroelectronics.
+# Copyright (c) 2018(-2024) STMicroelectronics.
 # All rights reserved.
 #
-# This file is part of the TouchGFX 4.17.0 distribution.
+# This file is part of the TouchGFX 4.23.2 distribution.
 #
 # This software is licensed under terms that can be found in the LICENSE file in
 # the root directory of this software component.
@@ -13,7 +13,6 @@ class TextEntries
 
   def initialize
     @entries = []
-    @is_rtl = false
     @unicode_is_rtl = false
   end
 
@@ -41,12 +40,8 @@ class TextEntries
     [ar,default]
   end
 
-  def languages
-    if @entries.empty?
-      []
-    else
-      @entries.first.languages
-    end
+  def languages_with_specific_settings
+    @entries.collect { |entry| entry.typographies.keys + entry.alignments.keys + entry.directions.keys }.flatten.uniq
   end
 
   def remove_language(language)
@@ -54,7 +49,7 @@ class TextEntries
   end
 
   def typographies
-    @entries.map { |entry| entry.typography }.uniq
+    @entries.map(&:default_typography).uniq
   end
 
   def entries
@@ -63,6 +58,14 @@ class TextEntries
 
   def with_typography(typography)
     @entries.select { |entry| entry.typography == typography }
+  end
+
+  def text_id(text_id)
+    @entries.find { |entry| entry.text_id == text_id }
+  end
+
+  def all_text_ids
+    @entries.collect { |entry| entry.text_id }
   end
 
   def include?(text_entry)
@@ -76,17 +79,18 @@ class TextEntries
   def is_rtl
     @unicode_is_rtl || @entries.any? { |entry| entry.is_rtl }
   end
-
 end
 
 class TextEntry
   attr_reader :text_id
-  attr_reader :typography
   attr_reader :typographies
   attr_reader :alignments
   attr_reader :directions
+  attr_reader :default_typography
+  attr_reader :default_alignment
+  attr_reader :default_direction
 
-  def initialize(text_id, typography, alignment, direction)
+  def initialize(text_id, default_typography, default_alignment, default_direction)
     @text_id = text_id
     @typographies = {}
     @alignments = {}
@@ -94,14 +98,13 @@ class TextEntry
     @translations = {}
 
     # default typography
-    @typography = typography
+    @default_typography = default_typography
 
     # default alignment
-    @alignment = alignment
+    @default_alignment = get_alignment_as_string(default_alignment)
 
     # default direction
-    @direction = get_direction_as_string(direction)
-    @right_to_left = false
+    @default_direction = get_direction_as_string(default_direction)
   end
 
   def add_typography(language, typography)
@@ -134,7 +137,7 @@ class TextEntry
   def translations_with_typography(typography)
     languages_with_typography = languages.select do |language|
       if @typographies[language].nil?
-        @typography == typography
+        @default_typography == typography
       else
         @typographies[language] == typography
       end
@@ -155,77 +158,48 @@ class TextEntry
     cppify(text_id)
   end
 
-  def alignment
-    get_alignment_as_string(@alignment)
-  end
-
-  def direction
-    get_direction_as_string(@direction)
-  end
-
   # includes the default typography
   def get_all_typographies
-    @typographies.values.compact.insert(0, @typography)
+    @typographies.values.compact.insert(0, @default_typography)
   end
 
   # includes the default alignment
   def get_all_alignments_as_string
-    @alignments.values.compact.collect{ |a| get_alignment_as_string(a) }.insert(0, alignment)
+    @alignments.values.compact.collect{ |a| get_alignment_as_string(a) }.insert(0, @default_alignment)
   end
 
   # includes the default direction
   def get_all_directions_as_string
-    @directions.values.compact.collect{ |a| get_direction_as_string(a) }.insert(0, direction)
+    @directions.values.compact.collect{ |a| get_direction_as_string(a) }.insert(0, @default_direction)
   end
 
   def is_rtl
-    @is_rtl
+    get_all_directions_as_string.any? { |dir| dir == 'RTL' }
   end
 
   private
 
   def get_alignment_as_string(a)
-    case a.to_s.downcase
-    when 'right'
-      'RIGHT'
-    when 'center'
-      'CENTER'
-    when 'left', ''
-      'LEFT'
-    else
-      a.to_s
-    end
+    a.to_s.empty? ? 'LEFT' : a.to_s.upcase
   end
 
   def get_direction_as_string(d)
-    case d.to_s.downcase
-    when 'ltr', ''
-      'LTR'
-    when 'rtl'
-      @is_rtl = true
-      'RTL'
-    else
-      d.to_s
-    end
+    d.to_s.empty? ? 'LTR' : d.to_s.upcase
   end
 
   def cppify(text)
-    t_type = "T_" + text
+    t_type = "T_" + text.upcase
 
     # strip the keys for characters, that can not be used in C++
     t_type = t_type.to_ascii
     t_type.gsub!(" ", "_")
-    t_type.gsub!(")", "")
-    t_type.gsub!("(", "")
-    t_type.gsub!("-", "")
-    t_type.gsub!("\"", "")
-    t_type.gsub!("/", "")
-    t_type.gsub!(".", "")
+    t_type.gsub!(/[^0-9a-zA-Z_]/, '')
     t_type
   end
 end
 
 class Translation
+  attr_reader :text
   def initialize(text)
     @text = text
   end
@@ -239,9 +213,10 @@ class Translation
     to_cpp.count("\2")
   end
   def unicodes
+    # Collect all unicodes and add a terminating zero, which is also part of the string
     @unicodes ||=
       begin
-        numbers.map { |number| number.to_s.gsub(/\[|\]/,'').to_i }
+        numbers.map { |number| number.to_s.gsub(/\[|\]/,'').to_i } + [0]
       end
   end
   def to_cpp

@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,9 +18,11 @@
 #ifndef TOUCHGFX_PAINTERABGR2222_HPP
 #define TOUCHGFX_PAINTERABGR2222_HPP
 
-#include <touchgfx/hal/Types.hpp>
+#include <platform/driver/lcd/LCD8bpp_ABGR2222.hpp>
 #include <touchgfx/Color.hpp>
+#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/widgets/canvas/AbstractPainterABGR2222.hpp>
+#include <touchgfx/widgets/canvas/AbstractPainterColor.hpp>
 
 namespace touchgfx
 {
@@ -30,7 +32,7 @@ namespace touchgfx
  *
  * @see AbstractPainter
  */
-class PainterABGR2222 : public AbstractPainterABGR2222
+class PainterABGR2222 : public AbstractPainterABGR2222, public AbstractPainterColor
 {
 public:
     /**
@@ -39,43 +41,26 @@ public:
      * @param  color (Optional) the color, default is black.
      */
     PainterABGR2222(colortype color = 0)
-        : AbstractPainterABGR2222(), painterColor(0), painterRed(0), painterGreen(0), painterBlue(0)
+        : AbstractPainterABGR2222(), AbstractPainterColor(color)
     {
-        setColor(color);
     }
 
-    /**
-     * Sets color to use when drawing the CanvasWidget.
-     *
-     * @param  color The color.
-     */
-    void setColor(colortype color)
+    virtual void setColor(colortype color)
     {
-        painterColor = color;
+        AbstractPainterColor::setColor(color);
         painterRed = Color::getRed(color);
         painterGreen = Color::getGreen(color);
         painterBlue = Color::getBlue(color);
+        color8 = LCD8bpp_ABGR2222::getNativeColor(painterColor);
     }
 
-    /**
-     * Gets the current color.
-     *
-     * @return The color.
-     */
-    colortype getColor() const
-    {
-        return painterColor;
-    }
-
-    virtual void render(uint8_t* ptr, int x, int xAdjust, int y, unsigned count, const uint8_t* covers);
+    virtual void paint(uint8_t* destination, int16_t offset, int16_t widgetX, int16_t widgetY, int16_t count, uint8_t alpha) const;
 
 protected:
-    virtual bool renderNext(uint8_t& red, uint8_t& green, uint8_t& blue, uint8_t& alpha);
-
-    colortype painterColor; ///< The color
-    uint8_t painterRed;     ///< The red part of the color, scaled up to [0..255]
-    uint8_t painterGreen;   ///< The green part of the color, scaled up to [0..255]
-    uint8_t painterBlue;    ///< The blue part of the color, scaled up to [0..255]
+    uint8_t painterRed;   ///< The red part of the color, used when alpha blending
+    uint8_t painterGreen; ///< The green part of the color, used when alpha blending
+    uint8_t painterBlue;  ///< The blue part of the color, used when alpha blending
+    uint8_t color8;       ///< Pre-calculated native color
 };
 
 } // namespace touchgfx

@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -219,23 +219,23 @@ struct Callback : public GenericCallback<T1, T2, T3>
 {
     /** Initializes a new instance of the Callback class. */
     Callback()
-        : pobject(0), pmemfun_3(0)
+        : pobject(0), pmemfun(0)
     {
     }
 
     /**
-     * Initializes a Callback with an object and a pointer to the member function in that
-     * object to call.
+     * Initializes a Callback with an object and a pointer to the member function in that object to
+     * call.
      *
-     * Initializes a Callback with an object and a pointer to the member function in that
-     * object to call.
+     * Initializes a Callback with an object and a pointer to the member function in that object to
+     * call.
      *
-     * @param [in] pobject   Pointer to the object on which the function should be called.
+     * @param [in] pObject   Pointer to the object on which the function should be called.
      * @param [in] pmemfun_3 Address of member function. This is the version where function takes
-     *                       three arguments.
+     *                        three arguments.
      */
-    Callback(dest_type* pobject, void (dest_type::*pmemfun_3)(T1, T2, T3))
-        : pobject(pobject), pmemfun_3(pmemfun_3)
+    Callback(dest_type* pObject, void (dest_type::*pmemfun_3)(T1, T2, T3))
+        : pobject(pObject), pmemfun(pmemfun_3)
     {
     }
 
@@ -249,7 +249,7 @@ struct Callback : public GenericCallback<T1, T2, T3>
      */
     virtual void execute(T1 t1, T2 t2, T3 t3)
     {
-        (pobject->*pmemfun_3)(t1, t2, t3);
+        (pobject->*pmemfun)(t1, t2, t3);
     }
 
     /**
@@ -259,12 +259,12 @@ struct Callback : public GenericCallback<T1, T2, T3>
      */
     virtual bool isValid() const
     {
-        return (pobject != 0) && (pmemfun_3 != 0);
+        return (pobject != 0) && (pmemfun != 0);
     }
 
 private:
     dest_type* pobject;
-    void (dest_type::*pmemfun_3)(T1, T2, T3);
+    void (dest_type::*pmemfun)(T1, T2, T3);
 };
 
 /**
@@ -291,20 +291,20 @@ struct Callback<dest_type, T1, T2, void> : public GenericCallback<T1, T2>
 {
     /** Initializes a new instance of the Callback class. */
     Callback()
-        : pobject(0), pmemfun_2(0)
+        : pobject(0), pmemfun(0)
     {
     }
 
     /**
-     * Initializes a Callback with an object and a pointer to the member function in that
-     * object to call.
+     * Initializes a Callback with an object and a pointer to the member function in that object to
+     * call.
      *
-     * @param [in] pobject   Pointer to the object on which the function should be called.
-     * @param [in] pmemfun_2 Address of member function. This is the version where function takes
-     *                       two arguments.
+     * @param [in] pObject   Pointer to the object on which the function should be called.
+     * @param [in] pmemfun_2 Address of member function. This is the version where function takes two
+     *                       arguments.
      */
-    Callback(dest_type* pobject, void (dest_type::*pmemfun_2)(T1, T2))
-        : pobject(pobject), pmemfun_2(pmemfun_2)
+    Callback(dest_type* pObject, void (dest_type::*pmemfun_2)(T1, T2))
+        : pobject(pObject), pmemfun(pmemfun_2)
     {
     }
 
@@ -317,7 +317,7 @@ struct Callback<dest_type, T1, T2, void> : public GenericCallback<T1, T2>
      */
     virtual void execute(T1 t1, T2 t2)
     {
-        (pobject->*pmemfun_2)(t1, t2);
+        (pobject->*pmemfun)(t1, t2);
     }
 
     /**
@@ -327,12 +327,12 @@ struct Callback<dest_type, T1, T2, void> : public GenericCallback<T1, T2>
      */
     virtual bool isValid() const
     {
-        return (pobject != 0) && (pmemfun_2 != 0);
+        return (pobject != 0) && (pmemfun != 0);
     }
 
 private:
     dest_type* pobject;
-    void (dest_type::*pmemfun_2)(T1, T2);
+    void (dest_type::*pmemfun)(T1, T2);
 };
 
 /**
@@ -358,20 +358,20 @@ struct Callback<dest_type, T1, void, void> : public GenericCallback<T1>
 {
     /** Initializes a new instance of the Callback class. */
     Callback()
-        : pobject(0), pmemfun_1(0)
+        : pobject(0), pmemfun(0)
     {
     }
 
     /**
-     * Initializes a Callback with an object and a pointer to the member function in that
-     * object to call.
+     * Initializes a Callback with an object and a pointer to the member function in that object to
+     * call.
      *
-     * @param [in] pobject   Pointer to the object on which the function should be called.
-     * @param [in] pmemfun_1 Address of member function. This is the version where function takes
-     *                       one argument.
+     * @param [in] pObject   Pointer to the object on which the function should be called.
+     * @param [in] pmemfun_1 Address of member function. This is the version where function takes one
+     *                       argument.
      */
-    Callback(dest_type* pobject, void (dest_type::*pmemfun_1)(T1))
-        : pobject(pobject), pmemfun_1(pmemfun_1)
+    Callback(dest_type* pObject, void (dest_type::*pmemfun_1)(T1))
+        : pobject(pObject), pmemfun(pmemfun_1)
     {
     }
 
@@ -385,7 +385,7 @@ struct Callback<dest_type, T1, void, void> : public GenericCallback<T1>
      */
     virtual void execute(T1 t1)
     {
-        (pobject->*pmemfun_1)(t1);
+        (pobject->*pmemfun)(t1);
     }
 
     /**
@@ -395,12 +395,12 @@ struct Callback<dest_type, T1, void, void> : public GenericCallback<T1>
      */
     virtual bool isValid() const
     {
-        return (pobject != 0) && (pmemfun_1 != 0);
+        return (pobject != 0) && (pmemfun != 0);
     }
 
 private:
     dest_type* pobject;
-    void (dest_type::*pmemfun_1)(T1);
+    void (dest_type::*pmemfun)(T1);
 };
 
 /**
@@ -425,20 +425,20 @@ struct Callback<dest_type, void, void, void> : public GenericCallback<>
 {
     /** Initializes a new instance of the Callback class. */
     Callback()
-        : pobject(0), pmemfun_0(0)
+        : pobject(0), pmemfun(0)
     {
     }
 
     /**
-     * Initializes a Callback with an object and a pointer to the member function in that
-     * object to call.
+     * Initializes a Callback with an object and a pointer to the member function in that object to
+     * call.
      *
-     * @param [in] pobject   Pointer to the object on which the function should be called.
-     * @param [in] pmemfun_0 Address of member function. This is the version where function takes
-     *                       zero arguments.
+     * @param [in] pObject   Pointer to the object on which the function should be called.
+     * @param [in] pmemfun_0 Address of member function. This is the version where function takes zero
+     *                       arguments.
      */
-    Callback(dest_type* pobject, void (dest_type::*pmemfun_0)())
-        : pobject(pobject), pmemfun_0(pmemfun_0)
+    Callback(dest_type* pObject, void (dest_type::*pmemfun_0)())
+        : pobject(pObject), pmemfun(pmemfun_0)
     {
     }
 
@@ -448,7 +448,7 @@ struct Callback<dest_type, void, void, void> : public GenericCallback<>
      */
     virtual void execute()
     {
-        (pobject->*pmemfun_0)();
+        (pobject->*pmemfun)();
     }
 
     /**
@@ -458,12 +458,12 @@ struct Callback<dest_type, void, void, void> : public GenericCallback<>
      */
     virtual bool isValid() const
     {
-        return (pobject != 0) && (pmemfun_0 != 0);
+        return (pobject != 0) && (pmemfun != 0);
     }
 
 private:
     dest_type* pobject;
-    void (dest_type::*pmemfun_0)();
+    void (dest_type::*pmemfun)();
 };
 
 } // namespace touchgfx

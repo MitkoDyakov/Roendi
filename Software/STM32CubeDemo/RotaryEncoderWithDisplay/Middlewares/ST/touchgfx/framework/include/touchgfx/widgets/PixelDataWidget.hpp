@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,8 +18,8 @@
 #ifndef TOUCHGFX_PIXELDATAWIDGET_HPP
 #define TOUCHGFX_PIXELDATAWIDGET_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Bitmap.hpp>
+#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/widgets/Widget.hpp>
 
 namespace touchgfx
@@ -35,7 +35,13 @@ namespace touchgfx
 class PixelDataWidget : public Widget
 {
 public:
-    PixelDataWidget();
+    PixelDataWidget()
+        : Widget(),
+          buffer(0),
+          format(Bitmap::RGB888),
+          alpha(255)
+    {
+    }
 
     virtual void draw(const Rect& invalidatedArea) const;
 
@@ -47,27 +53,73 @@ public:
      *
      * @param [in] data Image data.
      *
-     * @see setBitmapFormat
+     * @see getPixelData, setBitmapFormat
      */
-    void setPixelData(uint8_t* const data);
+    void setPixelData(uint8_t* const data)
+    {
+        buffer = data;
+    }
 
     /**
-     * Set the format of the pixel data. The supported formats depend on the display type.
-     * For example grayscale displays do not support color images.
+     * Get the pixel data memory pointer, previously set with setPixelData().
      *
-     * @param  format Describes the format to use when reading the pixel data.
+     * @return  The pixel data.
+     *
+     * @see setPixelData, setBitmapFormat
      */
-    void setBitmapFormat(Bitmap::BitmapFormat format);
+    uint8_t* getPixelData() const
+    {
+        return buffer;
+    }
+
+    /**
+     * Set the format of the pixel data. The supported formats depend on the display type. For
+     * example grayscale displays do not support color images.
+     *
+     * @param   bitmapFormat    Describes the format to use when reading the pixel data.
+     *
+     * @see getBitmapFormat
+     */
+    void setBitmapFormat(Bitmap::BitmapFormat bitmapFormat)
+    {
+        format = bitmapFormat;
+    }
+
+    /**
+     * Get the format of the pixel data previously set using setBitmapFormat().
+     *
+     * @return  The bitmap format.
+     *
+     * @see setBitmapFormat
+     */
+    Bitmap::BitmapFormat getBitmapFormat() const
+    {
+        return format;
+    }
 
     /**
      * @copydoc Image::setAlpha
      */
-    void setAlpha(uint8_t newAlpha);
+    void setAlpha(uint8_t newAlpha)
+    {
+        alpha = newAlpha;
+    }
 
     /**
      * @copydoc Image::getAlpha
      */
-    uint8_t getAlpha() const;
+    uint8_t getAlpha() const
+    {
+        return alpha;
+    }
+
+    virtual void invalidateContent() const
+    {
+        if (alpha > 0)
+        {
+            Widget::invalidateContent();
+        }
+    }
 
 protected:
     uint8_t* buffer;             ///< The buffer where the pixels are copied from

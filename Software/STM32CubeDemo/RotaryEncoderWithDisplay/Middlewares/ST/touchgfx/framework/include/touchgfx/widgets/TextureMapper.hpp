@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,8 +18,8 @@
 #ifndef TOUCHGFX_TEXTUREMAPPER_HPP
 #define TOUCHGFX_TEXTUREMAPPER_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Bitmap.hpp>
+#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/widgets/Image.hpp>
 
 namespace touchgfx
@@ -59,25 +59,25 @@ public:
     };
 
     /**
-     * Constructs a new TextureMapper with a default alpha value of 255 (solid) and a
-     * default Bitmap (undefined) if none is specified. If a Bitmap is passed to the
-     * constructor, the width and height of this widget is set to those of the bitmap.
+     * Constructs a new TextureMapper with a default alpha value of 255 (solid) and a default Bitmap
+     * (undefined) if none is specified. If a Bitmap is passed to the constructor, the width and
+     * height of this widget is set to those of the bitmap.
      *
-     * @param  bitmap (Optional) The bitmap to display.
+     * @param   bmp (Optional) The bitmap to display.
      *
      * @see setBitmap
      */
-    TextureMapper(const Bitmap& bitmap = Bitmap());
+    TextureMapper(const Bitmap& bmp = Bitmap());
 
     /**
-     * Sets the bitmap for this TextureMapper and updates the width and height of this
-     * widget to match those of the Bitmap.
+     * Sets the bitmap for this TextureMapper and updates the width and height of this widget to
+     * match those of the Bitmap.
      *
-     * @param  bitmap The bitmap instance.
+     * @param   bmp The bitmap instance.
      *
-     * @note The user code must call invalidate() in order to update the image on the display.
+     * @note    The user code must call invalidate() in order to update the image on the display.
      */
-    virtual void setBitmap(const Bitmap& bitmap);
+    virtual void setBitmap(const Bitmap& bmp);
 
     virtual void draw(const Rect& invalidatedArea) const;
 
@@ -104,26 +104,28 @@ public:
     }
 
     /**
-     * Sets the angles of the image.
+     * Sets the angles in radians of the image.
      *
-     * @param  newXAngle The new x Angle.
-     * @param  newYAngle The new y Angle.
-     * @param  newZAngle The new x Angle.
+     * @param   newXAngle   The new x Angle.
+     * @param   newYAngle   The new y Angle.
+     * @param   newZAngle   The new x Angle.
      *
      * @see updateAngles, getXAngle, getYAngle, getZAngle
      *
-     * @note The area covered by the image before/after changing the angles is NOT invalidated.
+     * @note    The area covered by the image before/after changing the angles is NOT invalidated.
+     * @note    Angles are given in radians, so a full circle is 2*PI.
      */
     virtual void setAngles(float newXAngle, float newYAngle, float newZAngle);
 
     /**
-     * Sets the x angle.
+     * Sets the x angle in radians.
      *
-     * @param  newXAngle The new x angle.
+     * @param   newXAngle   The new x angle.
      *
      * @see setAngles, updateXAngle, getXAngle
      *
-     * @note The area covered by the image before/after changing the angle is NOT invalidated.
+     * @note    The area covered by the image before/after changing the angle is NOT invalidated.
+     * @note    Angles are given in radians, so a full circle is 2*PI.
      */
     virtual void setXAngle(float newXAngle)
     {
@@ -131,13 +133,14 @@ public:
     }
 
     /**
-     * Sets the y angle.
+     * Sets the y angle in radians.
      *
-     * @param  newYAngle The new y angle.
+     * @param   newYAngle   The new y angle.
      *
      * @see setAngles, updateYAngle, getYAngle
      *
-     * @note The area covered by the image before/after changing the angle is NOT invalidated.
+     * @note    The area covered by the image before/after changing the angle is NOT invalidated.
+     * @note    Angles are given in radians, so a full circle is 2*PI.
      */
     virtual void setYAngle(float newYAngle)
     {
@@ -145,13 +148,14 @@ public:
     }
 
     /**
-     * Sets the z angle.
+     * Sets the z angle in radians.
      *
-     * @param  newZAngle The new z angle.
+     * @param   newZAngle   The new z angle.
      *
      * @see setAngles, updateZAngle, getZAngle
      *
-     * @note The area covered by the image before/after changing the angle is NOT invalidated.
+     * @note    The area covered by the image before/after changing the angle is NOT invalidated.
+     * @note    Angles are given in radians, so a full circle is 2*PI.
      */
     virtual void setZAngle(float newZAngle)
     {
@@ -159,23 +163,27 @@ public:
     }
 
     /**
-     * Updates the angles of the image. The area covered by the image before and after
+     * Updates the angles in radians of the image. The area covered by the image before and after
      * changing the angles is invalidated, which is the smallest required rectangle.
      *
-     * @param  newXAngle The new x Angle.
-     * @param  newYAngle The new y Angle.
-     * @param  newZAngle The new x Angle.
+     * @param   newXAngle   The new x Angle.
+     * @param   newYAngle   The new y Angle.
+     * @param   newZAngle   The new x Angle.
      *
      * @see setAngles, updateXAngle, updateYAngle, updateZAngle, getXAngle, getYAngle, getZAngle
+     *
+     * @note    Angles are given in radians, so a full circle is 2*PI.
      */
     virtual void updateAngles(float newXAngle, float newYAngle, float newZAngle);
 
     /**
-     * Updates the x angle.
+     * Updates the x angle in radians.
      *
-     * @param  newXAngle The new x angle.
+     * @param   newXAngle   The new x angle.
      *
      * @see updateAngles, getXAngle
+     *
+     * @note    Angles are given in radians, so a full circle is 2*PI.
      */
     virtual void updateXAngle(float newXAngle)
     {
@@ -183,11 +191,13 @@ public:
     }
 
     /**
-     * Updates the y angle.
+     * Updates the y angle in radians.
      *
-     * @param  newYAngle The new y angle.
+     * @param   newYAngle   The new y angle.
      *
      * @see updateAngles, getYAngle
+     *
+     * @note    Angles are given in radians, so a full circle is 2*PI.
      */
     virtual void updateYAngle(float newYAngle)
     {
@@ -195,11 +205,13 @@ public:
     }
 
     /**
-     * Updates the z angle.
+     * Updates the z angle in radians.
      *
-     * @param  newZAngle The new z angle.
+     * @param   newZAngle   The new z angle.
      *
      * @see updateAngles, getZAngle
+     *
+     * @note    Angles are given in radians, so a full circle is 2*PI.
      */
     virtual void updateZAngle(float newZAngle)
     {
@@ -207,11 +219,13 @@ public:
     }
 
     /**
-     * Get the x angle.
+     * Get the x angle in radians.
      *
-     * @return The x angle.
+     * @return  The x angle.
      *
      * @see updateXAngle
+     *
+     * @note    Angles are given in radians, so a full circle is 2*PI.
      */
     virtual float getXAngle() const
     {
@@ -219,11 +233,13 @@ public:
     }
 
     /**
-     * Get the y angle.
+     * Get the y angle in radians.
      *
-     * @return The y angle.
+     * @return  The y angle.
      *
      * @see updateYAngle
+     *
+     * @note    Angles are given in radians, so a full circle is 2*PI.
      */
     virtual float getYAngle() const
     {
@@ -231,11 +247,13 @@ public:
     }
 
     /**
-     * Get the z angle.
+     * Get the z angle in radians.
      *
-     * @return The z angle.
+     * @return  The z angle.
      *
      * @see updateZAngle
+     *
+     * @note    Angles are given in radians, so a full circle is 2*PI.
      */
     virtual float getZAngle() const
     {
@@ -586,11 +604,18 @@ public:
      * Invalidate the bounding rectangle of the transformed bitmap.
      *
      * @see getBoundingRect
+     *
+     * @deprecated Please use invalidateContent() instead.
      */
-    void invalidateBoundingRect() const
+    TOUCHGFX_DEPRECATED("Please use invalidateContent() instead.", void invalidateBoundingRect() const);
+
+    virtual void invalidateContent() const
     {
-        Rect r = getBoundingRect();
-        invalidateRect(r);
+        if (alpha > 0)
+        {
+            Rect r = getBoundingRect();
+            invalidateRect(r);
+        }
     }
 
 protected:
@@ -638,9 +663,9 @@ protected:
     float xBitmapPosition; ///< The bitmap position x
     float yBitmapPosition; ///< The bitmap position y
 
-    float xAngle; ///< The angle x
-    float yAngle; ///< The angle y
-    float zAngle; ///< The angle z
+    float xAngle; ///< The angle x in radians
+    float yAngle; ///< The angle y in radians
+    float zAngle; ///< The angle z in radians
     float scale;  ///< The scale
 
     float xOrigo; ///< The origo x coordinate

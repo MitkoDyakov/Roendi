@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -10,10 +10,7 @@
 *
 *******************************************************************************/
 
-#include <touchgfx/Bitmap.hpp>
-#include <touchgfx/Drawable.hpp>
 #include <touchgfx/containers/CacheableContainer.hpp>
-#include <touchgfx/containers/Container.hpp>
 #include <touchgfx/hal/HAL.hpp>
 #include <touchgfx/lcd/LCD.hpp>
 
@@ -26,11 +23,15 @@ CacheableContainer::CacheableContainer()
       isCachedMode(false),
       childWasInvalidated(false)
 {
+    // Set this Container as parent for the cachedImage. This will
+    // make sure the cachedImage is clipped correctly.
+    cachedImage.setParent(this);
+    cachedImage.setXY(0, 0);
 }
 
 void CacheableContainer::setCacheBitmap(BitmapId bitmapId)
 {
-    Bitmap bitmap(bitmapId);
+    const Bitmap bitmap(bitmapId);
 
     cachedBitmapId = BITMAP_INVALID;
 
@@ -87,9 +88,9 @@ void CacheableContainer::invalidateRect(Rect& invalidatedArea) const
     }
 }
 
-bool CacheableContainer::setSolidRect(const Rect& rect)
+bool CacheableContainer::setSolidRect(const Rect& solidRect) const
 {
-    return Bitmap::dynamicBitmapSetSolidRect(cachedBitmapId, rect);
+    return Bitmap::dynamicBitmapSetSolidRect(cachedBitmapId, solidRect);
 }
 
 bool CacheableContainer::isChildInvalidated() const
@@ -101,8 +102,8 @@ void CacheableContainer::setupDrawChain(const Rect& invalidatedArea, Drawable** 
 {
     if (isCachedMode && (cachedBitmapId != BITMAP_INVALID) && isVisible())
     {
-        Rect r = getAbsoluteRect();
-        cachedImage.setPosition(r.x, r.y, r.width, r.height);
+        // Make sure cachedImage is same size as container and position in the same coordinates
+        cachedImage.setWidthHeight(getWidth(), getHeight());
         cachedImage.setupDrawChain(invalidatedArea, nextPreviousElement);
     }
     else

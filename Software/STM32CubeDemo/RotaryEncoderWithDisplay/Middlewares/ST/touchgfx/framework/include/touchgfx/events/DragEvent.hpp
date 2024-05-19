@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,14 +18,14 @@
 #ifndef TOUCHGFX_DRAGEVENT_HPP
 #define TOUCHGFX_DRAGEVENT_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Event.hpp>
+#include <touchgfx/hal/Types.hpp>
 
 namespace touchgfx
 {
 /**
- * A drag event. The only drag event currently supported is DRAGGED, which will be issued every
- * time the input system detects a drag.
+ * A drag event. The only drag event currently supported is DRAGGED,
+ * which will be issued every time the input system detects a drag.
  *
  * @see Event
  */
@@ -41,35 +41,47 @@ public:
     /**
      * Initializes a new instance of the DragEvent class.
      *
-     * @param  type  The type of the drag event.
-     * @param  fromX The x coordinate of the drag start position (dragged from)
-     * @param  fromY The y coordinate of the drag start position (dragged from)
-     * @param  toX   The x coordinate of the new position (dragged to)
-     * @param  toY   The y coordinate of the new position (dragged to)
+     * @param  type The type of the drag event.
+     * @param  oldX The x coordinate of the drag start position (dragged from)
+     * @param  oldY The y coordinate of the drag start position (dragged from)
+     * @param  newX The x coordinate of the new position (dragged to)
+     * @param  newY The y coordinate of the new position (dragged to)
      */
-    DragEvent(DragEventType type, int16_t fromX, int16_t fromY, int16_t toX, int16_t toY)
-        : dragEventType(type), dragFromX(fromX), dragFromY(fromY), dragToX(toX), dragToY(toY)
+    DragEvent(DragEventType type, int16_t oldX, int16_t oldY, int16_t newX, int16_t newY)
+        : dragEventType(type), dragOldX(oldX), dragOldY(oldY), dragNewX(newX), dragNewY(newY)
     {
     }
 
     /**
-     * Gets the x coordinate where the drag operation was started (dragged from).
+     * Copy constructor.
      *
-     * @return The x coordinate where the drag operation was started (dragged from).
+     * @param  dragEvent The drag event.
+     */
+    DragEvent(const DragEvent& dragEvent)
+    {
+        *this = dragEvent;
+    }
+
+    /**
+     * Gets the old x coordinate, i.e. where the drag operation was
+     * started (dragged from).
+     *
+     * @return The old x coordinate, i.e. where the drag operation was started (dragged from).
      */
     int16_t getOldX() const
     {
-        return dragFromX;
+        return dragOldX;
     }
 
     /**
-     * Gets the y coordinate where the drag operation was started (dragged from).
+     * Gets the old y coordinate, i.e. where the drag operation was
+     * started (dragged from).
      *
-     * @return The y coordinate where the drag operation was started (dragged from).
+     * @return The old y coordinate, i.e. where the drag operation was started (dragged from).
      */
     int16_t getOldY() const
     {
-        return dragFromY;
+        return dragOldY;
     }
 
     /**
@@ -79,7 +91,7 @@ public:
      */
     int16_t getNewX() const
     {
-        return dragToX;
+        return dragNewX;
     }
 
     /**
@@ -89,7 +101,7 @@ public:
      */
     int16_t getNewY() const
     {
-        return dragToY;
+        return dragNewY;
     }
 
     /**
@@ -109,7 +121,7 @@ public:
      */
     int16_t getDeltaX() const
     {
-        return dragToX - dragFromX;
+        return dragNewX - dragOldX;
     }
 
     /**
@@ -119,7 +131,7 @@ public:
      */
     int16_t getDeltaY() const
     {
-        return dragToY - dragFromY;
+        return dragNewY - dragOldY;
     }
 
     /**
@@ -127,17 +139,34 @@ public:
      *
      * @return The type of this event.
      */
-    virtual Event::EventType getEventType()
+    virtual Event::EventType getEventType() const
     {
         return Event::EVENT_DRAG;
     }
 
+    /**
+     * Assignment operator.
+     *
+     * @param  dragEvent The drag event.
+     *
+     * @return A shallow copy of this object.
+     */
+    const DragEvent& operator=(const DragEvent& dragEvent)
+    {
+        dragEventType = dragEvent.dragEventType;
+        dragOldX = dragEvent.dragOldX;
+        dragOldY = dragEvent.dragOldY;
+        dragNewX = dragEvent.dragNewX;
+        dragNewY = dragEvent.dragNewY;
+        return *this;
+    }
+
 private:
     DragEventType dragEventType;
-    int16_t dragFromX;
-    int16_t dragFromY;
-    int16_t dragToX;
-    int16_t dragToY;
+    int16_t dragOldX;
+    int16_t dragOldY;
+    int16_t dragNewX;
+    int16_t dragNewY;
 };
 
 } // namespace touchgfx

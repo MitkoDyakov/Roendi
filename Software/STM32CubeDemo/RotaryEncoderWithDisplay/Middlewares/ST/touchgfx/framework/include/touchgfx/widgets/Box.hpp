@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -38,14 +38,13 @@ public:
     /**
      * Construct a Box with the given size and color (and optionally alpha).
      *
-     * @param  width  The width of the box.
-     * @param  height The height of the box.
-     * @param  color  The color of the box.
-     * @param  alpha  (Optional) The alpha of the box. Default is 255 (solid).
+     * @param  width    The width of the box.
+     * @param  height   The height of the box.
+     * @param  boxColor The color of the box.
+     * @param  boxAlpha (Optional) The alpha of the box. Default is 255 (solid).
      */
-    Box(uint16_t width, uint16_t height, colortype color, uint8_t alpha = 255)
-        : Widget(),
-          alpha(alpha), color(color)
+    Box(uint16_t width, uint16_t height, colortype boxColor, uint8_t boxAlpha = 255)
+        : Widget(), alpha(boxAlpha), color(boxColor)
     {
         rect.width = width;
         rect.height = height;
@@ -56,13 +55,13 @@ public:
     /**
      * Sets the color of the Box.
      *
-     * @param  color The color of the box.
+     * @param  newColor The color of the box.
      *
-     * @see getColor, Color::getColorFrom24BitRGB
+     * @see getColor, Color::getColorFromRGB
      */
-    void setColor(colortype color)
+    void setColor(colortype newColor)
     {
-        this->color = color;
+        color = newColor;
     }
 
     /**
@@ -94,6 +93,14 @@ public:
     }
 
     virtual void draw(const Rect& area) const;
+
+    virtual void invalidateContent() const
+    {
+        if (alpha > 0)
+        {
+            Widget::invalidateContent();
+        }
+    }
 
 protected:
     uint8_t alpha;   ///< The alpha value used for this Box.

@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -205,28 +205,29 @@ public:
      * Gets the position of the shapes (0,0).
      *
      * @tparam T Generic type parameter, either int or float.
-     * @param [out] dx The x coordinate rounded down to the precision of T.
-     * @param [out] dy The y coordinate rounded down to the precision of T.
+     * @param [out] xOrigin The x coordinate rounded down to the precision of T.
+     * @param [out] yOrigin The y coordinate rounded down to the precision of T.
      */
     template <typename T>
-    void getOrigin(T& dx, T& dy) const
+    void getOrigin(T& xOrigin, T& yOrigin) const
     {
-        dx = this->dx.to<T>();
-        dy = this->dy.to<T>();
+        xOrigin = dx.to<T>();
+        yOrigin = dy.to<T>();
     }
 
     /**
-     * Sets the absolute angle to turn the AbstractShape. 0 degrees means no rotation and 90
-     * degrees is rotate the shape clockwise. Repeated calls to setAngle(10) will therefore
-     * not rotate the shape by an additional 10 degrees. The cached outline of the shape is
+     * Sets the absolute angle in degrees to turn the AbstractShape. 0 degrees means no rotation and
+     * 90 degrees is rotate the shape clockwise. Repeated calls to setAngle(10) will therefore not
+     * rotate the shape by an additional 10 degrees. The cached outline of the shape is
      * automatically updated.
      *
-     * @tparam T Generic type parameter.
-     * @param  angle The absolute angle to turn the abstractShape to relative to 0 (straight up).
+     * @tparam  T   Generic type parameter.
+     * @param   angle   The absolute angle to turn the abstractShape to relative to 0 (straight up).
      *
      * @see updateAngle
      *
-     * @note The area containing the AbstractShape is not invalidated.
+     * @note    The area containing the AbstractShape is not invalidated.
+     * @note    Angles are given in degrees, so a full circle is 360.
      */
     template <typename T>
     void setAngle(T angle)
@@ -240,10 +241,13 @@ public:
     }
 
     /**
-     * Gets the abstractShape's angle.
+     * Gets the abstractShape's angle in degrees.
      *
-     * @tparam T Generic type parameter.
-     * @param [out] angle The current AbstractShape rotation angle rounded down to the precision of T.
+     * @tparam  T   Generic type parameter.
+     * @param [out] angle   The current AbstractShape rotation angle rounded down to the precision of
+     *                      T.
+     *
+     * @note    Angles are given in degrees, so a full circle is 360.
      */
     template <typename T>
     void getAngle(T& angle)
@@ -252,17 +256,18 @@ public:
     }
 
     /**
-     * Sets the absolute angle to turn the AbstractShape. 0 degrees means no rotation and 90
-     * degrees is rotate the shape clockwise. Repeated calls to setAngle(10) will therefore
-     * not rotate the shape by an additional 10 degrees. The cached outline of the shape is
+     * Sets the absolute angle in degrees to turn the AbstractShape. 0 degrees means no rotation and
+     * 90 degrees is rotate the shape clockwise. Repeated calls to setAngle(10) will therefore not
+     * rotate the shape by an additional 10 degrees. The cached outline of the shape is
      * automatically updated.
      *
-     * @tparam T Generic type parameter.
-     * @param  angle The angle to turn the abstractShape.
+     * @tparam  T   Generic type parameter.
+     * @param   angle   The angle to turn the abstractShape.
      *
      * @see setAngle
      *
-     * @note The area containing the AbstractShape is invalidated before and after the change.
+     * @note    The area containing the AbstractShape is invalidated before and after the change.
+     * @note    Angles are given in degrees, so a full circle is 360.
      */
     template <typename T>
     void updateAngle(T angle)
@@ -282,9 +287,11 @@ public:
     }
 
     /**
-     * Gets the current angle of the abstractShape.
+     * Gets the current angle in degrees of the abstractShape.
      *
-     * @return The angle of the AbstractShaperounded down to the precision of int.
+     * @return  The angle of the AbstractShaperounded down to the precision of int.
+     *
+     * @note    Angles are given in degrees, so a full circle is 360.
      */
     int getAngle() const
     {
@@ -383,6 +390,30 @@ public:
         y = yScale.to<T>();
     }
 
+    /**
+     * Sets the filling rule to be used when rendering the outline.
+     *
+     * @param  rule The filling rule.
+     *
+     * @see getFillingRule
+     */
+    void setFillingRule(Rasterizer::FillingRule rule)
+    {
+        fillingRule = rule;
+    }
+
+    /**
+     * Gets the filling rule being used when rendering the outline.
+     *
+     * @return The filling rule.
+     *
+     * @see setFillingRule
+     */
+    Rasterizer::FillingRule getFillingRule() const
+    {
+        return fillingRule;
+    }
+
     virtual bool drawCanvasWidget(const Rect& invalidatedArea) const;
 
     /**
@@ -393,6 +424,8 @@ public:
     void updateAbstractShapeCache();
 
 protected:
+    Rasterizer::FillingRule fillingRule; ///< The filling rule used by the rasterizer
+
     /**
      * Sets the cached coordinates of a given point/corner. The coordinates in the cache are
      * the coordinates from the corners after rotation and scaling has been applied to the

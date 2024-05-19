@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,13 +18,13 @@
 #ifndef TOUCHGFX_SCROLLBASE_HPP
 #define TOUCHGFX_SCROLLBASE_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Callback.hpp>
 #include <touchgfx/EasingEquations.hpp>
 #include <touchgfx/containers/Container.hpp>
 #include <touchgfx/containers/scrollers/DrawableList.hpp>
 #include <touchgfx/events/DragEvent.hpp>
 #include <touchgfx/events/GestureEvent.hpp>
+#include <touchgfx/hal/Types.hpp>
 
 namespace touchgfx
 {
@@ -119,7 +119,7 @@ public:
      *
      * @see setWidth, setHeight, setHorizontal
      */
-    void setDrawableSize(int16_t drawableSize, int16_t drawableMargin);
+    virtual void setDrawableSize(int16_t drawableSize, int16_t drawableMargin);
 
     /**
      * Gets drawable size as set through the first parameter in most recent call to
@@ -259,6 +259,33 @@ public:
      *       point arithmetic.
      */
     uint16_t getDragAcceleration() const;
+
+    /**
+     * Sets overshoot percentage when dragging a non-circular list. This is the size relative to an
+     * item that can be dragged further than the actual list. Setting this to 50, it is possible to
+     * drag the list to show an empty space half the size of an item. Setting this to 0 prevents
+     * dragging further than the actual elements in the list.
+     *
+     * @param   percentage  The overshoot percentage.
+     *
+     * @see getOvershootPercentage
+     */
+    void setOvershootPercentage(uint8_t percentage)
+    {
+        overshootPercentage = percentage;
+    }
+
+    /**
+     * Gets overshoot percentage, as previously set using setOvershootPercentage.
+     *
+     * @return  The overshoot percentage.
+     *
+     * @see setOvershootPercentage
+     */
+    uint8_t getOvershootPercentage() const
+    {
+        return overshootPercentage;
+    }
 
     /**
      * Enables horizontal scrolling to be passed to the children in the list (in case a child
@@ -437,6 +464,7 @@ protected:
     uint16_t maxSwipeItems;         ///< The maximum swipe items
     EasingEquation easingEquation;  ///< The easing equation used for animation
     uint16_t defaultAnimationSteps; ///< The animation steps
+    uint8_t overshootPercentage;    ///< The overshoot percentage when dragging
 
     GenericCallback<int16_t>* itemSelectedCallback; ///< The item selected callback
     GenericCallback<>* itemLockedInCallback;        ///< The item locked in callback

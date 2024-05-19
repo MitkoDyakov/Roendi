@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,32 +18,31 @@
 #ifndef TOUCHGFX_ABSTRACTPAINTER_HPP
 #define TOUCHGFX_ABSTRACTPAINTER_HPP
 
-#include <touchgfx/hal/Types.hpp>
+#include <string.h>
 #include <touchgfx/Bitmap.hpp>
 #include <touchgfx/hal/HAL.hpp>
+#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/lcd/LCD.hpp>
+#include <touchgfx/transforms/DisplayTransformation.hpp>
 
 namespace touchgfx
 {
 /**
  * An abstract class for creating painter classes for drawing canvas widgets. All canvas widgets
- * need a painter to fill the shape drawn with a CanvasWidgetRenderer. The painter must
- * provide the color of a pixel on a given coordinate, which will the be blended into
- * the framebuffer depending on the position of the canvas widget and the transparency
- * of the given pixel.
+ * need a painter to fill the shape drawn with a CanvasWidgetRenderer. The painter must provide the
+ * color of a pixel on a given coordinate, which will the be blended into the framebuffer depending
+ * on the position of the canvas widget and the transparency of the given pixel.
  *
- * The AbstractPainter also implements a function which will blend each pixel in a
- * scanline snippet into the framebuffer, but for better performance, the function
- * should be reimplemented in each painter.
+ * The AbstractPainter also implements a function which will blend each pixel in a scanline snippet
+ * into the framebuffer, but for better performance, the function should be reimplemented in each
+ * painter.
  */
 class AbstractPainter
 {
 public:
     /** Initializes a new instance of the AbstractPainter class. */
     AbstractPainter()
-        : areaOffsetX(0),
-          areaOffsetY(0),
-          widgetAlpha(255)
+        : widgetWidth(0)
     {
     }
 
@@ -53,61 +52,88 @@ public:
     }
 
     /**
-     * Sets the offset of the area being drawn. This allows render() to calculate the x, y
-     * relative to the widget, and not just relative to the invalidated area.
+     * Return the applicable rendering method of the painter.
+     * HARDWARE if the painter uses hardware based drawing,
+     * SOFTWARE otherwise. Relevant on platforms using DCACHE.
      *
-     * @param  offsetX The offset x coordinate of the invalidated area relative to the
-     *                 widget.
-     * @param  offsetY The offset y coordinate of the invalidated area relative to the
-     *                 widget.
-     *
-     * @note Used by CanvasWidgetRenderer - should not be overwritten.
+     * @return HARDWARE if painter uses hardware based drawing, SOFTWARE otherwise.
      */
-    void setOffset(uint16_t offsetX, uint16_t offsetY)
+    virtual HAL::RenderingMethod getRenderingMethod() const
     {
-        areaOffsetX = offsetX;
-        areaOffsetY = offsetY;
+        return HAL::SOFTWARE;
     }
 
     /**
-     * Paint a designated part of the RenderingBuffer with respect to the amount of coverage
-     * of each pixel given by the parameter covers. The cover is the alpha for each pixel,
-     * which is what makes it possible to have smooth anti-aliased edges on the shapes drawn
-     * with CanvasWidgetRenderer.
+     * This function is called before any actual paint operation is started. This allows the painter
+     * to initialize variables and optional dma queues. This happens before the first scan line
+     * segment is being drawn. If the painter is unable to draw, e.g. no bitmap assigned to a bitmap
+     * painter, 'false' should be returned.
      *
-     * @param [in] ptr     Pointer to the row in the RenderingBuffer.
-     * @param      x       The x coordinate.
-     * @param      xAdjust The minor adjustment of x (used when a pixel is smaller than a byte
-     *                     to specify that the \a ptr should have been advanced
-     *                     "xAdjust" pixels futher into the byte).
-     * @param      y       The y coordinate.
-     * @param      count   Number of pixels to fill.
-     * @param      covers  The coverage in of each pixel.
+     * @param  widgetRect The widget rectangle.
      *
-     * @note The implementation of render() in the AbstractPainter classes is a generic (i.e. slow)
-     *       implementation that should be completely implemented in subclasses of
-     *       AbstractPainter for better performance.
+     * @return True if the painter is ready to paint, false otherwise.
+     *
+     * @see AbstractPainter::paint, AbstractPainter::tearDown
      */
-    virtual void render(uint8_t* ptr, int x, int xAdjust, int y, unsigned count, const uint8_t* covers) = 0;
+    virtual bool setup(const Rect& widgetRect) const
+    {
+        widgetWidth = widgetRect.width;
+        return true;
+    }
+
+    /**
+     * This function is called after all paint operation have finished. This allows the painter to
+     * close down dma queues etc. This happens after the last scan line segment has been drawn.
+     *
+     * @see AbstractPainter::paint, AbstractPainter::setup
+     */
+    virtual void tearDown() const
+    {
+        return;
+    }
+
+    /**
+     * Convert Framebuffer widget coordinates to display widget coordinates. This is handy when
+     * creating a custom painter and the X,Y is needed in the same coordinate system as the widget
+     * on the display.
+     *
+     * @param [in,out] widgetX The widget x coordinate.
+     * @param [in,out] widgetY The widget y coordinate.
+     *
+     * @see AbstractPainter::paint
+     */
+    void framebufferToDisplay(int16_t& widgetX, int16_t& widgetY) const
+    {
+        if (HAL::DISPLAY_ROTATION == rotate0)
+        {
+            return;
+        }
+        const int16_t tmpX = widgetX;
+        widgetX = (widgetWidth - 1) - widgetY;
+        widgetY = tmpX;
+    }
+
+    /**
+     * Paints a streak of pixels (all with the same alpha) in the framebuffer. The first pixel to
+     * paint is at 'offset' relative to 'destination' (to be able to support 1bpp, 2bpp and 4bpp).
+     * The first pixel to paint is at the given 'widgetX', 'widgetY' coordinate. The number of
+     * pixels to paint is 'count' and the alpha to apply is 'alpha'.
+     *
+     * Note that the widgetX, widgetY is relative to the widget in the framebuffer, not the display.
+     * To convert the coordinate to display widget coordinates, use framebufferToDisplay().
+     *
+     * @param [in] destination If non-null, the pointer.
+     * @param      offset      The offset to add to the destination.
+     * @param      widgetX     The widget x coordinate.
+     * @param      widgetY     The widget y coordinate.
+     * @param      count       Number of pixels.
+     * @param      alpha       The alpha of the pixels.
+     *
+     * @see AbstractPainter::setup, AbstractPainter::tearDown, AbstractPainter::framebufferToDisplay
+     */
+    virtual void paint(uint8_t* destination, int16_t offset, int16_t widgetX, int16_t widgetY, int16_t count, uint8_t alpha) const = 0;
 
 protected:
-    int16_t areaOffsetX; ///< The offset x coordinate of the area being drawn.
-    int16_t areaOffsetY; ///< The offset y coordinate of the area being drawn.
-    uint8_t widgetAlpha; ///< The alpha of the widget using the painter.
-
-    /**
-     * Sets the widget alpha to allow an entire canvas widget to easily be faded without
-     * changing the painter of the widget.
-     *
-     * @param  alpha The alpha.
-     *
-     * @note Used internally by CanvasWidgetRenderer.
-     */
-    void setWidgetAlpha(const uint8_t alpha)
-    {
-        widgetAlpha = alpha;
-    }
-
     /**
      * Helper function to check if the provided bitmap format matches the current
      * framebuffer format.
@@ -126,7 +152,7 @@ protected:
         return compat;
     }
 
-    friend class Canvas;
+    mutable int16_t widgetWidth; ///< The width of the widget on screen, used by framebufferToDisplay()
 };
 
 } // namespace touchgfx

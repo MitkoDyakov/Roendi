@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,10 +18,10 @@
 #ifndef TOUCHGFX_ANALOGCLOCK_HPP
 #define TOUCHGFX_ANALOGCLOCK_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Bitmap.hpp>
 #include <touchgfx/EasingEquations.hpp>
 #include <touchgfx/containers/clock/AbstractClock.hpp>
+#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/widgets/AnimationTextureMapper.hpp>
 #include <touchgfx/widgets/Image.hpp>
 #include <touchgfx/widgets/TextureMapper.hpp>
@@ -215,6 +215,14 @@ public:
 
     /** @copydoc Image::getAlpha() */
     virtual uint8_t getAlpha() const;
+
+    virtual void invalidateContent() const
+    {
+        if (getAlpha() > 0)
+        {
+            AbstractClock::invalidateContent();
+        }
+    }
 
 protected:
     Image background; ///< The background image of the AnalogClock

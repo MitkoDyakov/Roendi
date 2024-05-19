@@ -1,3 +1,4 @@
+/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    quadspi.h
@@ -6,16 +7,16 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
-  * All rights reserved.</center></h2>
+  * Copyright (c) 2022 STMicroelectronics.
+  * All rights reserved.
   *
-  * This software component is licensed by ST under Ultimate Liberty license
-  * SLA0044, the "License"; You may not use this file except in compliance with
-  * the License. You may obtain a copy of the License at:
-  *                             www.st.com/SLA0044
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
+/* USER CODE END Header */
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __QUADSPI_H__
 #define __QUADSPI_H__
@@ -41,6 +42,7 @@ extern "C" {
 #define READ_STATUS_REG2         (0x07u)
 #define READ_CONFING_REG         (0x35u)
 #define READ_CONFING_REG2        (0x15u)
+#define DEEP_POWER_DOWN_CMD      (0xB9u)
 
 #define REG_PROGRAM_CMD          (0x01u)
 #define PAGE_PROGRAM_CMD         (0x12u)
@@ -68,6 +70,7 @@ uint8_t CSP_QSPI_WriteMemory(uint8_t* buffer, uint32_t address, uint32_t buffer_
 uint8_t CSP_QSPI_EraseSector(uint32_t EraseStartAddress, uint32_t EraseEndAddress);
 uint8_t CSP_QSPI_Erase_Chip(void);
 uint8_t CSP_QUADSPI_Init(void);
+uint8_t QSPI_PowerDown(void);
 
 /* USER CODE END Prototypes */
 
@@ -77,4 +80,3 @@ uint8_t CSP_QUADSPI_Init(void);
 
 #endif /* __QUADSPI_H__ */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

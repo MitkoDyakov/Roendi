@@ -1,7 +1,7 @@
-# Copyright (c) 2018(-2021) STMicroelectronics.
+# Copyright (c) 2018(-2024) STMicroelectronics.
 # All rights reserved.
 #
-# This file is part of the TouchGFX 4.17.0 distribution.
+# This file is part of the TouchGFX 4.23.2 distribution.
 #
 # This software is licensed under terms that can be found in the LICENSE file in
 # the root directory of this software component.
@@ -11,15 +11,15 @@
 require 'json'
 
 class TextKeysAndLanguages < Template
-  def initialize(text_entries, typographies, output_directory)
-    super
+  def initialize(text_entries, typographies, languages, output_directory)
+    super(text_entries, typographies, languages, output_directory)
     @cache = {}
   end
-  def countries
-    text_entries.languages.map { |language| language.upcase }.join(",\n    ")
+  def get_languages
+    @languages.map(&:upcase)
   end
-  def texts
-    text_entries.entries.map(&:cpp_text_id)
+  def get_texts
+    @text_entries.entries.map(&:cpp_text_id)
   end
   def input_path
     File.join(root_dir,'Templates','TextKeysAndLanguages.hpp.temp')
@@ -34,16 +34,16 @@ class TextKeysAndLanguages < Template
     File.join(@output_directory, output_path)
   end
   def run
-    @cache["languages"] = text_entries.languages
-    @cache["textids"] = texts;
+    @cache["languages"] = languages
+    @cache["textids"] = get_texts
 
     new_cache_file = false
     if not File::exists?(cache_file)
       new_cache_file = true
     else
-        #cache file exists, compare data with cache file
-        old_cache = JSON.parse(File.read(cache_file))
-        new_cache_file = (old_cache != @cache)
+      #cache file exists, compare data with cache file
+      old_cache = JSON.parse(File.read(cache_file))
+      new_cache_file = (old_cache != @cache)
     end
 
     if new_cache_file
@@ -51,7 +51,7 @@ class TextKeysAndLanguages < Template
       FileIO.write_file_silent(cache_file, @cache.to_json)
     end
 
-    if (!File::exists?(output_filename)) || new_cache_file || $Force_Generate_TextKeysAndLanguages
+    if !File::exists?(output_filename) || new_cache_file || $Force_Generate_TextKeysAndLanguages
       #generate TextKeysAndLanguages.hpp
       super
     end

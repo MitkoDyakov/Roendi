@@ -1,3 +1,4 @@
+/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    quadspi.c
@@ -6,17 +7,16 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
-  * All rights reserved.</center></h2>
+  * Copyright (c) 2022 STMicroelectronics.
+  * All rights reserved.
   *
-  * This software component is licensed by ST under Ultimate Liberty license
-  * SLA0044, the "License"; You may not use this file except in compliance with
-  * the License. You may obtain a copy of the License at:
-  *                             www.st.com/SLA0044
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
-
+/* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "quadspi.h"
 
@@ -30,6 +30,7 @@ uint8_t QSPI_AutoPollingWriteEnable(void);
 uint8_t QSPI_ReadConfigReg(uint8_t *reg);
 uint8_t QSPI_ReadStatusReg1(uint8_t *reg);
 uint8_t QSPI_ReadStatusReg2(uint8_t *reg);
+
 uint8_t CSP_QSPI_EnableMemoryMappedMode(void)
 {
     QSPI_CommandTypeDef      sCommand;
@@ -245,7 +246,7 @@ uint8_t CSP_QUADSPI_Init(void)
 //    {
 //        return HAL_ERROR;
 //    }
-
+//
 //    if(QSPI_EnableQuadMode() != HAL_OK)
 //    {
 //        return HAL_ERROR;
@@ -690,6 +691,30 @@ uint8_t QSPI_AutoPollingWriteEnable(void)
 
     return HAL_OK;
 }
+
+uint8_t QSPI_PowerDown(void)
+{
+    QSPI_CommandTypeDef sCommand;
+
+    /* Initialize the deep power down command */
+    sCommand.InstructionMode   = QSPI_INSTRUCTION_1_LINE;
+    sCommand.Instruction       = DEEP_POWER_DOWN_CMD;
+    sCommand.AddressMode       = QSPI_ADDRESS_NONE;
+    sCommand.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
+    sCommand.DataMode          = QSPI_DATA_NONE;
+    sCommand.DummyCycles       = 0;
+    sCommand.DdrMode           = QSPI_DDR_MODE_DISABLE;
+    sCommand.DdrHoldHalfCycle  = QSPI_DDR_HHC_ANALOG_DELAY;
+    sCommand.SIOOMode          = QSPI_SIOO_INST_EVERY_CMD;
+
+    /* Configure the command */
+    if (HAL_QSPI_Command(&hqspi, &sCommand, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
+    {
+      return 1;
+    }
+
+    return HAL_OK;
+}
 /* USER CODE END 0 */
 
 QSPI_HandleTypeDef hqspi;
@@ -798,5 +823,3 @@ void HAL_QSPI_MspDeInit(QSPI_HandleTypeDef* qspiHandle)
 /* USER CODE BEGIN 1 */
 
 /* USER CODE END 1 */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

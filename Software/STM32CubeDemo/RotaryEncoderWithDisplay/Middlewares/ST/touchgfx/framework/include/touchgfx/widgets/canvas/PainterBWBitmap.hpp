@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,10 +18,11 @@
 #ifndef TOUCHGFX_PAINTERBWBITMAP_HPP
 #define TOUCHGFX_PAINTERBWBITMAP_HPP
 
-#include <touchgfx/hal/Types.hpp>
-#include <touchgfx/Bitmap.hpp>
-#include <touchgfx/widgets/canvas/AbstractPainterBW.hpp>
 #include <platform/driver/lcd/LCD1bpp.hpp>
+#include <touchgfx/Bitmap.hpp>
+#include <touchgfx/hal/Types.hpp>
+#include <touchgfx/widgets/canvas/AbstractPainterBW.hpp>
+#include <touchgfx/widgets/canvas/AbstractPainterBitmap.hpp>
 
 namespace touchgfx
 {
@@ -33,39 +34,32 @@ namespace touchgfx
  *
  * @see AbstractPainter
  */
-class PainterBWBitmap : public AbstractPainterBW
+class PainterBWBitmap : public AbstractPainterBW, public AbstractPainterBitmap
 {
 public:
     /**
-     * Initializes a new instance of the PainterBWBitmap class.
+     * Constructor.
      *
-     * @param  bmp (Optional) The bitmap, default is #BITMAP_INVALID.
+     * @param  bmp (Optional) The bitmap to use in the painter.
      */
     PainterBWBitmap(const Bitmap& bmp = Bitmap(BITMAP_INVALID))
-        : AbstractPainterBW(), bitmapBWPointer(0), bw_rle(), bitmap(), bitmapRectToFrameBuffer()
+        : AbstractPainterBW(), AbstractPainterBitmap(bmp)
     {
-        setBitmap(bmp);
     }
 
-    /**
-     * Sets a bitmap to be used when drawing the CanvasWidget.
-     *
-     * @param  bmp The bitmap.
-     */
-    void setBitmap(const Bitmap& bmp);
+    virtual void setBitmap(const Bitmap& bmp);
 
-    virtual void render(uint8_t* ptr, int x, int xAdjust, int y, unsigned count, const uint8_t* covers);
+    virtual bool setup(const Rect& widgetRect) const
+    {
+        if (!AbstractPainterBW::setup(widgetRect))
+        {
+            return false;
+        }
+        updateBitmapOffsets(widgetWidth);
+        return bitmap.getId() != BITMAP_INVALID;
+    }
 
-protected:
-    virtual bool renderInit();
-
-    virtual bool renderNext(uint8_t& color);
-
-    const uint8_t* bitmapBWPointer; ///< Pointer to the bitmap (BW)
-    LCD1bpp::bwRLEdata bw_rle;      ///< Pointer to class for walking through bw_rle image
-
-    Bitmap bitmap;                ///< The bitmap to be used when painting
-    Rect bitmapRectToFrameBuffer; ///< Bitmap rectangle translated to framebuffer coordinates
+    virtual void paint(uint8_t* destination, int16_t offset, int16_t widgetX, int16_t widgetY, int16_t count, uint8_t alpha) const;
 };
 
 } // namespace touchgfx

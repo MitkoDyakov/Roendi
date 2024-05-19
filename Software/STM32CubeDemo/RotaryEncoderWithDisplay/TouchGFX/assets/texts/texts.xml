@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextDatabase xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="texts.xsd" Version="4.23.2">
+  <Languages>
+    <Language Id="GB" />
+  </Languages>
+  <Texts>
+    <TextGroup Id="Group1">
+      <Text Id="__SingleUse_G6RH" TypographyId="Default" Alignment="Left">
+        <Translation Language="GB">volume</Translation>
+      </Text>
+      <Text Id="__SingleUse_J74R" TypographyId="Large_A" Alignment="Center">
+        <Translation Language="GB" Alignment="Center">&lt;value&gt;</Translation>
+      </Text>
+      <Text Id="__SingleUse_5UIH" TypographyId="Large_A" Alignment="Center">
+        <Translation Language="GB" Alignment="Center">--</Translation>
+      </Text>
+      <Text Id="__SingleUse_0OF5" TypographyId="Default" Alignment="Left">
+        <Translation Language="GB">SELECT</Translation>
+      </Text>
+      <Text Id="__SingleUse_IGMP" TypographyId="Large" Alignment="Center">
+        <Translation Language="GB">&lt;value&gt;</Translation>
+      </Text>
+      <Text Id="__SingleUse_I3XU" TypographyId="Default" Alignment="Left">
+        <Translation Language="GB">volume</Translation>
+      </Text>
+      <Text Id="__SingleUse_60QS" TypographyId="Default" Alignment="Left">
+        <Translation Language="GB">New Text</Translation>
+      </Text>
+      <Text Id="__SingleUse_PMJZ" TypographyId="Large" Alignment="Left">
+        <Translation Language="GB">0</Translation>
+      </Text>
+    </TextGroup>
+  </Texts>
+  <Typographies>
+    <Typography Id="Default" Font="verdana.ttf" Size="22" Bpp="4" Direction="LTR" FallbackCharacter="?" IsVector="no" />
+    <Typography Id="Large_A" Font="verdana.ttf" Size="50" Bpp="4" Direction="LTR" FallbackCharacter="?" WildcardCharacterRanges="0-9,0x2B,0x2D" IsVector="no">
+      <LanguageSetting Language="GB" Font="verdana.ttf" Size="50" Bpp="4" Direction="LTR" FallbackCharacter="?" WildcardCharacterRanges="0-9,0x2B,0x2D" IsVector="no" />
+    </Typography>
+    <Typography Id="Large" Font="verdana.ttf" Size="50" Bpp="4" Direction="LTR" FallbackCharacter="?" WildcardCharacterRanges="0-9,0x2B,0x2D" IsVector="no" />
+    <Typography Id="Small" Font="verdana.ttf" Size="14" Bpp="4" Direction="LTR" FallbackCharacter="?" IsVector="no" />
+  </Typographies>
+</TextDatabase>

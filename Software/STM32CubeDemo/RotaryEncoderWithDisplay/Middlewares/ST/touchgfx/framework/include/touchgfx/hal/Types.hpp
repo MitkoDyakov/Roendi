@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -82,11 +82,11 @@ struct colortype
 
     /**
      * Constructor which creates a colortype with the given color. Use
-     * Color::getColorFrom24BitRGB() to create a color that will work on your selected LCD type.
+     * Color::getColorFromRGB() to create a color that will work on your selected LCD type.
      *
      * @param  col The color.
      *
-     * @see Color::getColorFrom24BitRGB
+     * @see Color::getColorFromRGB
      */
     colortype(uint32_t col)
         : color(col)
@@ -132,13 +132,13 @@ public:
     /**
      * Initializes a new instance of the Rect class.
      *
-     * @param  x      The x coordinate.
-     * @param  y      The y coordinate.
-     * @param  width  The width.
-     * @param  height The height.
+     * @param  rectX      The x coordinate.
+     * @param  rectY      The y coordinate.
+     * @param  rectWidth  The width.
+     * @param  rectHeight The height.
      */
-    Rect(int16_t x, int16_t y, int16_t width, int16_t height)
-        : x(x), y(y), width(width), height(height)
+    Rect(int16_t rectX, int16_t rectY, int16_t rectWidth, int16_t rectHeight)
+        : x(rectX), y(rectY), width(rectWidth), height(rectHeight)
     {
     }
 
@@ -148,9 +148,10 @@ public:
     int16_t height; ///< The height
 
     /**
-     * Gets the x coordinate of the right edge of the Rect.
+     * Gets the x coordinate of the right edge of the Rect, i.e. the number
+     * of the first column just to the right of the Rect.
      *
-     * @return x coordinate of the right edge.
+     * @return x coordinate of the right edge (calculated as "x + width").
      */
     FORCE_INLINE_FUNCTION int16_t right() const
     {
@@ -158,9 +159,10 @@ public:
     }
 
     /**
-     * Gets the y coordinate of the bottom edge of the Rect.
+     * Gets the y coordinate of the bottom edge of the Rect, i.e. the number
+     * of the first row just below the Rect.
      *
-     * @return y coordinate of the buttom edge.
+     * @return y coordinate of the bottom edge (calculated as "y + height").
      */
     FORCE_INLINE_FUNCTION int16_t bottom() const
     {
@@ -201,7 +203,7 @@ public:
      */
     bool includes(const Rect& other) const
     {
-        return other.x >= x && other.y >= y && other.right() <= right() && other.bottom() <= bottom();
+        return other.isEmpty() || (other.x >= x && other.y >= y && other.right() <= right() && other.bottom() <= bottom());
     }
 
     /**
@@ -210,7 +212,7 @@ public:
      *
      * @param  other The other rectangle.
      *
-     * @return Intersecting rectangle or Rect(0, 0, 0, 0) in case of no intersection.
+     * @return Intersecting rectangle or empty Rect in case of no intersection.
      */
     Rect operator&(const Rect& other) const
     {
@@ -221,7 +223,7 @@ public:
 
     /**
      * Assigns this Rect to the intersection of the current Rect and the assigned Rect. The
-     * assignment will result in a Rect(0, 0, 0, 0) if they do not intersect.
+     * assignment will result in a empty Rect if they do not intersect.
      *
      * @param  other The rect to intersect with.
      */
@@ -280,6 +282,39 @@ public:
     }
 
     /**
+     * Restrict the area to not exceed the given max width and max height. As a result, width or
+     * height can be negative if the rect is completely outside Rect(0, 0, max_width, max_height),
+     * but this is nicely handled by the isEmpty() function.
+     *
+     * @param   max_width   The maximum width.
+     * @param   max_height  The maximum height.
+     *
+     * @see intersect, isEmpty
+     */
+    void restrictTo(int16_t max_width, int16_t max_height)
+    {
+        // Limit area to the screen (0,0,HAL::WIDTH,HAL::HEIGT)
+        if (x < 0)
+        {
+            width += x;
+            x = 0; // Negative width is ok (isEmpty => true)
+        }
+        if (width > max_width - x) // right() > max_width
+        {
+            width = max_width - x;
+        }
+        if (y < 0)
+        {
+            height += y;
+            y = 0; // Negative height is ok (isEmpty => true)
+        }
+        if (height > max_height - y) // bottom() > max_height
+        {
+            height = max_height - y;
+        }
+    }
+
+    /**
      * Compares equality of two Rect by the dimensions and position of these.
      *
      * @param  other The Rect to compare with.
@@ -318,9 +353,9 @@ public:
      *
      * @return area of the rectangle.
      */
-    uint32_t area() const
+    int32_t area() const
     {
-        return width * height;
+        return isEmpty() ? 0 : width * height;
     }
 
 private:
@@ -420,16 +455,13 @@ public:
      */
     T removeAt(uint16_t index)
     {
-        T tmp;
+        assert(index < _size);
 
-        if (index < _size)
+        _size--;
+        T tmp = _elem[index];
+        for (int i = index; i < _size; i++)
         {
-            tmp = _elem[index];
-            for (int i = index; i < _size; i++)
-            {
-                _elem[i] = _elem[i + 1];
-            }
-            _size--;
+            _elem[i] = _elem[i + 1];
         }
         return tmp;
     }
@@ -442,14 +474,13 @@ public:
      */
     void quickRemoveAt(uint16_t index)
     {
+        assert(index < _size);
+
+        _size--;
+        // No need to copy element when removing the last element in the vector
         if (index < _size)
         {
-            _size--;
-            if (index < _size)
-            {
-                // No need to copy element when removing the last element in the vector
-                _elem[index] = _elem[_size];
-            }
+            _elem[index] = _elem[_size];
         }
     }
 
@@ -547,7 +578,7 @@ struct Point
      *
      * @return The squared distance.
      */
-    unsigned dist_sqr(struct Point& o)
+    int32_t dist_sqr(struct Point& o)
     {
         return (x - o.x) * (x - o.x) + (y - o.y) * (y - o.y);
     }
@@ -615,9 +646,11 @@ enum TextRotation
 enum WideTextAction
 {
     WIDE_TEXT_NONE,                          ///< Do nothing, simply cut the text in the middle of any character that extends beyond the width of the TextArea
-    WIDE_TEXT_WORDWRAP,                      ///< Wrap between words, ellipsis anywhere "Very long t..."
-    WIDE_TEXT_WORDWRAP_ELLIPSIS_AFTER_SPACE, ///< Wrap between words, ellipsis anywhere only after space "Very long ..."
-    WIDE_TEXT_CHARWRAP,                      ///< Wrap between any two characters, ellipsis anywhere, as used in Chinese
+    WIDE_TEXT_WORDWRAP,                      ///< Wrap between words, no ellipsis, keep wrapping lines
+    WIDE_TEXT_WORDWRAP_ELLIPSIS,             ///< Wrap between words, ellipsis anywhere "Very long t..."
+    WIDE_TEXT_WORDWRAP_ELLIPSIS_AFTER_SPACE, ///< Wrap between words, ellipsis only after space "Very long ..."
+    WIDE_TEXT_CHARWRAP,                      ///< Wrap between any two characters, no ellipsis, keep wrapping lines
+    WIDE_TEXT_CHARWRAP_ELLIPSIS,             ///< Wrap between any two characters, ellipsis anywhere, as used in Chinese
     WIDE_TEXT_CHARWRAP_DOUBLE_ELLIPSIS       ///< Wrap between any two characters, double ellipsis anywhere, as used in Chinese
 };
 
@@ -727,6 +760,32 @@ enum DMAType
 {
     DMA_TYPE_GENERIC, ///< Generic DMA Implementation
     DMA_TYPE_CHROMART ///< ChromART hardware DMA Implementation
+};
+
+/**
+ * A list of the vector graphics primitives.
+ *
+ * @see VectorRenderer::drawPath
+ */
+enum VectorPrimitives
+{
+    VECTOR_PRIM_CLOSE = 0,       ///< Close the path
+    VECTOR_PRIM_MOVE = 1,        ///< Move to a point
+    VECTOR_PRIM_LINE = 2,        ///< Line to a point from current position
+    VECTOR_PRIM_HLINE = 3,       ///< Horizontal line to a point from current position
+    VECTOR_PRIM_VLINE = 4,       ///< Vertical line to a point from current position
+    VECTOR_PRIM_BEZIER_QUAD = 5, ///< Quadratic Bezier (1 control point) curve to a point from the current position
+    VECTOR_PRIM_BEZIER_CUBIC = 6 ///< Cubic Bezier (2 control points) curve to a point from the current position
+};
+
+/**
+ * Dictionary entry used in LZW decompression.
+ */
+struct LZW9DictionaryEntry
+{
+    uint8_t character;    ///< Current character of the entry
+    uint8_t length;       ///< Remaining length of the entry
+    uint16_t prefixIndex; ///< Index to previous character
 };
 
 } // namespace touchgfx

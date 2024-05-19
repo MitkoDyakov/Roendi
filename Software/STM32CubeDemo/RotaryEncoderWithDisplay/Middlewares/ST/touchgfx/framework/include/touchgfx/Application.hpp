@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,11 +18,13 @@
 #ifndef TOUCHGFX_APPLICATION_HPP
 #define TOUCHGFX_APPLICATION_HPP
 
-#include <touchgfx/hal/Types.hpp>
+#include <touchgfx/Drawable.hpp>
 #include <touchgfx/UIEventListener.hpp>
 #include <touchgfx/events/ClickEvent.hpp>
 #include <touchgfx/events/DragEvent.hpp>
 #include <touchgfx/events/GestureEvent.hpp>
+#include <touchgfx/hal/Config.hpp>
+#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/lcd/LCD.hpp>
 
 namespace touchgfx
@@ -51,9 +53,24 @@ public:
      *
      * @return The current screen.
      */
-    Screen* getCurrentScreen()
+    static Screen* getCurrentScreen()
     {
         return currentScreen;
+    }
+
+    /**
+     * This function can be called to send your application back to
+     * the start screen. The simulator will call this function when F5
+     * is pressed. To make this work, please implement this function
+     * in FrontendApplication.
+     *
+     * @note The application will not make a complete restart - if
+     *       your Model contains data, this will not be reset, unless
+     *       this is explicitly done in your
+     *       FrontendApplication::changeToStartScreen().
+     */
+    virtual void changeToStartScreen()
+    {
     }
 
     /**
@@ -73,6 +90,7 @@ public:
      */
     virtual void appSwitchScreen(uint8_t screenId)
     {
+        (void)screenId; // Unused variable
     }
 
     /** An application specific function for requesting redraw of entire screen. */
@@ -87,24 +105,6 @@ public:
     {
         redraw = rect;
     }
-
-    /**
-     * Initiate a draw operation of the entire screen. Standard implementation is to
-     * delegate draw request to the current Screen.
-     */
-    virtual void draw();
-
-    /**
-     * Initiate a draw operation of the specified region of the screen. Standard
-     * implementation is to delegate draw request to the current Screen.
-     *
-     * @param [in] rect The area to draw.
-     *
-     * @note Unlike Widget::draw this is safe to call from user code as it will properly traverse
-     *       widgets in z-order.
-     * @note The coordinates given must be absolute coordinates.
-     */
-    virtual void draw(Rect& rect);
 
     /**
      * Handle a click event. Standard implementation is to delegate the event to the current
@@ -141,7 +141,7 @@ public:
      * Handle an incoming character received by the HAL layer. Standard implementation
      * delegates to current screen (which, in turn, does nothing).
      *
-     * @param  c The incomming character to handle.
+     * @param  c The incoming character to handle.
      */
     virtual void handleKeyEvent(uint8_t c);
 
@@ -152,20 +152,22 @@ public:
     virtual void handlePendingScreenTransition();
 
     /**
-     * This function allows for deferring draw operations to a later time. If active, calls
-     * to draw will simply note that the specified area is dirty, but not perform any actual
-     * drawing. When disabling the draw cache, the dirty area will be flushed (drawn)
-     * immediately.
+     * Clears the cached areas so coming calls to invalidate are collected for future drawing.
      *
-     * @param  enableCache if true, all future draw operations will be cached. If false draw
-     *                     caching is disabled, and the current cache (if not empty) is
-     *                     drawn immediately.
+     * @see drawCachedAreas
      */
-    virtual void cacheDrawOperations(bool enableCache);
+    virtual void clearCachedAreas();
+
+    /**
+     * Draws all cached, invalidated areas on the screen.
+     *
+     * @see clearCachedAreas
+     */
+    virtual void drawCachedAreas();
 
     /**
      * This function copies the parts that were updated in the
-     * previous frame (in the tft buffer) to the active framebuffer
+     * previous frame (in the TFT buffer) to the active framebuffer
      * (client buffer).
      *
      * This function only copies pixels in double buffering mode.
@@ -182,10 +184,17 @@ public:
      *
      * @note The framework keeps track of the number of times a specific widget is registered.
      */
-    void registerTimerWidget(Drawable* w);
+    void registerTimerWidget(Drawable* w)
+    {
+        timerWidgets.add(w);
+    }
 
     /** Clears all currently registered timer widgets. */
-    void clearAllTimerWidgets();
+
+    void clearAllTimerWidgets()
+    {
+        timerWidgets.clear();
+    }
 
     /**
      * Removes a widget from the list of widgets receiving ticks every frame (typically
@@ -196,14 +205,20 @@ public:
      * @note If widget has been registered multiple times, an equal number of calls to unregister
      *       are required to stop widget from receiving tick events.
      */
-    void unregisterTimerWidget(const Drawable* w);
+    void unregisterTimerWidget(const Drawable* w)
+    {
+        timerWidgets.remove(w);
+    }
 
     /**
-     * gets the number of timer widgets that has been registered.
+     * gets the number of timer widgets that are registered and active.
      *
      * @return The size of timerWidgets.
      */
-    uint16_t getNumberOfRegisteredTimerWidgets() const;
+    uint16_t getNumberOfRegisteredTimerWidgets() const
+    {
+        return timerWidgets.getNumberOfActiveTimerWidgets();
+    }
 
     /**
      * Gets the number of timer events registered to a widget, i.e. how many times a
@@ -214,7 +229,10 @@ public:
      * @return 0 if the drawable is not registered as a timer widget, otherwise returns how
      *         many times the drawable is currently registered.
      */
-    uint16_t getTimerWidgetCountForDrawable(const Drawable* w) const;
+    uint16_t getTimerWidgetCountForDrawable(const Drawable* w) const
+    {
+        return timerWidgets.getCounter(w);
+    }
 
     static const uint8_t MAX_TIMER_WIDGETS = 32; ///< Maximum number of widgets receiving ticks. @remarks Memory impact: x * (sizeof(Drawable*)+1)
     static const uint16_t TICK_INTERVAL_MS = 10; ///< Deprecated, do not use this constant. Tick interval depends on VSYNC of your target platform.
@@ -264,30 +282,124 @@ public:
         }
     }
 
-protected:
     /**
-     * Invalidates this area.
+     * Invalidates the entire screen.
+     */
+    virtual void invalidate();
+
+    /**
+     * Invalidates the given area.
      *
      * @param  area The area to invalidate.
      */
-    void invalidateArea(Rect area);
+    virtual void invalidateArea(Rect area);
 
+    /**
+     * Get list of the invalidated areas in the current frame.
+     * The list is cleared in the beginning of HAL::tick.
+     *
+     * The list can be usefull on some platforms where the information
+     * can be used to reduce the amount of pixels sent to the display.
+     *
+     * @return Const reference to the list.
+     */
+    const Vector<Rect, 8>& getInvalidatedAreas()
+    {
+        return cachedDirtyAreas;
+    }
+
+protected:
     /** Protected constructor. */
     Application();
 
-    typedef Vector<Rect, 8> RectVector_t;              ///< Type to ensure the same number of rects are in the Vector
-    Vector<Drawable*, MAX_TIMER_WIDGETS> timerWidgets; ///< List of widgets that receive timer ticks.
-    uint8_t timerWidgetCounter[MAX_TIMER_WIDGETS];     ///< A counter for each potentially registered timer widget. Increase when registering for timer events, decrease when unregistering.
-    RectVector_t cachedDirtyAreas;                     ///< When draw caching is enabled, these rects keeps track of the dirty screen area.
-    RectVector_t lastRects;                            ///< The dirty areas from last frame that needs to be redrawn because we have swapped frame buffers.
-    Rect redraw;                                       ///< Rect describing application requested invalidate area
-    bool drawCacheEnabled;                             ///< True when draw caching is active.
-    bool transitionHandled;                            ///< True if the transition is done and Screen::afterTransition has been called.
-    static Screen* currentScreen;                      ///< Pointer to currently displayed Screen.
-    static Transition* currentTransition;              ///< Pointer to current transition.
-    static Application* instance;                      ///< Pointer to the instance of the Application-derived subclass. @note Must be set by subclass constructor!
-    static DebugPrinter* debugPrinter;                 ///< Pointer to the DebugPrinter instance.
-    static Rect debugRegionInvalidRect;                ///< Invalidated Debug Region
+    /**
+     * Initiate a draw operation of the entire screen. Standard implementation is to
+     * delegate draw request to the current Screen.
+     */
+    virtual void draw();
+
+    /**
+     * Initiate a draw operation of the specified region of the screen. Standard
+     * implementation is to delegate draw request to the current Screen.
+     *
+     * @param [in] rect The area to draw.
+     *
+     * @note Unlike Widget::draw this is safe to call from user code as it will properly traverse
+     *       widgets in z-order.
+     * @note The coordinates given must be absolute coordinates.
+     */
+    virtual void draw(Rect& rect);
+
+    typedef Vector<Rect, 8> RectVector_t; ///< Type to ensure the same number of rects are in the Vector
+
+    /** A class to handle and manage timer widgets. */
+    class TimerWidgets
+    {
+    public:
+        /**
+         * Tick all active timer widgets. Adding and removing timer widgets during ticks is supported.
+         */
+        void tickActive();
+
+        /**
+         * Adds timer widget. If a timer widget is added from a handleTickEvent(), the timer will not be
+         * ticket until the next tick (unless that same widget is already registered, and has not yet
+         * been ticked in this tick).
+         *
+         * @param [in] w The timer widget to add.
+         */
+        void add(Drawable* w);
+
+        /**
+         * Removes the given timer widget.
+         *
+         * @param  w The timer widget to remove.
+         */
+        void remove(const Drawable* w);
+
+        /** Clears all timer widgets. */
+        void clear();
+
+        /**
+         * Gets a counter for a given timer widget. Normally the counter is 1 unless a timer widget has
+         * been registered several times.
+         *
+         * @param  w The timer widget to get the counter for.
+         *
+         * @return The counter.
+         */
+        uint16_t getCounter(const Drawable* w) const;
+
+        /**
+         * Gets number of active timer widgets.
+         *
+         * @return The number of active timer widgets.
+         */
+        uint16_t getNumberOfActiveTimerWidgets() const;
+
+        /**
+         * Compacts the timer widgets. All widgets with a counter of 0 will be removed from the list,
+         * and the list will be compacted. Compacting the timer widgets during traversal (in
+         * tickActive()) is handled properly.
+         */
+        void compact();
+
+    private:
+        Vector<Drawable*, MAX_TIMER_WIDGETS> widgets; ///< List of widgets that receive timer ticks.
+        uint8_t counters[MAX_TIMER_WIDGETS];          ///< A counter for each potentially registered timer widget. Increase when registering for timer events, decrease when unregistering.
+        uint16_t currentWidget;                       ///< The current widget, used in tickActive().
+        uint16_t lastWidget;                          ///< The last widget, used in tickActive().
+    } timerWidgets;                                   ///< The timer widgets
+
+    RectVector_t cachedDirtyAreas;        ///< When draw caching is enabled, these rects keeps track of the dirty screen area.
+    RectVector_t lastRects;               ///< The dirty areas from last frame that needs to be redrawn because we have swapped frame buffers.
+    Rect redraw;                          ///< Rect describing application requested invalidate area
+    bool transitionHandled;               ///< True if the transition is done and Screen::afterTransition has been called.
+    static Screen* currentScreen;         ///< Pointer to currently displayed Screen.
+    static Transition* currentTransition; ///< Pointer to current transition.
+    static Application* instance;         ///< Pointer to the instance of the Application-derived subclass. @note Must be set by subclass constructor!
+    static DebugPrinter* debugPrinter;    ///< Pointer to the DebugPrinter instance.
+    static Rect debugRegionInvalidRect;   ///< Invalidated Debug Region
 };
 
 } // namespace touchgfx

@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -31,7 +31,7 @@ class DebugPrinter
 public:
     /** Initializes a new instance of the DebugPrinter class. */
     DebugPrinter()
-        : debugString(0), debugRegion(Rect(0, 0, 0, 0)), debugForegroundColor(colortype(0xffffffff)), debugScale(1)
+        : debugString(0), debugRegion(), debugForegroundColor(0xffffffff), debugScale(1)
     {
     }
 
@@ -53,12 +53,12 @@ public:
     /**
      * Sets the position onscreen where the debug string will be displayed.
      *
-     * @param [in] x The coordinate of the region where the debug string is displayed.
-     * @param [in] y The coordinate of the region where the debug string is displayed.
-     * @param [in] w The width of the region where the debug string is displayed.
-     * @param [in] h The height of the region where the debug string is displayed.
+     * @param  x The coordinate of the region where the debug string is displayed.
+     * @param  y The coordinate of the region where the debug string is displayed.
+     * @param  w The width of the region where the debug string is displayed.
+     * @param  h The height of the region where the debug string is displayed.
      */
-    void setPosition(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
+    void setPosition(int16_t x, int16_t y, int16_t w, int16_t h)
     {
         debugRegion = Rect(x, y, w, h);
     }

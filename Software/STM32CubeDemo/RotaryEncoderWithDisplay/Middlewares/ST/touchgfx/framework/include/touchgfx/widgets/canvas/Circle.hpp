@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -41,8 +41,8 @@ namespace touchgfx
  *            Circle circle;
  *            circle.setCircle(1.1f, 1.1f, 0.9); // Will use (35/32, 35/32, 28/32) = (1.09375f, 1.09375f, 0.875f)
  *            int x, y, r;
- *            circle.getCenter(&amp;x, &amp;y); // Will return (1, 1)
- *            circle.getRadius(&amp;r); // Will return 0
+ *            circle.getCenter(&x, &y); // Will return (1, 1)
+ *            circle.getRadius(&r); // Will return 0
  *       @endcode.
  */
 class Circle : public CanvasWidget
@@ -162,6 +162,7 @@ public:
     void setRadius(const T r)
     {
         this->circleRadius = CWRUtil::toQ5(r);
+        this->circleRadius = MAX(CWRUtil::toQ5(0), this->circleRadius);
     }
 
     /**
@@ -177,17 +178,18 @@ public:
     }
 
     /**
-     * Sets the start and end angles in degrees of the Circle arc. 0 degrees is straight up
-     * (12 o'clock) and 90 degrees is to the left (3 o'clock). Any positive or negative
-     * degrees can be used to specify the part of the Circle to draw.
+     * Sets the start and end angles in degrees of the Circle arc. 0 degrees is straight up (12
+     * o'clock) and 90 degrees is to the left (3 o'clock). Any positive or negative degrees can be
+     * used to specify the part of the Circle to draw.
      *
-     * @tparam T Generic type parameter, either int or float.
-     * @param  startAngle The start degrees.
-     * @param  endAngle   The end degrees.
+     * @tparam  T   Generic type parameter, either int or float.
+     * @param   startAngle  The start degrees.
+     * @param   endAngle    The end degrees.
      *
      * @see getArc, updateArcStart, updateArcEnd, updateArc
      *
-     * @note The area containing the Circle is not invalidated.
+     * @note    The area containing the Circle is not invalidated.
+     * @note    Angles are given in degrees, so a full circle is 360.
      */
     template <typename T>
     void setArc(const T startAngle, const T endAngle)
@@ -197,16 +199,17 @@ public:
     }
 
     /**
-     * Sets the start and end angles in degrees of the Circle arc. 0 degrees is straight up
-     * (12 o'clock) and 90 degrees is to the left (3 o'clock). Any positive or negative
-     * degrees can be used to specify the part of the Circle to draw.
+     * Sets the start and end angles in degrees of the Circle arc. 0 degrees is straight up (12
+     * o'clock) and 90 degrees is to the left (3 o'clock). Any positive or negative degrees can be
+     * used to specify the part of the Circle to draw.
      *
-     * @param  startAngle The start degrees.
-     * @param  endAngle   The end degrees.
+     * @param   startAngle  The start degrees.
+     * @param   endAngle    The end degrees.
      *
      * @see getArc, updateArcStart, updateArcEnd, updateArc
      *
-     * @note The area containing the Circle is not invalidated.
+     * @note    The area containing the Circle is not invalidated.
+     * @note    Angles are given in degrees, so a full circle is 360.
      */
     void setArc(const int16_t startAngle, const int16_t endAngle)
     {
@@ -216,11 +219,13 @@ public:
     /**
      * Gets the start and end angles in degrees for the circle arc.
      *
-     * @tparam T Generic type parameter, either int or float.
-     * @param [out] startAngle The start angle rounded down to the precision of T.
-     * @param [out] endAngle   The end angle rounded down to the precision of T.
+     * @tparam  T   Generic type parameter, either int or float.
+     * @param [out] startAngle  The start angle rounded down to the precision of T.
+     * @param [out] endAngle    The end angle rounded down to the precision of T.
      *
      * @see setArc
+     *
+     * @note    Angles are given in degrees, so a full circle is 360.
      */
     template <typename T>
     void getArc(T& startAngle, T& endAngle) const
@@ -232,9 +237,11 @@ public:
     /**
      * Gets the start angle in degrees for the arc.
      *
-     * @return The starting angle for the arc rounded down to an integer.
+     * @return  The starting angle for the arc rounded down to an integer.
      *
      * @see getArc, setArc
+     *
+     * @note    Angles are given in degrees, so a full circle is 360.
      */
     int16_t getArcStart() const
     {
@@ -244,10 +251,12 @@ public:
     /**
      * Gets the start angle in degrees for the arc.
      *
-     * @tparam T Generic type parameter, either int or float.
-     * @param [out] angle The starting angle rounded down to the precision of T.
+     * @tparam  T   Generic type parameter, either int or float.
+     * @param [out] angle   The starting angle rounded down to the precision of T.
      *
      * @see getArc, setArc
+     *
+     * @note    Angles are given in degrees, so a full circle is 360.
      */
     template <typename T>
     void getArcStart(T& angle) const
@@ -258,9 +267,11 @@ public:
     /**
      * Gets the end angle in degrees for the arc.
      *
-     * @return The end angle for the arc rounded down to an integer.
+     * @return  The end angle for the arc rounded down to an integer.
      *
      * @see getArc, setArc
+     *
+     * @note    Angles are given in degrees, so a full circle is 360.
      */
     int16_t getArcEnd() const
     {
@@ -270,8 +281,10 @@ public:
     /**
      * Gets the end angle in degrees for the arc.
      *
-     * @tparam T Generic type parameter, either int or float.
-     * @param [out] angle The end angle rounded down to the precision of T.
+     * @tparam  T   Generic type parameter, either int or float.
+     * @param [out] angle   The end angle rounded down to the precision of T.
+     *
+     * @note    Angles are given in degrees, so a full circle is 360.
      */
     template <typename T>
     void getArcEnd(T& angle) const
@@ -282,12 +295,13 @@ public:
     /**
      * Updates the start angle in degrees for this Circle arc.
      *
-     * @tparam T Generic type parameter, either int or float.
-     * @param  startAngle The start angle in degrees.
+     * @tparam  T   Generic type parameter, either int or float.
+     * @param   startAngle  The start angle in degrees.
      *
      * @see setArc, updateArcEnd, updateArc
      *
-     * @note The area containing the updated Circle arc is invalidated.
+     * @note    The area containing the updated Circle arc is invalidated.
+     * @note    Angles are given in degrees, so a full circle is 360.
      */
     template <typename T>
     void updateArcStart(const T startAngle)
@@ -297,23 +311,21 @@ public:
         {
             return;
         }
-
         Rect minimalRect = getMinimalRectForUpdatedStartAngle(startAngleQ5);
-
         circleArcAngleStart = startAngleQ5;
-
         invalidateRect(minimalRect);
     }
 
     /**
      * Updates the end angle in degrees for this Circle arc.
      *
-     * @tparam T Generic type parameter, either int or float.
-     * @param  endAngle The end angle in degrees.
+     * @tparam  T   Generic type parameter, either int or float.
+     * @param   endAngle    The end angle in degrees.
      *
      * @see setArc, updateArcStart, updateArc
      *
-     * @note The area containing the updated Circle arc is invalidated.
+     * @note    The area containing the updated Circle arc is invalidated.
+     * @note    Angles are given in degrees, so a full circle is 360.
      */
     template <typename T>
     void updateArcEnd(const T endAngle)
@@ -323,25 +335,23 @@ public:
         {
             return;
         }
-
         Rect minimalRect = getMinimalRectForUpdatedEndAngle(endAngleQ5);
-
         circleArcAngleEnd = endAngleQ5;
-
         invalidateRect(minimalRect);
     }
 
     /**
      * Updates the start and end angle in degrees for this Circle arc.
      *
-     * @tparam T Generic type parameter, either int or float.
-     * @param  startAngle The new start angle in degrees.
-     * @param  endAngle   The new end angle in degrees.
+     * @tparam  T   Generic type parameter, either int or float.
+     * @param   startAngle  The new start angle in degrees.
+     * @param   endAngle    The new end angle in degrees.
      *
      * @see setArc, getArc, updateArcStart, updateArcEnd
      *
-     * @note The areas containing the updated Circle arcs are invalidated. As little as possible
-     *       will be invalidated for best performance.
+     * @note    The areas containing the updated Circle arcs are invalidated. As little as possible
+     *          will be invalidated for best performance.
+     * @note    Angles are given in degrees, so a full circle is 360.
      */
     template <typename T>
     void updateArc(const T startAngle, const T endAngle)
@@ -364,6 +374,7 @@ public:
     void setLineWidth(const T width)
     {
         this->circleLineWidth = CWRUtil::toQ5(width);
+        this->circleLineWidth = MAX(CWRUtil::toQ5(0), this->circleLineWidth);
     }
 
     /**
@@ -430,7 +441,10 @@ public:
 
     virtual bool drawCanvasWidget(const Rect& invalidatedArea) const;
 
-    virtual Rect getMinimalRect() const;
+    virtual Rect getMinimalRect() const
+    {
+        return getMinimalRect(circleArcAngleStart, circleArcAngleEnd);
+    }
 
     /**
      * Gets minimal rectangle containing a given circle arc using the set line width.
@@ -440,7 +454,10 @@ public:
      *
      * @return The minimal rectangle.
      */
-    Rect getMinimalRect(int16_t arcStart, int16_t arcEnd) const;
+    Rect getMinimalRect(int16_t arcStart, int16_t arcEnd) const
+    {
+        return getMinimalRect(CWRUtil::toQ5<int>(arcStart), CWRUtil::toQ5<int>(arcEnd));
+    }
 
     /**
      * Gets minimal rectangle containing a given circle arc using the set line width.
@@ -476,11 +493,61 @@ private:
     uint8_t circleArcIncrement;
     uint8_t circleCapArcIncrement;
 
-    void moveToAR2(Canvas& canvas, const CWRUtil::Q5& angle, const CWRUtil::Q5& r2) const;
-    void lineToAR2(Canvas& canvas, const CWRUtil::Q5& angle, const CWRUtil::Q5& r2) const;
-    void lineToXYAR2(Canvas& canvas, const CWRUtil::Q5& x, const CWRUtil::Q5& y, const CWRUtil::Q5& angle, const CWRUtil::Q5& r2) const;
-    void updateMinMaxAR(const CWRUtil::Q5& a, const CWRUtil::Q5& r2, CWRUtil::Q5& xMin, CWRUtil::Q5& xMax, CWRUtil::Q5& yMin, CWRUtil::Q5& yMax) const;
-    void updateMinMaxXY(const CWRUtil::Q5& xNew, const CWRUtil::Q5& yNew, CWRUtil::Q5& xMin, CWRUtil::Q5& xMax, CWRUtil::Q5& yMin, CWRUtil::Q5& yMax) const;
+    FORCE_INLINE_FUNCTION void moveToAngleRadius2(Canvas& canvas, const CWRUtil::Q5& angle, const CWRUtil::Q5& r2) const
+    {
+        canvas.moveTo(circleCenterX + ((r2 * CWRUtil::sine(angle)) / 2), circleCenterY - ((r2 * CWRUtil::cosine(angle)) / 2));
+    }
+
+    FORCE_INLINE_FUNCTION void lineToAngleRadius2(Canvas& canvas, const CWRUtil::Q5& angle, const CWRUtil::Q5& r2) const
+    {
+        lineToXYAngleRadius2(canvas, circleCenterX, circleCenterY, angle, r2);
+    }
+
+    FORCE_INLINE_FUNCTION void lineToXYAngleRadius2(Canvas& canvas, const CWRUtil::Q5& x, const CWRUtil::Q5& y, const CWRUtil::Q5& angle, const CWRUtil::Q5& r2) const
+    {
+        canvas.lineTo(x + ((r2 * CWRUtil::sine(angle)) / 2), y - ((r2 * CWRUtil::cosine(angle)) / 2));
+    }
+
+    FORCE_INLINE_FUNCTION void updateMinMaxAngleLine(const CWRUtil::Q5& angle, const CWRUtil::Q5& halfLineWidth, CWRUtil::Q5& xMin, CWRUtil::Q5& xMax, CWRUtil::Q5& yMin, CWRUtil::Q5& yMax) const
+    {
+        const CWRUtil::Q5 xNew = circleCenterX + (circleRadius * CWRUtil::sine(angle));
+        updateMinMaxX(xNew - halfLineWidth, xMin, xMax);
+        updateMinMaxX(xNew + halfLineWidth, xMin, xMax);
+        const CWRUtil::Q5 yNew = circleCenterY - (circleRadius * CWRUtil::cosine(angle));
+        updateMinMaxY(yNew - halfLineWidth, yMin, yMax);
+        updateMinMaxY(yNew + halfLineWidth, yMin, yMax);
+    }
+
+    FORCE_INLINE_FUNCTION void updateMinMaxAngleSolid(const CWRUtil::Q5& angle, CWRUtil::Q5& xMin, CWRUtil::Q5& xMax, CWRUtil::Q5& yMin, CWRUtil::Q5& yMax) const
+    {
+        updateMinMaxX(circleCenterX + (circleRadius * CWRUtil::sine(angle)), xMin, xMax);
+        updateMinMaxY(circleCenterY - (circleRadius * CWRUtil::cosine(angle)), yMin, yMax);
+    }
+
+    FORCE_INLINE_FUNCTION void updateMinMaxX(const CWRUtil::Q5& xNew, CWRUtil::Q5& xMin, CWRUtil::Q5& xMax) const
+    {
+        if (xNew < xMin)
+        {
+            xMin = xNew;
+        }
+        if (xNew > xMax)
+        {
+            xMax = xNew;
+        }
+    }
+
+    FORCE_INLINE_FUNCTION void updateMinMaxY(const CWRUtil::Q5& yNew, CWRUtil::Q5& yMin, CWRUtil::Q5& yMax) const
+    {
+        if (yNew < yMin)
+        {
+            yMin = yNew;
+        }
+        if (yNew > yMax)
+        {
+            yMax = yNew;
+        }
+    }
+
     void calculateMinimalRect(CWRUtil::Q5 arcStart, CWRUtil::Q5 arcEnd, CWRUtil::Q5& xMin, CWRUtil::Q5& xMax, CWRUtil::Q5& yMin, CWRUtil::Q5& yMax) const;
     Rect getMinimalRectForUpdatedStartAngle(const CWRUtil::Q5& startAngleQ5) const;
     Rect getMinimalRectForUpdatedEndAngle(const CWRUtil::Q5& endAngleQ5) const;

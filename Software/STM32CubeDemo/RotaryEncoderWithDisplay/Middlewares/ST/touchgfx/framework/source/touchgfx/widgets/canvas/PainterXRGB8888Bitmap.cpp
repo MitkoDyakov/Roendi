@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -10,239 +10,114 @@
 *
 *******************************************************************************/
 
-#include <touchgfx/hal/Types.hpp>
-#include <touchgfx/Bitmap.hpp>
+#include <platform/driver/lcd/LCD32bpp_XRGB8888.hpp>
 #include <touchgfx/Color.hpp>
 #include <touchgfx/lcd/LCD.hpp>
 #include <touchgfx/transforms/DisplayTransformation.hpp>
 #include <touchgfx/widgets/canvas/PainterXRGB8888Bitmap.hpp>
-#include <platform/driver/lcd/LCD32bpp_XRGB8888.hpp>
 
 namespace touchgfx
 {
 void PainterXRGB8888Bitmap::setBitmap(const Bitmap& bmp)
 {
-    bitmap = bmp;
-    assert((bitmap.getId() == BITMAP_INVALID || bitmap.getFormat() == Bitmap::RGB565 || bitmap.getFormat() == Bitmap::RGB888 || bitmap.getFormat() == Bitmap::ARGB8888) && "The chosen painter only works with RGB565, RGB888 and ARGB8888 bitmaps");
-    bitmapRectToFrameBuffer = bitmap.getRect();
-    DisplayTransformation::transformDisplayToFrameBuffer(bitmapRectToFrameBuffer);
+    AbstractPainterBitmap::setBitmap(bmp);
+    assert((bitmap.getId() == BITMAP_INVALID || bitmapFormat == Bitmap::RGB565 || bitmapFormat == Bitmap::RGB888 || bitmapFormat == Bitmap::ARGB8888) && !bitmap.getExtraData() && "PainterXRGB8888Bitmap only works with RGB565 (without alpha), RGB888 and ARGB8888 bitmaps");
+    assert(bitmap.getId() == BITMAP_INVALID || bitmapData);
 }
 
-void PainterXRGB8888Bitmap::render(uint8_t* ptr, int x, int xAdjust, int y, unsigned count, const uint8_t* covers)
+void PainterXRGB8888Bitmap::paint(uint8_t* destination, int16_t offset, int16_t widgetX, int16_t widgetY, int16_t count, uint8_t alpha) const
 {
-    uint32_t* RESTRICT p32 = reinterpret_cast<uint32_t*>(ptr) + (x + xAdjust);
-
-    currentX = x + areaOffsetX;
-    currentY = y + areaOffsetY;
-
-    if (!renderInit())
+    if (!adjustBitmapXY(widgetX, widgetY, offset, count))
     {
         return;
     }
 
-    if (currentX + (int)count > bitmapRectToFrameBuffer.width)
+    uint32_t* RESTRICT framebuffer = reinterpret_cast<uint32_t*>(destination) + offset;
+    const uint32_t* const lineEnd = framebuffer + count;
+    const int32_t rowSkip = widgetY * bitmapRect.width;
+    int16_t bitmapAvailable = bitmapRect.width - widgetX;
+    if (bitmapFormat == Bitmap::ARGB8888)
     {
-        count = bitmapRectToFrameBuffer.width - currentX;
-    }
-
-    const uint32_t* const p32_lineend = p32 + count;
-    if (bitmap.getFormat() == Bitmap::ARGB8888)
-    {
-        const uint32_t* RESTRICT src = bitmapARGB8888Pointer;
-        if (widgetAlpha == 0xFF)
+        const uint32_t* const bitmapLineStart = reinterpret_cast<const uint32_t*>(bitmapData) + rowSkip;
+        const uint32_t* bitmapPointer = bitmapLineStart + widgetX;
+        do
         {
+            const int16_t length = MIN(bitmapAvailable, count);
+            const uint32_t* const chunkend = framebuffer + length;
+            count -= length;
             do
             {
-                const uint8_t srcAlpha = (*src) >> 24;
-                const uint8_t alpha = LCD::div255((*covers++) * srcAlpha);
-                if (alpha == 0xFF)
+                const uint8_t srcAlpha = (*bitmapPointer) >> 24;
+                const uint8_t a = LCD::div255(alpha * srcAlpha);
+                if (a == 0xFF)
                 {
-                    *p32 = *src;
+                    *framebuffer = *bitmapPointer;
                 }
                 else
                 {
-                    *p32 = LCD32bpp_XRGB8888::blendRgb888withXrgb8888(reinterpret_cast<const uint8_t*>(src), *p32, alpha, 0xFF - alpha);
+                    *framebuffer = LCD32bpp_XRGB8888::blendRgb888withXrgb8888(reinterpret_cast<const uint8_t*>(bitmapPointer), *framebuffer, a, 0xFF - a);
                 }
-                p32++;
-                src++;
-            } while (p32 < p32_lineend);
-        }
-        else
+                bitmapPointer++;
+            } while (++framebuffer < chunkend);
+            bitmapPointer = bitmapLineStart;
+            bitmapAvailable = bitmapRect.width;
+        } while (framebuffer < lineEnd);
+    }
+    else if (bitmapFormat == Bitmap::RGB888)
+    {
+        const uint8_t* const bitmapLineStart = reinterpret_cast<const uint8_t*>(bitmapData) + rowSkip * 3;
+        const uint8_t* bitmapPointer = bitmapLineStart + widgetX * 3;
+        do
         {
-            do
+            const int16_t length = MIN(bitmapAvailable, count);
+            const uint32_t* const chunkend = framebuffer + length;
+            count -= length;
+            if (alpha == 0xFF)
             {
-                const uint8_t srcAlpha = (*src) >> 24;
-                const uint8_t alpha = LCD::div255((*covers++) * LCD::div255(srcAlpha * widgetAlpha));
-                if (alpha)
+                do
                 {
-                    *p32 = LCD32bpp_XRGB8888::blendRgb888withXrgb8888(reinterpret_cast<const uint8_t*>(src), *p32, alpha, 0xFF - alpha);
-                }
-                p32++;
-                src++;
-            } while (p32 < p32_lineend);
-        }
-    }
-    else if (bitmap.getFormat() == Bitmap::RGB888)
-    {
-        const uint8_t* RESTRICT src = bitmapRGB888Pointer;
-        if (widgetAlpha == 0xFF)
-        {
-            do
+                    *framebuffer = LCD32bpp_XRGB8888::rgb888toXrgb8888(bitmapPointer);
+                    bitmapPointer += 3;
+                } while (++framebuffer < chunkend);
+            }
+            else
             {
-                const uint8_t alpha = *covers++;
-                if (alpha == 0xFF)
+                do
                 {
-                    // Opaque pixel
-                    *p32 = LCD32bpp_XRGB8888::rgb888toXrgb8888(src);
-                }
-                else
-                {
-                    // Non-Opaque pixel
-                    *p32 = LCD32bpp_XRGB8888::blendRgb888withXrgb8888(src, *p32, alpha, 0xFF - alpha);
-                }
-                p32++;
-                src += 3;
-            } while (p32 < p32_lineend);
-        }
-        else
+                    *framebuffer = LCD32bpp_XRGB8888::blendRgb888withXrgb8888(bitmapPointer, *framebuffer, alpha, 0xFF - alpha);
+                    bitmapPointer += 3;
+                } while (++framebuffer < chunkend);
+            }
+            bitmapPointer = bitmapLineStart;
+            bitmapAvailable = bitmapRect.width;
+        } while (framebuffer < lineEnd);
+    }
+    else // if (bitmapFormat == Bitmap::RGB565)
+    {
+        const uint16_t* const bitmapLineStart = reinterpret_cast<const uint16_t*>(bitmapData) + (widgetY * bitmapRect.width);
+        const uint16_t* bitmapPointer = bitmapLineStart + widgetX;
+        do
         {
-            do
+            const int16_t length = MIN(bitmapAvailable, count);
+            const uint32_t* const chunkend = framebuffer + length;
+            count -= length;
+            if (alpha == 0xFF)
             {
-                const uint8_t alpha = LCD::div255((*covers++) * widgetAlpha);
-                if (alpha)
+                do
                 {
-                    *p32 = LCD32bpp_XRGB8888::blendRgb888withXrgb8888(src, *p32, alpha, 0xFF - alpha);
-                }
-                p32++;
-                src += 3;
-            } while (p32 < p32_lineend);
-        }
-    }
-    else if (bitmap.getFormat() == Bitmap::RGB565)
-    {
-        const uint16_t* RESTRICT src = bitmapRGB565Pointer;
-        if (widgetAlpha == 0xFF)
-        {
-            do
+                    *framebuffer = Color::rgb565toXrgb8888(*bitmapPointer++);
+                } while (++framebuffer < chunkend);
+            }
+            else
             {
-                const uint8_t alpha = *covers++;
-                const uint16_t srcpix = *src++;
-                if (alpha == 0xFF)
+                do
                 {
-                    *p32 = Color::rgb565toXrgb8888(srcpix);
-                }
-                else
-                {
-                    *p32 = LCD32bpp_XRGB8888::blendRgb565withXrgb8888(srcpix, *p32, alpha, 0xFF - alpha);
-                }
-                p32++;
-            } while (p32 < p32_lineend);
-        }
-        else
-        {
-            do
-            {
-                const uint8_t alpha = LCD::div255((*covers++) * widgetAlpha);
-                uint16_t srcpix = *src++;
-                if (alpha)
-                {
-                    *p32 = LCD32bpp_XRGB8888::blendRgb565withXrgb8888(srcpix, *p32, alpha, 0xFF - alpha);
-                }
-                p32++;
-            } while (p32 < p32_lineend);
-        }
+                    *framebuffer = LCD32bpp_XRGB8888::blendRgb565withXrgb8888(*bitmapPointer++, *framebuffer, alpha, 0xFF - alpha);
+                } while (++framebuffer < chunkend);
+            }
+            bitmapPointer = bitmapLineStart;
+            bitmapAvailable = bitmapRect.width;
+        } while (framebuffer < lineEnd);
     }
-}
-
-bool PainterXRGB8888Bitmap::renderInit()
-{
-    bitmapARGB8888Pointer = 0;
-    bitmapRGB565Pointer = 0;
-    bitmapRGB888Pointer = 0;
-
-    if (bitmap.getId() == BITMAP_INVALID)
-    {
-        return false;
-    }
-
-    if ((currentX >= bitmapRectToFrameBuffer.width) || (currentY >= bitmapRectToFrameBuffer.height))
-    {
-        // Outside bitmap area, do not draw anything
-        // Consider the following instead of "return" to get a tiled image:
-        //   currentX %= bitmapRectToFrameBuffer.width
-        //   currentY %= bitmapRectToFrameBuffer.height
-        return false;
-    }
-
-    if (bitmap.getFormat() == Bitmap::ARGB8888)
-    {
-        bitmapARGB8888Pointer = (const uint32_t*)bitmap.getData();
-        if (!bitmapARGB8888Pointer)
-        {
-            return false;
-        }
-        bitmapARGB8888Pointer += currentX + currentY * bitmapRectToFrameBuffer.width;
-        return true;
-    }
-
-    if (bitmap.getFormat() == Bitmap::RGB888)
-    {
-        bitmapRGB888Pointer = (const uint8_t*)bitmap.getData();
-        if (!bitmapRGB888Pointer)
-        {
-            return false;
-        }
-        bitmapRGB888Pointer += (currentX + currentY * bitmapRectToFrameBuffer.width) * 3;
-        return true;
-    }
-
-    if (bitmap.getFormat() == Bitmap::RGB565)
-    {
-        bitmapRGB565Pointer = (const uint16_t*)bitmap.getData();
-        if (!bitmapRGB565Pointer)
-        {
-            return false;
-        }
-        bitmapRGB565Pointer += currentX + currentY * bitmapRectToFrameBuffer.width;
-        return true;
-    }
-
-    return false;
-}
-
-bool PainterXRGB8888Bitmap::renderNext(uint8_t& red, uint8_t& green, uint8_t& blue, uint8_t& alpha)
-{
-    if (currentX >= bitmapRectToFrameBuffer.width)
-    {
-        return false;
-    }
-
-    if (bitmapARGB8888Pointer != 0)
-    {
-        uint32_t argb8888 = *bitmapARGB8888Pointer++;
-        alpha = (argb8888 >> 24) & 0xFF;
-        red = (argb8888 >> 16) & 0xFF;
-        green = (argb8888 >> 8) & 0xFF;
-        blue = argb8888 & 0xFF;
-    }
-    else if (bitmapRGB888Pointer != 0)
-    {
-        blue = *bitmapRGB888Pointer++;
-        green = *bitmapRGB888Pointer++;
-        red = *bitmapRGB888Pointer++;
-        alpha = 0xFF;
-    }
-    else if (bitmapRGB565Pointer != 0)
-    {
-        uint16_t srcpix = *bitmapRGB565Pointer++;
-        red = (srcpix & 0xF800) >> 11;
-        green = (srcpix & 0x07E0) >> 5;
-        blue = srcpix & 0x001F;
-        red = (red * 527 + 23) >> 6;
-        green = (green * 259 + 33) >> 6;
-        blue = (blue * 527 + 23) >> 6;
-        alpha = 0xFF;
-    }
-    return true;
 }
 } // namespace touchgfx

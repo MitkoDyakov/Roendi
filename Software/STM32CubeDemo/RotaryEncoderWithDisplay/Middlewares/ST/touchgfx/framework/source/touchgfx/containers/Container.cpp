@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -10,9 +10,8 @@
 *
 *******************************************************************************/
 
-#include <touchgfx/hal/Types.hpp>
-#include <touchgfx/Drawable.hpp>
 #include <touchgfx/containers/Container.hpp>
+#include <touchgfx/hal/HAL.hpp>
 
 namespace touchgfx
 {
@@ -126,7 +125,7 @@ void Container::draw(const Rect& invalidatedArea) const
         return;
     }
 
-    Rect tmp = invalidatedArea;
+    const Rect tmp = invalidatedArea;
     Drawable* d = firstChild;
     while (d)
     {
@@ -163,23 +162,89 @@ void Container::getLastChild(int16_t x, int16_t y, Drawable** last)
         // Iterate over children.
         if (d->isVisible() && d->getRect().intersect(x, y))
         {
-            int16_t xadj = x - d->getX();
-            int16_t yadj = y - d->getY();
+            const int16_t xadj = x - d->getX();
+            const int16_t yadj = y - d->getY();
             d->getLastChild(xadj, yadj, last);
         }
         d = d->nextSibling;
     }
 }
 
+void Container::getLastChildNear(int16_t x, int16_t y, Drawable** last, int16_t* fingerAdjustmentX, int16_t* fingerAdjustmentY)
+{
+    const int fingerSize = HAL::getInstance()->getFingerSize();
+    *fingerAdjustmentX = 0;
+    *fingerAdjustmentY = 0;
+
+    *last = 0;
+    Container::getLastChild(x, y, last);
+
+    const int fingerSizeDistance = 3; // Up to this number is not multi-sampled
+    if (fingerSize > fingerSizeDistance)
+    {
+        const Rect meAbsRect = getAbsoluteRect();
+
+        uint32_t bestDistance = 0xFFFFFFFF;
+        Drawable* previous = 0; // Speed up calculations if we hit the same drawable on next sample
+        if (*last)
+        {
+            // Touched a drawable, but perhaps there is a better alternative
+            previous = *last;
+            const Rect absRect = (*last)->getAbsoluteRect();
+            const int dx = (x + meAbsRect.x) - (absRect.x + (absRect.width / 2));
+            const int dy = (y + meAbsRect.y) - (absRect.y + (absRect.height / 2));
+            bestDistance = dx * dx + dy * dy;
+        }
+
+        const int samplePoints[2][4][2] = { { { 0, -1 }, { -1, 0 }, { 1, 0 }, { 0, 1 } },     // above, left, right, below
+                                            { { -1, -1 }, { 1, -1 }, { -1, 1 }, { 1, 1 } } }; // up-left, up-right, down-left and down-right
+        const int maxRings = 3;
+        const int numRings = MIN(maxRings, (fingerSize - 1) / fingerSizeDistance);
+        for (int ring = 0; ring < numRings; ring++)
+        {
+            // For each 'ring' "distance" increases up to "fingerSize":
+            const int distance = fingerSize * (ring + 1) / numRings;
+            for (int sampleIndex = 0; sampleIndex < 4; sampleIndex++)
+            {
+                const int* xy = samplePoints[ring % 2][sampleIndex];
+                const int16_t deltaX = xy[0] * distance;
+                const int16_t deltaY = xy[1] * distance;
+                if (rect.intersect(x + deltaX, y + deltaY))
+                {
+                    Drawable* drawable = 0;
+                    Container::getLastChild(x + deltaX, y + deltaY, &drawable);
+                    if (drawable && drawable != previous)
+                    {
+                        previous = drawable;
+                        const Rect absRect = drawable->getAbsoluteRect();
+                        // Find distance to center of drawable
+                        const int dx = (x + meAbsRect.x) - (absRect.x + (absRect.width / 2));
+                        const int dy = (y + meAbsRect.y) - (absRect.y + (absRect.height / 2));
+                        const uint32_t dist = dx * dx + dy * dy;
+                        // Check if this drawable center is closer than the previous
+                        if (dist < bestDistance)
+                        {
+                            bestDistance = dist;
+                            *last = drawable;
+                            *fingerAdjustmentX = deltaX;
+                            *fingerAdjustmentY = deltaY;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 Rect Container::getSolidRect() const
 {
-    return Rect(0, 0, 0, 0);
+    return Rect();
 }
 
 Rect Container::getContainedArea() const
 {
     Drawable* d = firstChild;
-    Rect contained(0, 0, 0, 0);
+    Rect contained;
     while (d)
     {
         contained.expandToFit(d->getRect());

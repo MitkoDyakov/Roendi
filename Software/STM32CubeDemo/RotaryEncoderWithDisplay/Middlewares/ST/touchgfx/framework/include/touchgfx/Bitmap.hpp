@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -69,6 +69,15 @@ public:
         L8,       ///< 8-bit indexed color
         A4,       ///< 4-bit alpha level
         CUSTOM    ///< Non-standard platform specific format
+    };
+
+    /** Algorithms used for L8 images compression can be stored in the following formats. */
+    enum Compression
+    {
+        COMPRESSION_L8_NONE = 0, ///< No compression applied on the L8 image
+        COMPRESSION_L8_L4 = 1,   ///< L4 compression applied on the L8 image
+        COMPRESSION_L8_RLE = 2,  ///< RLE compression applied on the L8 image
+        COMPRESSION_L8_LZW9 = 3  ///< LZW9 compression applied on the L8 image
     };
 
     /** Data of a bitmap. */
@@ -180,14 +189,14 @@ public:
      *
      * @return The Bitmap width in pixels.
      */
-    uint16_t getWidth() const;
+    int16_t getWidth() const;
 
     /**
      * Gets the height of the Bitmap in pixels.
      *
      * @return The Bitmap height in pixels.
      */
-    uint16_t getHeight() const;
+    int16_t getHeight() const;
 
     /**
      * Gets the rectangle describing the dimensions of the Bitmap.
@@ -313,6 +322,23 @@ public:
 
     /** Clears the cached bitmaps from RAM. */
     static void clearCache();
+
+    /**
+     * Decompress a compressed bitmap into the bitmap cache. The
+     * decompressed bitmap will automatically be used by all Widgets.
+     *
+     * Only compressed L8 images can be decompressed. The decompressed
+     * bitmap will be L8 with an unchanged palette.
+     *
+     * When decompressing L8 bitmaps compressed with LZW an array of
+     * size 2048 bytes (16 bit aligned) must be supplied. The array is
+     * only used during decompressing.
+     *
+     * @param  id The id of the Bitmap to decompress.
+     * @param  buffer Pointer to a buffer for LZW decompression.
+     * @return true if the bitmap was decompressed.
+     */
+    static bool decompress(BitmapId id, uint16_t* buffer = 0);
 
     /**
      * Create a dynamic Bitmap. The clutFormat parameter is ignored for bitmaps not in L8 format
@@ -483,7 +509,7 @@ public:
      */
     static bool dynamicBitmapAddSolidRect(BitmapId id, const Rect& solidRect);
 
-    ///@cond
+    /// @cond
     /**
      * Gets the subformat of the dynamic bitmap. Zero is returned if
      * the subformat was not set.
@@ -536,10 +562,13 @@ private:
     static uint32_t getSizeOfBitmap(BitmapId id);
     static uint32_t getSizeOfBitmapData(BitmapId id);
     static uint32_t getSizeOfBitmapExtraData(BitmapId id);
-    static bool cacheInternal(BitmapId id, uint32_t size);
+    static bool cacheInternal(BitmapId id, uint32_t size, bool doCopy = true);
     static bool isCustomDynamicBitmap(BitmapId id);
     static bool copyBitmapToCache(BitmapId id, uint8_t* const dst);
     static uint32_t firstFreeDynamicBitmapId();
+    static uint32_t decompressL8_L4(uint8_t* dst, BitmapId id);
+    static uint32_t decompressL8_RLE(uint8_t* dst, BitmapId id);
+    static uint32_t decompressL8_LZW9(uint8_t* dst, BitmapId id, uint16_t* buffer = 0);
 
     BitmapId bitmapId;
     static const BitmapData* bitmaps;
@@ -553,6 +582,8 @@ private:
     static uint16_t numberOfBitmaps;
     static uint16_t numberOfDynamicBitmaps;
     static uint16_t uncachedCount; ///< Uncached images, sort of ...
+
+    static const uint16_t RLE_BLOCK_SIZE = 1024U;
 };
 
 } // namespace touchgfx

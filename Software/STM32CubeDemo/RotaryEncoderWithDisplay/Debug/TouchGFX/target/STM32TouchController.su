@@ -1,6 +1,0 @@
-TouchController.hpp:30:13:touchgfx::TouchController::~TouchController()	16	static
-TouchController.hpp:30:13:virtual touchgfx::TouchController::~TouchController()	16	static
-STM32TouchController.cpp:22:6:virtual void STM32TouchController::init()	16	static
-STM32TouchController.cpp:30:6:virtual bool STM32TouchController::sampleTouch(int32_t&, int32_t&)	24	static
-STM32TouchController.hpp:33:7:STM32TouchController::~STM32TouchController()	16	static
-STM32TouchController.hpp:33:7:virtual STM32TouchController::~STM32TouchController()	16	static

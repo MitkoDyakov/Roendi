@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -10,13 +10,8 @@
 *
 *******************************************************************************/
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Callback.hpp>
 #include <touchgfx/Drawable.hpp>
-#include <touchgfx/containers/Container.hpp>
-#include <touchgfx/events/ClickEvent.hpp>
-#include <touchgfx/events/DragEvent.hpp>
-#include <touchgfx/widgets/canvas/CWRUtil.hpp>
 #include <touchgfx/widgets/graph/AbstractDataGraph.hpp>
 #include <touchgfx/widgets/graph/GraphElements.hpp>
 #include <touchgfx/widgets/graph/GraphLabels.hpp>
@@ -25,39 +20,21 @@ namespace touchgfx
 {
 AbstractDataGraph::AbstractDataGraph(int16_t capacity)
     : Container(),
-      dataScale(1), alpha(255),
+      alpha(255), xScale(1), yScale(1),
       graphArea(), leftArea(), rightArea(), topArea(), bottomArea(),
       topPadding(0), leftPadding(0), rightPadding(0), bottomPadding(0),
-      maxCapacity(capacity), usedCapacity(0), gapBeforeIndex(0), clickAction(0), dragAction(0)
+      maxCapacity(capacity), usedCapacity(0), gapBeforeIndex(0), clickAction(0), dragAction(0),
+      graphRangeMinX(0), graphRangeMaxX(0), graphRangeMinY(0), graphRangeMaxY(0)
 {
-    add(graphArea);
-    add(topArea);
-    add(leftArea);
-    add(rightArea);
-    add(bottomArea);
+    assert(capacity > 0);
+    AbstractDataGraph::add(graphArea);
+    AbstractDataGraph::add(topArea);
+    AbstractDataGraph::add(leftArea);
+    AbstractDataGraph::add(rightArea);
+    AbstractDataGraph::add(bottomArea);
     // Place all areas properly:
     setGraphAreaMargin(0, 0, 0, 0);
     setTouchable(true);
-}
-
-void AbstractDataGraph::setScale(int scale)
-{
-    dataScale = scale;
-}
-
-int AbstractDataGraph::getScale() const
-{
-    return dataScale;
-}
-
-void AbstractDataGraph::setAlpha(uint8_t newAlpha)
-{
-    alpha = newAlpha;
-}
-
-uint8_t AbstractDataGraph::getAlpha() const
-{
-    return alpha;
 }
 
 void AbstractDataGraph::setWidth(int16_t width)
@@ -90,26 +67,6 @@ void AbstractDataGraph::setGraphAreaMargin(int16_t top, int16_t left, int16_t ri
     updateAreasPosition();
 }
 
-int16_t AbstractDataGraph::getGraphAreaMarginTop() const
-{
-    return topArea.getHeight();
-}
-
-int16_t AbstractDataGraph::getGraphAreaMarginLeft() const
-{
-    return leftArea.getWidth();
-}
-
-int16_t AbstractDataGraph::getGraphAreaMarginRight() const
-{
-    return rightArea.getWidth();
-}
-
-int16_t AbstractDataGraph::getGraphAreaMarginBottom() const
-{
-    return bottomArea.getHeight();
-}
-
 void AbstractDataGraph::setGraphAreaPadding(int16_t top, int16_t left, int16_t right, int16_t bottom)
 {
     topPadding = top;
@@ -118,71 +75,10 @@ void AbstractDataGraph::setGraphAreaPadding(int16_t top, int16_t left, int16_t r
     bottomPadding = bottom;
 }
 
-int16_t AbstractDataGraph::getGraphAreaPaddingTop() const
-{
-    return topPadding;
-}
-
-int16_t AbstractDataGraph::getGraphAreaPaddingLeft() const
-{
-    return leftPadding;
-}
-
-int16_t AbstractDataGraph::getGraphAreaPaddingRight() const
-{
-    return rightPadding;
-}
-
-int16_t AbstractDataGraph::getGraphAreaPaddingBottom() const
-{
-    return bottomPadding;
-}
-
-int16_t AbstractDataGraph::getGraphAreaWidth() const
-{
-    return graphArea.getWidth() - (leftPadding + rightPadding);
-}
-
-int16_t AbstractDataGraph::getGraphAreaWidthIncludingPadding() const
-{
-    return graphArea.getWidth();
-}
-
-int16_t AbstractDataGraph::getGraphAreaHeight() const
-{
-    return graphArea.getHeight() - (topPadding + bottomPadding);
-}
-
-int16_t AbstractDataGraph::getGraphAreaHeightIncludingPadding() const
-{
-    return graphArea.getHeight();
-}
-
-void AbstractDataGraph::setGraphRange(int xMin, int xMax, int yMin, int yMax)
-{
-    setGraphRangeX(xMin, xMax);
-    setGraphRangeY(yMin, yMax);
-}
-
-void AbstractDataGraph::setGraphRange(int xMin, int xMax, float yMin, float yMax)
-{
-    setGraphRangeX(xMin, xMax);
-    setGraphRangeY(yMin, yMax);
-}
-
 void AbstractDataGraph::clear()
 {
     usedCapacity = 0;
-}
-
-void AbstractDataGraph::setGapBeforeIndex(int16_t index)
-{
-    gapBeforeIndex = index;
-}
-
-int16_t AbstractDataGraph::getGapBeforeIndex() const
-{
-    return gapBeforeIndex;
+    invalidateGraphArea();
 }
 
 void AbstractDataGraph::addGraphElement(AbstractGraphElement& d)
@@ -215,28 +111,18 @@ void AbstractDataGraph::addBottomElement(AbstractGraphDecoration& d)
     d.setPosition(0, 0, bottomArea.getWidth(), bottomArea.getHeight());
 }
 
-int16_t AbstractDataGraph::getUsedCapacity() const
-{
-    return usedCapacity;
-}
-
-int16_t AbstractDataGraph::getMaxCapacity() const
-{
-    return maxCapacity;
-}
-
 bool AbstractDataGraph::getNearestIndexForScreenXY(int16_t x, int16_t y, int16_t& index)
 {
     if (usedCapacity == 0)
     {
         return false;
     }
-    int32_t bestDist = 0x7FFFFFFF;
+    uint32_t bestDist = 0xFFFFFFFF;
     for (int16_t ix = 0; ix < usedCapacity; ix++)
     {
-        const int16_t xDist = abs(indexToScreenX(ix) - x);
-        const int16_t yDist = abs(indexToScreenY(ix) - y);
-        const int32_t dist = xDist * xDist + yDist * yDist;
+        const int16_t xDist = indexToScreenX(ix) - x;
+        const int16_t yDist = indexToScreenY(ix) - y;
+        const uint32_t dist = xDist * xDist + yDist * yDist;
         if (dist < bestDist)
         {
             index = ix;
@@ -248,62 +134,22 @@ bool AbstractDataGraph::getNearestIndexForScreenXY(int16_t x, int16_t y, int16_t
 
 bool AbstractDataGraph::getNearestIndexForScreenX(int16_t x, int16_t& index) const
 {
+    index = 0;
     if (usedCapacity == 0)
     {
         return false;
     }
-    int16_t indexLow;
-    int16_t indexHigh;
-    xScreenRangeToIndexRange(x, x, indexLow, indexHigh);
-    const int16_t xLow = indexToScreenX(indexLow);
-    const int16_t xHigh = indexToScreenX(indexHigh);
-    index = abs(xLow - x) <= abs(xHigh - x) ? indexLow : indexHigh;
+    uint32_t bestDist = abs(indexToScreenX(index) - x);
+    for (int16_t ix = 1; ix < usedCapacity; ix++)
+    {
+        const uint32_t dist = abs(indexToScreenX(ix) - x);
+        if (dist < bestDist)
+        {
+            index = ix;
+            bestDist = dist;
+        }
+    }
     return true;
-}
-
-int16_t AbstractDataGraph::indexToScreenX(int16_t index) const
-{
-    return indexToScreenXQ5(index).round();
-}
-
-int16_t AbstractDataGraph::indexToScreenY(int16_t index) const
-{
-    return indexToScreenYQ5(index).round();
-}
-
-int AbstractDataGraph::indexToDataPointXAsInt(int16_t index) const
-{
-    return scaled2int(indexToDataPointXScaled(index));
-}
-
-float AbstractDataGraph::indexToDataPointXAsFloat(int16_t index) const
-{
-    return scaled2float(indexToDataPointXScaled(index));
-}
-
-int AbstractDataGraph::indexToDataPointYAsInt(int16_t index) const
-{
-    return scaled2int(indexToDataPointYScaled(index));
-}
-
-float AbstractDataGraph::indexToDataPointYAsFloat(int16_t index) const
-{
-    return scaled2float(indexToDataPointYScaled(index));
-}
-
-int32_t AbstractDataGraph::indexToGlobalIndex(int16_t index) const
-{
-    return (int32_t)index;
-}
-
-void AbstractDataGraph::setClickAction(GenericCallback<const AbstractDataGraph&, const GraphClickEvent&>& callback)
-{
-    clickAction = &callback;
-}
-
-void AbstractDataGraph::setDragAction(GenericCallback<const AbstractDataGraph&, const GraphDragEvent&>& callback)
-{
-    dragAction = &callback;
 }
 
 void AbstractDataGraph::handleClickEvent(const ClickEvent& event)
@@ -320,7 +166,7 @@ void AbstractDataGraph::handleClickEvent(const ClickEvent& event)
         {
             if (clickAction && clickAction->isValid())
             {
-                GraphClickEvent graphClickEvent(index, event);
+                const GraphClickEvent graphClickEvent(index, event);
                 clickAction->execute(*this, graphClickEvent);
             }
         }
@@ -337,7 +183,7 @@ void AbstractDataGraph::handleDragEvent(const DragEvent& event)
         {
             if (dragAction && dragAction->isValid())
             {
-                GraphDragEvent graphDragEvent(index, event);
+                const GraphDragEvent graphDragEvent(index, event);
                 dragAction->execute(*this, graphDragEvent);
             }
         }
@@ -355,11 +201,6 @@ void AbstractDataGraph::invalidateGraphPointAt(int16_t index)
             d = (AbstractGraphElement*)d->getNextSibling();
         }
     }
-}
-
-void AbstractDataGraph::invalidateGraphArea()
-{
-    graphArea.invalidate();
 }
 
 void AbstractDataGraph::invalidateXAxisPointAt(int16_t index)
@@ -380,18 +221,12 @@ void AbstractDataGraph::invalidateXAxisPointAt(int16_t index)
 
 void AbstractDataGraph::invalidateAllXAxisPoints()
 {
-    int min = getGraphRangeXMin();
-    int max = getGraphRangeXMax();
-    if (max < min)
-    {
-        const int16_t tmp = min;
-        min = max;
-        max = tmp;
-    }
-    for (int index = min; index <= max; index++)
+    for (int index = 0; index <= usedCapacity; index++)
     {
         invalidateXAxisPointAt(index);
     }
+    topArea.invalidate();
+    bottomArea.invalidate();
 }
 
 void AbstractDataGraph::updateAreasPosition()
@@ -434,50 +269,7 @@ void AbstractDataGraph::updateAreasPosition()
     invalidate();
 }
 
-void AbstractDataGraph::setGraphRangeScaled(int xMin, int xMax, int yMin, int yMax)
-{
-    setGraphRangeX(xMin, xMax);
-    setGraphRangeYScaled(yMin, yMax);
-}
-
-int AbstractDataGraph::convertToGraphScale(int value, int scale) const
-{
-    if (scale == dataScale)
-    {
-        return value;
-    }
-    return muldiv(value, dataScale, scale);
-}
-
-int AbstractDataGraph::getXAxisScaleScaled() const
-{
-    return dataScale;
-}
-
-int AbstractDataGraph::getXAxisOffsetScaled() const
-{
-    return 0;
-}
-
-AbstractDataGraphWithY::AbstractDataGraphWithY(int16_t capacity, int* values)
-    : AbstractDataGraph(capacity), yValues(values), dataCounter(0), xOffset(0), xScale(1),
-      graphRangeMinX(0), graphRangeMaxX(0), graphRangeMinY(0), graphRangeMaxY(0)
-{
-    assert(capacity > 0);
-    setGraphRangeX(0, capacity - 1);
-}
-
-int16_t AbstractDataGraphWithY::addDataPoint(int y)
-{
-    return addDataPointScaled(y * dataScale);
-}
-
-int16_t AbstractDataGraphWithY::addDataPoint(float y)
-{
-    return addDataPointScaled(float2scaled(y));
-}
-
-void AbstractDataGraphWithY::setGraphRangeX(int min, int max)
+void AbstractDataGraph::setGraphRangeXScaled(int min, int max)
 {
     assert(min != max);
     if (max < min)
@@ -496,211 +288,7 @@ void AbstractDataGraphWithY::setGraphRangeX(int min, int max)
     }
 }
 
-void AbstractDataGraphWithY::setGraphRangeY(int min, int max)
-{
-    setGraphRangeYScaled(int2scaled(min), int2scaled(max));
-}
-
-void AbstractDataGraphWithY::setGraphRangeY(float min, float max)
-{
-    setGraphRangeYScaled(float2scaled(min), float2scaled(max));
-}
-
-int AbstractDataGraphWithY::getGraphRangeXMin() const
-{
-    return graphRangeMinX;
-}
-
-int AbstractDataGraphWithY::getGraphRangeXMax() const
-{
-    return graphRangeMaxX;
-}
-
-int AbstractDataGraphWithY::getGraphRangeYMinAsInt() const
-{
-    return scaled2int(graphRangeMinY);
-}
-
-float AbstractDataGraphWithY::getGraphRangeYMinAsFloat() const
-{
-    return scaled2float(graphRangeMinY);
-}
-
-int AbstractDataGraphWithY::getGraphRangeYMaxAsInt() const
-{
-    return scaled2int(graphRangeMaxY);
-}
-
-float AbstractDataGraphWithY::getGraphRangeYMaxAsFloat() const
-{
-    return scaled2float(graphRangeMaxY);
-}
-
-void AbstractDataGraphWithY::setGraphRangeYAuto(bool showXaxis, int margin)
-{
-    if (usedCapacity > 0)
-    {
-        int loX = getGraphRangeXMin();
-        int hiX = getGraphRangeXMax();
-        if (loX > hiX)
-        {
-            const int16_t tmp = loX;
-            loX = hiX;
-            hiX = tmp;
-        }
-        loX = MAX(loX, 0);
-        hiX = MIN(hiX, usedCapacity);
-        if (loX < usedCapacity && hiX >= 0)
-        {
-            int loYnew = showXaxis ? margin : yValues[loX];
-            int hiYnew = showXaxis ? -margin : yValues[loX];
-            for (int16_t i = loX; i < hiX; i++)
-            {
-                int y = yValues[i];
-                if (loYnew > y)
-                {
-                    loYnew = y;
-                }
-                if (hiYnew < y)
-                {
-                    hiYnew = y;
-                }
-            }
-            loYnew -= margin;
-            hiYnew += margin;
-            if (loYnew != hiYnew)
-            {
-                setGraphRangeYScaled(loYnew, hiYnew);
-            }
-        }
-    }
-}
-
-void AbstractDataGraphWithY::setScale(int scale)
-{
-    const int oldScale = getScale();
-    AbstractDataGraph::setScale(scale);
-    xScale = convertToGraphScale(xScale, oldScale);
-    xOffset = convertToGraphScale(xOffset, oldScale);
-}
-
-void AbstractDataGraphWithY::setXAxisScale(int scale)
-{
-    setXAxisScaleScaled(scale * dataScale);
-}
-
-void AbstractDataGraphWithY::setXAxisScale(float scale)
-{
-    setXAxisScaleScaled(float2scaled(scale));
-}
-
-int AbstractDataGraphWithY::getXAxisScaleAsInt() const
-{
-    return scaled2int(getXAxisScaleScaled());
-}
-
-float AbstractDataGraphWithY::getXAxisScaleAsFloat() const
-{
-    return scaled2float(getXAxisScaleScaled());
-}
-
-void AbstractDataGraphWithY::setXAxisOffset(int offset)
-{
-    setXAxisOffsetScaled(offset * dataScale);
-}
-
-void AbstractDataGraphWithY::setXAxisOffset(float offset)
-{
-    setXAxisOffsetScaled(float2scaled(offset));
-}
-
-int AbstractDataGraphWithY::getXAxisOffsetAsInt() const
-{
-    return scaled2int(getXAxisOffsetScaled());
-}
-
-float AbstractDataGraphWithY::getXAxisOffsetAsFloat() const
-{
-    return scaled2float(getXAxisOffsetScaled());
-}
-
-int16_t AbstractDataGraphWithY::addDataPointScaled(int y)
-{
-    beforeAddValue();
-    dataCounter++;
-    return addValue(y);
-}
-
-void AbstractDataGraphWithY::beforeAddValue()
-{
-}
-
-int16_t AbstractDataGraphWithY::realIndex(int16_t index) const
-{
-    return index;
-}
-
-int AbstractDataGraphWithY::indexToDataPointXScaled(int16_t index) const
-{
-    return (indexToGlobalIndex(index) * getXAxisScaleScaled()) + getXAxisOffsetScaled();
-}
-
-int AbstractDataGraphWithY::indexToDataPointYScaled(int16_t index) const
-{
-    return yValues[realIndex(index)];
-}
-
-bool AbstractDataGraphWithY::xScreenRangeToIndexRange(int16_t xLo, int16_t xHi, int16_t& indexLow, int16_t& indexHigh) const
-{
-    if (usedCapacity == 0)
-    {
-        indexLow = indexHigh = -1;
-        return false;
-    }
-    if (getGraphAreaWidth() == 1)
-    {
-        indexLow = 0;
-        indexHigh = usedCapacity - 1;
-        return true;
-    }
-    CWRUtil::Q5 loQ5 = CWRUtil::muldivQ5(CWRUtil::toQ5(xLo - leftPadding), CWRUtil::Q5(graphRangeMaxX - graphRangeMinX), CWRUtil::Q5(getGraphAreaWidth() - 1)) + CWRUtil::toQ5(graphRangeMinX);
-    CWRUtil::Q5 hiQ5 = CWRUtil::muldivQ5(CWRUtil::toQ5(xHi - leftPadding), CWRUtil::Q5(graphRangeMaxX - graphRangeMinX), CWRUtil::Q5(getGraphAreaWidth() - 1)) + CWRUtil::toQ5(graphRangeMinX);
-    if (loQ5 > hiQ5)
-    {
-        const CWRUtil::Q5 tmp = loQ5;
-        loQ5 = hiQ5;
-        hiQ5 = tmp;
-    }
-    const int low = loQ5.to<int>();
-    const int high = hiQ5.ceil();
-    const int lowValid = 0;
-    const int highValid = usedCapacity - 1;
-    if (high < lowValid)
-    {
-        indexLow = indexHigh = lowValid;
-        return false;
-    }
-    if (low > highValid)
-    {
-        indexLow = indexHigh = highValid;
-        return false;
-    }
-    indexLow = MAX(lowValid, low);
-    indexHigh = MIN(highValid, high);
-    return true;
-}
-
-void AbstractDataGraphWithY::setXAxisScaleScaled(int scale)
-{
-    xScale = scale;
-}
-
-int AbstractDataGraphWithY::getXAxisScaleScaled() const
-{
-    return xScale;
-}
-
-void AbstractDataGraphWithY::setGraphRangeYScaled(int min, int max)
+void AbstractDataGraph::setGraphRangeYScaled(int min, int max)
 {
     assert(min != max);
     if (max < min)
@@ -719,45 +307,294 @@ void AbstractDataGraphWithY::setGraphRangeYScaled(int min, int max)
     }
 }
 
-int AbstractDataGraphWithY::getGraphRangeYMinScaled() const
+int AbstractDataGraph::convertToNewScale(int value, int oldScale, int newScale)
 {
-    return graphRangeMinY;
+    if (oldScale == newScale)
+    {
+        return value;
+    }
+    return muldiv(value, newScale, oldScale);
 }
 
-int AbstractDataGraphWithY::getGraphRangeYMaxScaled() const
+int16_t DynamicDataGraph::addDataPointScaled(int y)
 {
-    return graphRangeMaxY;
+    beforeAddValue();
+    dataCounter++;
+    return addValue(y);
 }
 
-void AbstractDataGraphWithY::setXAxisOffsetScaled(int offset)
+void DynamicDataGraph::setGraphRangeYAutoScaled(bool showXaxis, int margin)
 {
-    xOffset = offset;
+    if (usedCapacity == 0)
+    {
+        return;
+    }
+    int16_t indexMin = (int16_t)getGraphRangeXMin();
+    int16_t indexMax = (int16_t)getGraphRangeXMax();
+    if (indexMin > indexMax)
+    {
+        const int tmp = indexMin;
+        indexMin = indexMax;
+        indexMax = tmp;
+    }
+    indexMin = MAX(indexMin, 0);
+    indexMax = MIN(indexMax, usedCapacity);
+    if (indexMin < usedCapacity && indexMax >= 0)
+    {
+        int yMin = showXaxis ? margin : yValues[indexMin];
+        int yMax = showXaxis ? -margin : yValues[indexMin];
+        for (int i = indexMin; i < indexMax; i++)
+        {
+            const int y = yValues[i];
+            if (yMin > y)
+            {
+                yMin = y;
+            }
+            if (yMax < y)
+            {
+                yMax = y;
+            }
+        }
+        yMin -= margin;
+        yMax += margin;
+        if (yMin != yMax)
+        {
+            setGraphRangeYScaled(yMin, yMax);
+        }
+    }
 }
 
-int AbstractDataGraphWithY::getXAxisOffsetScaled() const
+bool DynamicDataGraph::xScreenRangeToIndexRange(int16_t xMin, int16_t xMax, int16_t& indexMin, int16_t& indexMax) const
 {
-    return xOffset;
+    if (usedCapacity == 0)
+    {
+        indexMin = indexMax = -1;
+        return false;
+    }
+    if (getGraphAreaWidth() <= 1)
+    {
+        indexMin = 0;
+        indexMax = usedCapacity - 1;
+        return true;
+    }
+    CWRUtil::Q5 xQ5Min = CWRUtil::muldivQ5(CWRUtil::toQ5(xMin - leftPadding), CWRUtil::Q5(scaled2intX(graphRangeMaxX - graphRangeMinX)), CWRUtil::Q5(getGraphAreaWidth() - 1)) + CWRUtil::toQ5(scaled2intX(graphRangeMinX));
+    CWRUtil::Q5 xQ5Max = CWRUtil::muldivQ5(CWRUtil::toQ5(xMax - leftPadding), CWRUtil::Q5(scaled2intX(graphRangeMaxX - graphRangeMinX)), CWRUtil::Q5(getGraphAreaWidth() - 1)) + CWRUtil::toQ5(scaled2intX(graphRangeMinX));
+    if (xQ5Min > xQ5Max)
+    {
+        const CWRUtil::Q5 tmp = xQ5Min;
+        xQ5Min = xQ5Max;
+        xQ5Max = tmp;
+    }
+    indexMin = xQ5Min.to<int16_t>(); // X is also index in AbstractDataGraphWithY
+    indexMax = xQ5Max.ceil();
+    if (indexMax < 0)
+    {
+        indexMin = indexMax = 0;
+        return false;
+    }
+    if (indexMin > usedCapacity - 1)
+    {
+        indexMin = indexMax = usedCapacity - 1;
+        return false;
+    }
+    indexMin = MAX(0, indexMin);
+    indexMax = MIN(usedCapacity - 1, indexMax);
+    return true;
 }
 
-CWRUtil::Q5 AbstractDataGraphWithY::valueToScreenXQ5(int x) const
+void DynamicDataGraph::setScaleX(int scale, bool updateData /*= false*/)
 {
-    return CWRUtil::muldiv_toQ5(x - graphRangeMinX, getGraphAreaWidth() - 1, graphRangeMaxX - graphRangeMinX) + CWRUtil::toQ5(leftPadding);
+    const int oldScale = getScaleX();
+    if (scale != oldScale)
+    {
+        setGraphRangeXScaled(convertToNewScale(graphRangeMinX, oldScale, scale), convertToNewScale(graphRangeMaxX, oldScale, scale));
+        xAxisFactor = convertToNewScale(xAxisFactor, oldScale, scale);
+        xAxisOffset = convertToNewScale(xAxisOffset, oldScale, scale);
+        AbstractDataGraph::setScaleX(scale, updateData);
+    }
 }
 
-CWRUtil::Q5 AbstractDataGraphWithY::valueToScreenYQ5(int y) const
+void DynamicDataGraph::setScaleY(int scale, bool updateData /*= false*/)
 {
-    const int16_t graphAreaHeight = getGraphAreaHeight();
-    return CWRUtil::toQ5(graphAreaHeight + topPadding - 1) - CWRUtil::muldiv_toQ5(y - graphRangeMinY, graphAreaHeight - 1, graphRangeMaxY - graphRangeMinY);
+    if (updateData)
+    {
+        const int oldScale = getScaleY();
+        for (int16_t index = 0; index < usedCapacity; index++)
+        {
+            yValues[index] = convertToNewScale(yValues[index], oldScale, scale);
+        }
+    }
+    AbstractDataGraph::setScaleY(scale);
 }
 
-CWRUtil::Q5 AbstractDataGraphWithY::indexToScreenXQ5(int16_t index) const
+void StaticDataGraph::setScaleX(int scale, bool updateData /*= false*/)
 {
-    return valueToScreenXQ5(index);
+    if (updateData)
+    {
+        const int oldScale = getScaleX();
+        for (int16_t index = 0; index < usedCapacity; index++)
+        {
+            xValues[index] = convertToNewScale(xValues[index], oldScale, scale);
+        }
+    }
+    AbstractDataGraph::setScaleX(scale);
 }
 
-CWRUtil::Q5 AbstractDataGraphWithY::indexToScreenYQ5(int16_t index) const
+void StaticDataGraph::setScaleY(int scale, bool updateData /*= false*/)
 {
-    return valueToScreenYQ5(yValues[realIndex(index)]);
+    if (updateData)
+    {
+        const int oldScale = getScaleY();
+        for (int16_t index = 0; index < usedCapacity; index++)
+        {
+            yValues[index] = convertToNewScale(yValues[index], oldScale, scale);
+        }
+    }
+    AbstractDataGraph::setScaleY(scale);
+}
+
+void StaticDataGraph::setGraphRangeXAutoScaled(bool showYaxis, int margin)
+{
+    if (usedCapacity == 0)
+    {
+        return;
+    }
+    int xMin = xValues[0];                // First x value is the lowest
+    int xMax = xValues[usedCapacity - 1]; // Last x value is the highest
+    if (showYaxis)
+    {
+        // The y axis (x=0) must be shown, so make sure 0 is included after subtracting/adding the margin
+        xMin = MIN(xMin, margin);
+        xMax = MAX(xMax, -margin);
+    }
+    xMin -= margin;
+    xMax += margin;
+    if (xMin != xMax)
+    {
+        setGraphRangeXScaled(xMin, xMax);
+    }
+}
+
+void StaticDataGraph::setGraphRangeYAutoScaled(bool showXaxis /*= true*/, int margin /*= 0*/)
+{
+    if (usedCapacity == 0)
+    {
+        return;
+    }
+    int xValueMin = getGraphRangeXMinScaled(); // Get shown x range
+    int xValueMax = getGraphRangeXMaxScaled();
+    if (xValueMin > xValueMax)
+    {
+        // Swap so min<=max.
+        const int16_t tmp = xValueMin;
+        xValueMin = xValueMax;
+        xValueMax = tmp;
+    }
+    int index = 0;
+    while (xValues[index] < xValueMin && index < usedCapacity)
+    {
+        // Skip all indices that have x outside visible area
+        index++;
+    }
+    if (xValues[index] > xValueMax)
+    {
+        // No x values are in the visible area
+        return;
+    }
+    int yMin = yValues[index++]; // The index'th value must be visible
+    int yMax = yMin;
+    // Go through all points where x is in the visible range
+    while (xValues[index] < xValueMax && index < usedCapacity)
+    {
+        const int y = yValues[index++];
+        yMin = MIN(yMin, y);
+        yMax = MAX(yMax, y);
+    }
+    if (showXaxis)
+    {
+        // The x axis (y=0) must be shown, so make sure 0 is included after subtracting/adding the margin
+        yMin = MIN(yMin, margin);
+        yMax = MAX(yMax, -margin);
+    }
+    yMin -= margin;
+    yMax += margin;
+    if (yMin != yMax)
+    {
+        setGraphRangeYScaled(yMin, yMax);
+    }
+}
+
+int16_t StaticDataGraph::deleteValue(int xvalue)
+{
+    for (int index = 0; index < usedCapacity; index++)
+    {
+        if (xValues[index] == xvalue)
+        {
+            return deleteIndex(index);
+        }
+    }
+    return -1;
+}
+
+int16_t StaticDataGraph::deleteIndex(int index)
+{
+    assert(index >= 0 && index < usedCapacity);
+    invalidateGraphPointAt(index);
+    usedCapacity--;
+    for (int i = index; i < usedCapacity; i++)
+    {
+        xValues[i] = xValues[i + 1];
+        yValues[i] = yValues[i + 1];
+    }
+    return index;
+}
+
+bool StaticDataGraph::xScreenRangeToIndexRange(int16_t xMin, int16_t xMax, int16_t& indexMin, int16_t& indexMax) const
+{
+    if (usedCapacity == 0)
+    {
+        indexMin = indexMax = -1;
+        return false;
+    }
+    if (getGraphAreaWidth() <= 1)
+    {
+        indexMin = 0;
+        indexMax = usedCapacity - 1;
+        return true;
+    }
+    CWRUtil::Q5 xQ5Min = CWRUtil::muldivQ5(CWRUtil::toQ5(xMin - leftPadding), CWRUtil::Q5(graphRangeMaxX - graphRangeMinX), CWRUtil::Q5(getGraphAreaWidth() - 1)) + CWRUtil::toQ5(graphRangeMinX);
+    CWRUtil::Q5 xQ5Max = CWRUtil::muldivQ5(CWRUtil::toQ5(xMax - leftPadding), CWRUtil::Q5(graphRangeMaxX - graphRangeMinX), CWRUtil::Q5(getGraphAreaWidth() - 1)) + CWRUtil::toQ5(graphRangeMinX);
+    if (xQ5Min > xQ5Max)
+    {
+        const CWRUtil::Q5 tmp = xQ5Min;
+        xQ5Min = xQ5Max;
+        xQ5Max = tmp;
+    }
+    const int xValueMin = xQ5Min.to<int>(); // These are REAL x values
+    const int xValueMax = xQ5Max.ceil();
+    indexMin = -1;
+    while (indexMin < usedCapacity - 1 && xValues[indexMin + 1] <= xValueMin)
+    {
+        indexMin++;
+    }
+    indexMax = usedCapacity;
+    while (indexMax > 0 && xValues[indexMax - 1] >= xValueMax)
+    {
+        indexMax--;
+    }
+    if (indexMax <= 0)
+    {
+        indexMin = indexMax = 0;
+        return false;
+    }
+    if (indexMin >= usedCapacity - 1)
+    {
+        indexMin = indexMax = usedCapacity - 1;
+        return false;
+    }
+    indexMin = MAX(0, indexMin);
+    indexMax = MIN(usedCapacity - 1, indexMax);
+    return true;
 }
 
 } // namespace touchgfx

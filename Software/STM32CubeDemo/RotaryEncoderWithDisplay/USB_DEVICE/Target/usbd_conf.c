@@ -847,4 +847,3 @@ static void SystemClockConfig_Resume(void)
 }
 /* USER CODE END 5 */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

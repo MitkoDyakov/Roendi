@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,8 +18,8 @@
 #ifndef TOUCHGFX_BUTTONWITHICON_HPP
 #define TOUCHGFX_BUTTONWITHICON_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Bitmap.hpp>
+#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/widgets/Button.hpp>
 
 namespace touchgfx
@@ -37,7 +37,7 @@ class ButtonWithIcon : public Button
 public:
     ButtonWithIcon();
 
-#ifdef __IAR_SYSTEMS_ICC__ // Only include in IAR compilation
+#ifdef __IAR_SYSTEMS_ICC__    // Only include in IAR compilation
 #pragma diag_suppress = Pe997 // Suppress warning for intentional virtual function override
 #elif defined(__ARMCC_VERSION) && (__ARMCC_VERSION < 6000000)
 #pragma diag_suppress 997
@@ -153,6 +153,11 @@ protected:
     Bitmap iconPressed;  ///< Icon to display when button is pressed.
     int16_t iconX;       ///< x coordinate offset for icon.
     int16_t iconY;       ///< y coordinate offset for icon.
+
+private:
+    virtual void setBitmaps(const Bitmap& /*bitmapReleased*/, const Bitmap& /*bitmapPressed*/)
+    {
+    }
 };
 
 } // namespace touchgfx

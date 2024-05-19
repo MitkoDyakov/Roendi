@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextDatabase xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="texts.xsd" Version="4.20.0">
+  <Languages>
+    <Language Id="GB" />
+    <Language Id="AR" />
+  </Languages>
+  <Texts>
+    <TextGroup Id="Texts1">
+      <Text Id="Id1" TypographyId="Default" Alignment="Left">
+        <Translation Language="GB">main page</Translation>
+        <Translation Language="AR" Alignment="Right">الصفحة الرئيسية</Translation>
+      </Text>
+      <Text Id="Id2" TypographyId="Default" Alignment="Left">
+        <Translation Language="GB">title</Translation>
+        <Translation Language="AR" Alignment="Right">لقب</Translation>
+      </Text>
+    </TextGroup>
+  </Texts>
+  <Typographies>
+    <Typography Id="Default" Font="verdana.ttf" Size="20" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?">
+      <LanguageSetting Language="AR" Font="helvetica.ttf" Size="14" Bpp="4" Direction="RTL" />
+    </Typography>
+  </Typographies>
+</TextDatabase>

@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -10,107 +10,119 @@
 *
 *******************************************************************************/
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Drawable.hpp>
-#include <touchgfx/Font.hpp>
-#include <touchgfx/TypedText.hpp>
-#include <touchgfx/Unicode.hpp>
 #include <touchgfx/hal/HAL.hpp>
 #include <touchgfx/lcd/LCD.hpp>
-#include <touchgfx/widgets/graph/AbstractDataGraph.hpp>
 #include <touchgfx/widgets/graph/GraphLabels.hpp>
 
 namespace touchgfx
 {
-GraphLabelsBase::GraphLabelsBase()
-    : AbstractGraphDecoration(),
-      labelInterval(0), labelTypedText(TypedText(TYPED_TEXT_INVALID)), labelRotation(TEXT_ROTATE_0), labelDecimals(0), labelDecimalPoint('.'),
-      majorLabel(0)
+
+void GraphLabelsBase::draw(const Rect& invalidatedArea) const
 {
+    if (!labelTypedText.hasValidId())
+    {
+        return;
+    }
+    const Font* fontToDraw = labelTypedText.getFont();
+    if (!fontToDraw)
+    {
+        return;
+    }
+
+    const AbstractDataGraph* graph = getGraph();
+    const uint8_t a = LCD::div255(getAlpha() * graph->getAlpha());
+    if (a == 0)
+    {
+        return;
+    }
+
+    const int minorInterval = getCorrectlyScaledLabelInterval(graph);
+    const int majorInterval = getCorrectlyScaledMajorInterval(graph);
+
+    if (majorInterval == 0 && minorInterval == 0)
+    {
+        drawString(invalidatedArea, fontToDraw, graph, 0, 0, a);
+    }
+    else if (minorInterval > 0)
+    {
+        int rangeMin = getGraphRangeMinScaled(graph);
+        int rangeMax = getGraphRangeMaxScaled(graph);
+        if (rangeMin > rangeMax)
+        {
+            const int tmp = rangeMin;
+            rangeMin = rangeMax;
+            rangeMax = tmp;
+        }
+        if ((rangeMax - rangeMin) / minorInterval > 100)
+        {
+            return; // Too many labels
+        }
+        drawIndexRange(invalidatedArea, fontToDraw, graph, rangeMin, rangeMax, minorInterval, majorInterval, a);
+    }
 }
 
-int GraphLabelsBase::getCorrectlyScaledMajorInterval(const AbstractDataGraph* graph) const
+void GraphLabelsBase::drawIndexRange(const Rect& invalidatedArea, const Font* fontToDraw, const AbstractDataGraph* graph, const int rangeMin, const int rangeMax, const int minorInterval, const int majorInterval, const uint8_t a) const
 {
-    return majorLabel == 0 ? 0 : convertToGraphScale(graph, majorLabel->getIntervalScaled(), majorLabel->getScale());
-}
+    if (minorInterval == 0)
+    {
+        if ((0 >= rangeMin && 0 <= rangeMax) || (0 >= rangeMax && 0 <= rangeMin))
+        {
+            drawString(invalidatedArea, fontToDraw, graph, 0, 0, a);
+        }
+        return;
+    }
 
-void GraphLabelsBase::setIntervalScaled(int interval)
-{
-    labelInterval = abs(interval);
-}
-
-void GraphLabelsBase::setInterval(int interval)
-{
-    setIntervalScaled(abs(interval) * dataScale);
-}
-
-void GraphLabelsBase::setInterval(float interval)
-{
-    setIntervalScaled(AbstractDataGraph::float2scaled(abs(interval), dataScale));
-}
-
-int GraphLabelsBase::getIntervalScaled() const
-{
-    return labelInterval;
-}
-
-int GraphLabelsBase::getIntervalAsInt() const
-{
-    return AbstractDataGraph::scaled2int(getIntervalScaled(), dataScale);
-}
-
-float GraphLabelsBase::getIntervalAsFloat() const
-{
-    return AbstractDataGraph::scaled2float(getIntervalScaled(), dataScale);
-}
-
-void GraphLabelsBase::setMajorLabel(const GraphLabelsBase& major)
-{
-    majorLabel = &major;
-}
-
-void GraphLabelsBase::setLabelTypedText(const TypedText& typedText)
-{
-    labelTypedText = typedText;
-}
-
-TypedText GraphLabelsBase::getLabelTypedText() const
-{
-    return labelTypedText;
-}
-
-void GraphLabelsBase::setLabelRotation(TextRotation rotation)
-{
-    labelRotation = rotation;
-}
-
-TextRotation GraphLabelsBase::getLabelRotation() const
-{
-    return labelRotation;
-}
-
-void GraphLabelsBase::setLabelDecimals(uint16_t decimals)
-{
-    labelDecimals = decimals;
-}
-
-uint16_t GraphLabelsBase::getLabelDecimals() const
-{
-    return labelDecimals;
-}
-
-void GraphLabelsBase::setLabelDecimalPoint(Unicode::UnicodeChar decimalPoint)
-{
-    labelDecimalPoint = decimalPoint;
-}
-
-Unicode::UnicodeChar GraphLabelsBase::getLabelDecimalPoint() const
-{
-    return labelDecimalPoint;
-}
-
-void GraphLabelsBase::invalidateGraphPointAt(int16_t index)
-{
+    const int minorLo = (int)(rangeMin / minorInterval) - 1;
+    const int minorHi = (int)(rangeMax / minorInterval) + 1;
+    if (majorInterval == 0)
+    {
+        for (int minorIndex = minorLo; minorIndex != minorHi + 1; minorIndex++)
+        {
+            const int minorValue = (int)(minorInterval * minorIndex);
+            if ((minorValue >= rangeMin && minorValue <= rangeMax) || (minorValue >= rangeMax && minorValue <= rangeMin))
+            {
+                drawString(invalidatedArea, fontToDraw, graph, minorValue, labelInterval * minorIndex, a);
+            }
+        }
+    }
+    else
+    {
+        const int majorLo = (int)(rangeMin / majorInterval) - 1;
+        const int majorHi = (int)(rangeMax / majorInterval) + 1;
+        int majorIndex = majorLo;
+        int majorValue = majorInterval * majorIndex;
+        int minorIndex = minorLo;
+        int minorValue = minorInterval * minorIndex;
+        for (;;)
+        {
+            // Draw strings up to the major
+            while (minorValue < majorValue)
+            {
+                if ((minorValue >= rangeMin && minorValue <= rangeMax) || (minorValue >= rangeMax && minorValue <= rangeMin))
+                {
+                    drawString(invalidatedArea, fontToDraw, graph, minorValue, labelInterval * minorIndex, a);
+                }
+                minorIndex++;
+                minorValue += minorInterval;
+            }
+            // Advance minor past the major we are about to draw
+            while (minorValue <= majorValue)
+            {
+                minorIndex++;
+                minorValue += minorInterval;
+            }
+            if (majorValue < minorValue)
+            {
+                majorIndex++;
+                if (majorIndex == majorHi + 1)
+                {
+                    break;
+                }
+                majorValue += majorInterval;
+            }
+        }
+    }
 }
 
 void GraphLabelsBase::formatLabel(Unicode::UnicodeChar* buffer, int16_t bufferSize, int label, int decimals, Unicode::UnicodeChar decimalPoint, int scale) const
@@ -128,11 +140,11 @@ void GraphLabelsBase::formatLabel(Unicode::UnicodeChar* buffer, int16_t bufferSi
     else if (decimals > 0)
     {
         Unicode::snprintf(buffer + length, bufferSize - length, "%d", label / scale);
-        int length = Unicode::strlen(buffer);
+        length = Unicode::strlen(buffer);
         if (length < bufferSize - 1)
         {
             buffer[length++] = decimalPoint;
-            int32_t remainder = label % scale;
+            int remainder = label % scale;
             for (int i = 0; i < decimals && length < bufferSize - 1; i++)
             {
                 remainder *= 10;
@@ -145,56 +157,6 @@ void GraphLabelsBase::formatLabel(Unicode::UnicodeChar* buffer, int16_t bufferSi
                 remainder %= scale;
             }
             buffer[length] = (Unicode::UnicodeChar)0;
-        }
-    }
-}
-
-void GraphLabelsX::draw(const Rect& invalidatedArea) const
-{
-    if (!labelTypedText.hasValidId())
-    {
-        return;
-    }
-    const Font* fontToDraw = labelTypedText.getFont();
-    if (!fontToDraw)
-    {
-        return;
-    }
-
-    const AbstractDataGraph* graph = getGraph();
-    const uint8_t alpha = LCD::div255(getAlpha() * graph->getAlpha());
-    if (alpha == 0)
-    {
-        return;
-    }
-
-    const int minorInterval = getIntervalAsInt();
-    const int majorInterval = (majorLabel == 0) ? 0 : majorLabel->getIntervalAsInt();
-
-    if (minorInterval == 0 && majorInterval == 0)
-    {
-        drawString(invalidatedArea, fontToDraw, graph, 0, alpha);
-    }
-    else if (minorInterval > 0)
-    {
-        int rangeMin = graph->getGraphRangeXMin();
-        int rangeMax = graph->getGraphRangeXMax();
-        if (rangeMin > rangeMax)
-        {
-            const int tmp = rangeMin;
-            rangeMin = rangeMax;
-            rangeMax = tmp;
-        }
-
-        const int16_t gapIndex = graph->getGapBeforeIndex();
-        if (gapIndex <= 0 || gapIndex <= rangeMin || gapIndex > rangeMax)
-        {
-            drawIndexRange(invalidatedArea, fontToDraw, graph, rangeMin, rangeMax, alpha);
-        }
-        else
-        {
-            drawIndexRange(invalidatedArea, fontToDraw, graph, rangeMin, (int)gapIndex - 1, alpha);
-            drawIndexRange(invalidatedArea, fontToDraw, graph, (int)gapIndex, rangeMax, alpha);
         }
     }
 }
@@ -212,134 +174,79 @@ void GraphLabelsX::invalidateGraphPointAt(int16_t index)
     }
 
     const AbstractDataGraph* graph = getGraph();
-    const uint8_t alpha = LCD::div255(getAlpha() * graph->getAlpha());
-    if (alpha == 0)
+    const uint8_t a = LCD::div255(getAlpha() * graph->getAlpha());
+    if (a == 0)
     {
         return;
     }
 
-    const int minorInterval = getIntervalAsInt();
-    const int majorInterval = (majorLabel == 0) ? 0 : majorLabel->getIntervalAsInt();
+    const int scaledIndex = graph->int2scaledX(index);
+    const int minorInterval = getCorrectlyScaledLabelInterval(graph);
+    const int majorInterval = getCorrectlyScaledMajorInterval(graph);
 
-    bool isOnMinor = (minorInterval > 0 && index == minorInterval * (int)(index / minorInterval));
-    bool isOnMajor = (majorInterval > 0 && index == majorInterval * (int)(index / majorInterval));
-    if ((majorInterval == 0 && minorInterval == 0 && index == 0) || (isOnMinor && !isOnMajor))
+    const bool isOnMinor = (minorInterval > 0 && scaledIndex == minorInterval * (int)(scaledIndex / minorInterval));
+    const bool isOnMajor = (majorInterval > 0 && scaledIndex == majorInterval * (int)(scaledIndex / majorInterval));
+    if ((majorInterval == 0 && minorInterval == 0 && scaledIndex == 0) || (isOnMinor && !isOnMajor))
     {
         Unicode::UnicodeChar wildcard[20];
-        formatLabel(wildcard, 20, (graph->indexToGlobalIndex((int)index) * getGraphXAxisScaleScaled(graph)) + getGraphXAxisOffsetScaled(graph), labelDecimals, labelDecimalPoint, graph->getScale());
+        const int labelScaled = (minorInterval == 0) ? 0 : (scaledIndex / minorInterval) * labelInterval;
+        formatLabel(wildcard, 20, getIndexToXAxis(graph, scaledIndex, labelScaled), labelDecimals, labelDecimalPoint, dataScale);
         // Adjust to make label centered
-        uint16_t labelWidth;
+        int16_t labelWidth;
+        const Unicode::UnicodeChar* text = labelTypedText.getText();
         if (labelRotation == TEXT_ROTATE_0 || labelRotation == TEXT_ROTATE_180)
         {
-            labelWidth = fontToDraw->getStringWidth(labelTypedText.getText(), wildcard);
+            labelWidth = fontToDraw->getStringWidth(text, wildcard);
         }
         else
         {
-            labelWidth = fontToDraw->getMaxTextHeight(labelTypedText.getText(), wildcard) * fontToDraw->getNumberOfLines(labelTypedText.getText(), wildcard) + fontToDraw->getSpacingAbove(labelTypedText.getText(), wildcard);
+            // Get full height for all lines, except the last line for which we "replace" the part under
+            // the baseline with the 'spacing above'.
+            labelWidth = fontToDraw->getHeight() * fontToDraw->getNumberOfLines(text, wildcard) + fontToDraw->getSpacingAbove(text, wildcard);
         }
-        Rect dirty((graph->getGraphAreaMarginLeft() + valueToScreenXQ5(graph, index).round()) - labelWidth / 2, 0, labelWidth, getHeight());
+        const int16_t offset = (labelRotation == TEXT_ROTATE_0 || labelRotation == TEXT_ROTATE_90) ? (labelWidth / 2) : ((labelWidth + 1) / 2);
+        Rect dirty((graph->getGraphAreaMarginLeft() + valueToScreenXQ5(graph, scaledIndex).round()) - offset, 0, labelWidth, getHeight());
         invalidateRect(dirty);
     }
 }
 
-void GraphLabelsX::drawIndexRange(const Rect& invalidatedArea, const Font* fontToDraw, const AbstractDataGraph* graph, int indexLow, int indexHigh, const uint8_t alpha) const
+void GraphLabelsX::drawIndexRange(const Rect& invalidatedArea, const Font* fontToDraw, const AbstractDataGraph* graph, const int rangeMin, const int rangeMax, const int minorInterval, const int majorInterval, const uint8_t a) const
 {
-    if (indexLow > indexHigh)
+    const int16_t gapIndex = graph->getGapBeforeIndex();
+    if (gapIndex <= 0 || gapIndex <= rangeMin || gapIndex > rangeMax)
     {
-        const int tmp = indexLow;
-        indexLow = indexHigh;
-        indexHigh = tmp;
-    }
-    // Now indexHigh is higher than indexLow
-
-    const int minorInterval = getIntervalAsInt();
-    if (minorInterval > 0 && abs(indexHigh - indexLow) / minorInterval > 100)
-    {
-        return; // Too many labels
-    }
-
-    if (minorInterval == 0)
-    {
-        if ((0 >= indexLow && 0 <= indexHigh) || (0 >= indexHigh && 0 <= indexLow))
-        {
-            drawString(invalidatedArea, fontToDraw, graph, 0, alpha);
-        }
-        return;
-    }
-    const int majorInterval = (majorLabel == 0) ? 0 : majorLabel->getIntervalAsInt();
-
-    const int minorLo = (int)(indexLow / minorInterval) - 1;
-    const int minorHi = (int)(indexHigh / minorInterval) + 1;
-
-    if (majorInterval == 0)
-    {
-        for (int minorIndex = minorLo; minorIndex != minorHi + 1; minorIndex++)
-        {
-            const int index = (int)(minorInterval * minorIndex);
-            if ((index >= indexLow && index <= indexHigh) || (index >= indexHigh && index <= indexLow))
-            {
-                drawString(invalidatedArea, fontToDraw, graph, index, alpha);
-            }
-        }
+        GraphLabelsBase::drawIndexRange(invalidatedArea, fontToDraw, graph, rangeMin, rangeMax, minorInterval, majorInterval, a);
     }
     else
     {
-        const int majorLo = (int)(indexLow / majorInterval) - 1;
-        const int majorHi = (int)(indexHigh / majorInterval) + 1;
-        int majorIndex = majorLo;
-        int32_t majorValue = majorInterval * majorLo;
-        int32_t minorValue = minorInterval * minorLo;
-        for (;;)
-        {
-            // Draw strings lines up to the major line
-            while (minorValue < majorValue)
-            {
-                if ((minorValue >= indexLow && minorValue <= indexHigh) || (minorValue >= indexHigh && minorValue <= indexLow))
-                {
-                    drawString(invalidatedArea, fontToDraw, graph, minorValue, alpha);
-                }
-                minorValue += minorInterval;
-            }
-            // Advance minor past the major line we are about to draw
-            while (minorValue <= majorValue)
-            {
-                minorValue += minorInterval;
-            }
-            if (majorValue < minorValue)
-            {
-                majorIndex++;
-                if (majorIndex == majorHi + 1)
-                {
-                    break;
-                }
-                majorValue += majorInterval;
-            }
-        }
+        GraphLabelsBase::drawIndexRange(invalidatedArea, fontToDraw, graph, rangeMin, (int)gapIndex - 1, minorInterval, majorInterval, a);
+        GraphLabelsBase::drawIndexRange(invalidatedArea, fontToDraw, graph, (int)gapIndex, rangeMax, minorInterval, majorInterval, a);
     }
 }
 
-void GraphLabelsX::drawString(const Rect& invalidatedArea, const Font* fontToDraw, const AbstractDataGraph* graph, int index, const uint8_t alpha) const
+void GraphLabelsX::drawString(const Rect& invalidatedArea, const Font* fontToDraw, const AbstractDataGraph* graph, const int valueScaled, const int labelScaled, const uint8_t a) const
 {
-    const int16_t labelX = valueToScreenXQ5(graph, index).round() - graph->getGraphAreaPaddingLeft();
+    const int16_t labelX = valueToScreenXQ5(graph, valueScaled).round() - graph->getGraphAreaPaddingLeft();
     if (labelX < 0 || labelX >= graph->getGraphAreaWidth())
     {
         return;
     }
 
     Unicode::UnicodeChar wildcard[20];
-    formatLabel(wildcard, 20, (graph->indexToGlobalIndex(index) * getGraphXAxisScaleScaled(graph)) + getGraphXAxisOffsetScaled(graph), labelDecimals, labelDecimalPoint, graph->getScale());
-
+    formatLabel(wildcard, 20, getIndexToXAxis(graph, valueScaled, labelScaled), labelDecimals, labelDecimalPoint, graph->getScaleX());
     // Adjust to make label centered
-    uint16_t labelWidth;
+    int16_t labelWidth;
+    const Unicode::UnicodeChar* text = labelTypedText.getText();
     if (labelRotation == TEXT_ROTATE_0 || labelRotation == TEXT_ROTATE_180)
     {
-        labelWidth = fontToDraw->getStringWidth(labelTypedText.getText(), wildcard);
+        labelWidth = fontToDraw->getStringWidth(text, wildcard);
     }
     else
     {
-        labelWidth = fontToDraw->getMaxTextHeight(labelTypedText.getText(), wildcard) * fontToDraw->getNumberOfLines(labelTypedText.getText(), wildcard) + fontToDraw->getSpacingAbove(labelTypedText.getText(), wildcard);
+        labelWidth = fontToDraw->getHeight() * fontToDraw->getNumberOfLines(text, wildcard) + fontToDraw->getSpacingAbove(text, wildcard);
     }
-    Rect labelRect((graph->getGraphAreaMarginLeft() + valueToScreenXQ5(graph, index).round()) - labelWidth / 2, 0, labelWidth, getHeight());
+    const int16_t offset = (labelRotation == TEXT_ROTATE_0 || labelRotation == TEXT_ROTATE_90) ? (labelWidth / 2) : ((labelWidth + 1) / 2);
+    Rect labelRect((graph->getGraphAreaMarginLeft() + valueToScreenXQ5(graph, valueScaled).round()) - offset, 0, labelWidth, getHeight());
 
     Rect dirty = labelRect & invalidatedArea;
     if (!dirty.isEmpty())
@@ -347,101 +254,12 @@ void GraphLabelsX::drawString(const Rect& invalidatedArea, const Font* fontToDra
         dirty.x -= labelRect.x;
         dirty.y -= labelRect.y;
         translateRectToAbsolute(labelRect);
-        LCD::StringVisuals visuals(fontToDraw, color, alpha, labelTypedText.getAlignment(), 0, labelRotation, labelTypedText.getTextDirection(), 0, WIDE_TEXT_NONE);
-        HAL::lcd().drawString(labelRect, dirty, visuals, labelTypedText.getText(), wildcard, 0);
+        const LCD::StringVisuals visuals(fontToDraw, color, a, labelTypedText.getAlignment(), 0, labelRotation, labelTypedText.getTextDirection(), 0, WIDE_TEXT_NONE);
+        HAL::lcd().drawString(labelRect, dirty, visuals, text, wildcard, 0);
     }
 }
 
-void GraphLabelsY::draw(const Rect& invalidatedArea) const
-{
-    if (!labelTypedText.hasValidId())
-    {
-        return;
-    }
-    const Font* fontToDraw = labelTypedText.getFont();
-    if (!fontToDraw)
-    {
-        return;
-    }
-
-    const AbstractDataGraph* graph = getGraph();
-    const uint8_t alpha = LCD::div255(getAlpha() * graph->getAlpha());
-    if (alpha == 0)
-    {
-        return;
-    }
-
-    const int minorInterval = convertToGraphScale(graph, labelInterval, dataScale);
-    int majorInterval = getCorrectlyScaledMajorInterval(graph);
-
-    if (majorInterval == 0 && minorInterval == 0)
-    {
-        drawString(invalidatedArea, fontToDraw, graph, 0, 0, alpha);
-    }
-    else if (minorInterval > 0)
-    {
-        int rangeMin = getGraphRangeYMinScaled(graph);
-        int rangeMax = getGraphRangeYMaxScaled(graph);
-        if (abs(rangeMax - rangeMin) / minorInterval > 100)
-        {
-            return; // Too many labels
-        }
-
-        if (rangeMin > rangeMax)
-        {
-            const int tmp = rangeMin;
-            rangeMin = rangeMax;
-            rangeMax = tmp;
-        }
-        // Now rangeMax is higher than rangeMin
-
-        const int minorLo = (int)(rangeMin / minorInterval) - 1;
-        const int minorHi = (int)(rangeMax / minorInterval) + 1;
-        if (majorInterval == 0)
-        {
-            for (int minorIndex = minorLo; minorIndex != minorHi + 1; minorIndex++)
-            {
-                drawString(invalidatedArea, fontToDraw, graph, minorInterval * minorIndex, labelInterval * minorIndex, alpha);
-            }
-        }
-        else
-        {
-            const int majorLo = (int)(rangeMin / majorInterval) - 1;
-            const int majorHi = (int)(rangeMax / majorInterval) + 1;
-            int majorIndex = majorLo;
-            int32_t majorValue = majorInterval * majorIndex;
-            int minorIndex = minorLo;
-            int32_t minorValue = minorInterval * minorIndex;
-            for (;;)
-            {
-                // Draw strings lines up to the major line
-                while (minorValue < majorValue)
-                {
-                    drawString(invalidatedArea, fontToDraw, graph, minorValue, labelInterval * minorIndex, alpha);
-                    minorIndex++;
-                    minorValue += minorInterval;
-                }
-                // Advance minor past the major line we are about to draw
-                while (minorValue <= majorValue)
-                {
-                    minorIndex++;
-                    minorValue += minorInterval;
-                }
-                if (majorValue < minorValue)
-                {
-                    majorIndex++;
-                    if (majorIndex == majorHi + 1)
-                    {
-                        break;
-                    }
-                    majorValue += majorInterval;
-                }
-            }
-        }
-    }
-}
-
-void GraphLabelsY::drawString(const Rect& invalidatedArea, const Font* fontToDraw, const AbstractDataGraph* graph, int valueScaled, int labelScaled, const uint8_t alpha) const
+void GraphLabelsY::drawString(const Rect& invalidatedArea, const Font* fontToDraw, const AbstractDataGraph* graph, const int valueScaled, const int labelScaled, const uint8_t a) const
 {
     const int16_t labelCoord = valueToScreenYQ5(graph, valueScaled).round() - graph->getGraphAreaPaddingTop();
     if (labelCoord < 0 || labelCoord >= graph->getGraphAreaHeight())
@@ -453,16 +271,20 @@ void GraphLabelsY::drawString(const Rect& invalidatedArea, const Font* fontToDra
     formatLabel(wildcard, 20, labelScaled, labelDecimals, labelDecimalPoint, dataScale);
 
     // Adjust to make label centered
-    uint16_t labelHeight;
+    int16_t labelHeight;
+    const Unicode::UnicodeChar* text = labelTypedText.getText();
     if (labelRotation == TEXT_ROTATE_0 || labelRotation == TEXT_ROTATE_180)
     {
-        labelHeight = fontToDraw->getMaxTextHeight(labelTypedText.getText(), wildcard) * fontToDraw->getNumberOfLines(labelTypedText.getText(), wildcard) + fontToDraw->getSpacingAbove(labelTypedText.getText(), wildcard);
+        // Get full height for all lines, except the last line for which we "replace" the part under
+        // the baseline with the 'spacing above'.
+        labelHeight = fontToDraw->getHeight() * fontToDraw->getNumberOfLines(text, wildcard) + fontToDraw->getSpacingAbove(text, wildcard);
     }
     else
     {
-        labelHeight = fontToDraw->getStringWidth(labelTypedText.getText(), wildcard);
+        labelHeight = fontToDraw->getStringWidth(text, wildcard);
     }
-    Rect labelRect(0, (graph->getGraphAreaMarginTop() + valueToScreenYQ5(graph, valueScaled).round()) - labelHeight / 2, getWidth(), labelHeight);
+    const int16_t offset = (labelRotation == TEXT_ROTATE_0 || labelRotation == TEXT_ROTATE_90) ? (labelHeight / 2) : ((labelHeight + 1) / 2);
+    Rect labelRect(0, (graph->getGraphAreaMarginTop() + valueToScreenYQ5(graph, valueScaled).round()) - offset, getWidth(), labelHeight);
 
     Rect dirty = labelRect & invalidatedArea;
     if (!dirty.isEmpty())
@@ -470,34 +292,9 @@ void GraphLabelsY::drawString(const Rect& invalidatedArea, const Font* fontToDra
         dirty.x -= labelRect.x;
         dirty.y -= labelRect.y;
         translateRectToAbsolute(labelRect);
-        LCD::StringVisuals visuals(fontToDraw, color, alpha, labelTypedText.getAlignment(), 0, labelRotation, labelTypedText.getTextDirection(), 0, WIDE_TEXT_NONE);
-        HAL::lcd().drawString(labelRect, dirty, visuals, labelTypedText.getText(), wildcard, 0);
+        const LCD::StringVisuals visuals(fontToDraw, color, a, labelTypedText.getAlignment(), 0, labelRotation, labelTypedText.getTextDirection(), 0, WIDE_TEXT_NONE);
+        HAL::lcd().drawString(labelRect, dirty, visuals, text, wildcard, 0);
     }
-}
-
-GraphTitle::GraphTitle()
-    : titleTypedText(TypedText(TYPED_TEXT_INVALID)), titleRotation(TEXT_ROTATE_0)
-{
-}
-
-void GraphTitle::setTitleTypedText(const TypedText& typedText)
-{
-    titleTypedText = typedText;
-}
-
-TypedText GraphTitle::getTitleTypedText() const
-{
-    return titleTypedText;
-}
-
-void GraphTitle::setTitleRotation(TextRotation rotation)
-{
-    titleRotation = rotation;
-}
-
-TextRotation GraphTitle::getTitleRotation() const
-{
-    return titleRotation;
 }
 
 void GraphTitle::draw(const Rect& invalidatedArea) const
@@ -512,14 +309,13 @@ void GraphTitle::draw(const Rect& invalidatedArea) const
         return;
     }
 
-    const AbstractDataGraph* graph = getGraph();
-    const uint8_t alpha = LCD::div255(getAlpha() * graph->getAlpha());
-    if (alpha == 0)
+    const uint8_t a = LCD::div255(getAlpha() * getGraph()->getAlpha());
+    if (a == 0)
     {
         return;
     }
 
-    const uint16_t lineHeight = fontToDraw->getMaxTextHeight(titleTypedText.getText()) * fontToDraw->getNumberOfLines(titleTypedText.getText()) + fontToDraw->getSpacingAbove(titleTypedText.getText());
+    const uint16_t lineHeight = fontToDraw->getHeight() * fontToDraw->getNumberOfLines(titleTypedText.getText());
 
     Rect labelRect(rect);
     // Adjust to make label centered
@@ -540,18 +336,9 @@ void GraphTitle::draw(const Rect& invalidatedArea) const
         dirty.x -= labelRect.x;
         dirty.y -= labelRect.y;
         translateRectToAbsolute(labelRect);
-        LCD::StringVisuals visuals(fontToDraw, getColor(), alpha, titleTypedText.getAlignment(), 0, titleRotation, titleTypedText.getTextDirection(), 0, WIDE_TEXT_NONE);
+        const LCD::StringVisuals visuals(fontToDraw, getColor(), a, titleTypedText.getAlignment(), 0, titleRotation, titleTypedText.getTextDirection(), 0, WIDE_TEXT_NONE);
         HAL::lcd().drawString(labelRect, dirty, visuals, titleTypedText.getText(), 0, 0);
     }
-}
-
-bool GraphTitle::drawCanvasWidget(const Rect& /*invalidatedArea*/) const
-{
-    return true;
-}
-
-void GraphTitle::invalidateGraphPointAt(int16_t index)
-{
 }
 
 } // namespace touchgfx

@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -10,17 +10,11 @@
 *
 *******************************************************************************/
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Bitmap.hpp>
-#include <touchgfx/Callback.hpp>
 #include <touchgfx/Color.hpp>
 #include <touchgfx/Drawable.hpp>
 #include <touchgfx/Font.hpp>
 #include <touchgfx/FontManager.hpp>
-#include <touchgfx/Unicode.hpp>
-#include <touchgfx/containers/Container.hpp>
-#include <touchgfx/events/ClickEvent.hpp>
-#include <touchgfx/events/DragEvent.hpp>
 #include <touchgfx/hal/HAL.hpp>
 #include <touchgfx/lcd/LCD.hpp>
 #include <touchgfx/widgets/Keyboard.hpp>
@@ -38,7 +32,7 @@ Keyboard::Keyboard()
     highlightImage.setVisible(false);
     Keyboard::add(highlightImage);
 
-    enteredText.setColor(Color::getColorFrom24BitRGB(0, 0, 0));
+    enteredText.setColor(Color::getColorFromRGB(0, 0, 0));
     Keyboard::add(enteredText);
 }
 
@@ -73,7 +67,7 @@ void Keyboard::setTextIndentation()
 {
     if (layout != 0)
     {
-        uint8_t indentation = layout->textAreaFont.getFont()->getMaxPixelsLeft();
+        const uint8_t indentation = layout->textAreaFont.getFont()->getMaxPixelsLeft();
         enteredText.setPosition(layout->textAreaPosition.x - indentation, layout->textAreaPosition.y,
                                 layout->textAreaPosition.width + indentation * 2, layout->textAreaPosition.height);
         enteredText.setIndentation(indentation);
@@ -133,20 +127,20 @@ void Keyboard::draw(const Rect& invalidatedArea) const
             // String with room for a single character
             Unicode::UnicodeChar character[2] = { 0, 0 }; // The last is important as string terminator.
 
-            uint16_t fontHeight = font->getMinimumTextHeight();
+            const uint16_t fontHeight = font->getHeight();
 
             for (uint8_t i = 0; i < layout->numberOfKeys; i++)
             {
                 const Key& key = layout->keyArray[i];
                 if (key.keyArea.intersect(invalidatedArea))
                 {
-                    uint8_t keyId = key.keyId;
-                    Unicode::UnicodeChar c = getCharForKey(keyId);
+                    const uint8_t keyId = key.keyId;
+                    const Unicode::UnicodeChar c = getCharForKey(keyId);
                     if (c != 0)
                     {
                         // Get a copy of the keyArea and v-center the area for the character
                         Rect keyArea = key.keyArea;
-                        uint16_t offset = (keyArea.height - fontHeight) / 2;
+                        const uint16_t offset = (keyArea.height - fontHeight) / 2;
                         keyArea.y += offset;
                         keyArea.height -= offset;
                         // Calculate the invalidated area relative to the key
@@ -166,14 +160,14 @@ void Keyboard::draw(const Rect& invalidatedArea) const
 
 void Keyboard::handleClickEvent(const ClickEvent& event)
 {
-    ClickEvent::ClickEventType type = event.getType();
+    const ClickEvent::ClickEventType type = event.getType();
     if (type == ClickEvent::RELEASED && cancelIsEmitted)
     {
         cancelIsEmitted = false;
         return;
     }
-    int16_t x = event.getX();
-    int16_t y = event.getY();
+    const int16_t x = event.getX();
+    const int16_t y = event.getY();
     Rect toDraw;
 
     Keyboard::CallbackArea callbackArea = getCallbackAreaForCoordinates(x, y);
@@ -199,37 +193,34 @@ void Keyboard::handleClickEvent(const ClickEvent& event)
     }
     else
     {
-        Keyboard::Key key = getKeyForCoordinates(x, y);
+        const Keyboard::Key key = getKeyForCoordinates(x, y);
 
         if (type == ClickEvent::PRESSED)
         {
-            highlightImage.setXY(key.keyArea.x, key.keyArea.y);
-            highlightImage.setBitmap(Bitmap(key.highlightBitmapId));
-            highlightImage.setVisible(true);
-            toDraw = highlightImage.getRect();
-            invalidateRect(toDraw);
+            if (key.keyId != 0)
+            {
+                highlightImage.setXY(key.keyArea.x, key.keyArea.y);
+                highlightImage.setBitmap(Bitmap(key.highlightBitmapId));
+                highlightImage.setVisible(true);
+                toDraw = highlightImage.getRect();
+                invalidateRect(toDraw);
+            }
         }
 
         if (type == ClickEvent::RELEASED)
         {
             if (key.keyId != 0 && buffer)
             {
-                Unicode::UnicodeChar c = getCharForKey(key.keyId);
-                if (c != 0)
+                const Unicode::UnicodeChar c = getCharForKey(key.keyId);
+                if (c != 0 && bufferPosition < (bufferSize - 1))
                 {
-                    uint16_t prevBufferPosition = bufferPosition;
-                    if (bufferPosition < (bufferSize - 1))
+                    enteredText.invalidateContent();
+                    buffer[bufferPosition++] = c;
+                    buffer[bufferPosition] = 0;
+                    enteredText.invalidateContent();
+                    if (keyListener)
                     {
-                        buffer[bufferPosition++] = c;
-                        buffer[bufferPosition] = 0;
-                    }
-                    if (prevBufferPosition != bufferPosition)
-                    {
-                        enteredText.invalidate();
-                        if (keyListener)
-                        {
-                            keyListener->execute(c);
-                        }
+                        keyListener->execute(c);
                     }
                 }
             }
@@ -254,7 +245,7 @@ void Keyboard::handleDragEvent(const DragEvent& event)
     if (highlightImage.isVisible() && (!highlightImage.getRect().intersect(static_cast<int16_t>(event.getNewX()), static_cast<int16_t>(event.getNewY()))) && (!cancelIsEmitted))
     {
         // Send a CANCEL click event, if user has dragged out of currently pressed/highlighted key.
-        ClickEvent cancelEvent(ClickEvent::CANCEL, static_cast<int16_t>(event.getOldX()), static_cast<int16_t>(event.getOldY()));
+        const ClickEvent cancelEvent(ClickEvent::CANCEL, static_cast<int16_t>(event.getOldX()), static_cast<int16_t>(event.getOldY()));
         handleClickEvent(cancelEvent);
     }
 }

@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,10 +18,10 @@
 #ifndef TOUCHGFX_LCD1BPP_HPP
 #define TOUCHGFX_LCD1BPP_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Bitmap.hpp>
 #include <touchgfx/Color.hpp>
 #include <touchgfx/hal/HAL.hpp>
+#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/lcd/LCD.hpp>
 #include <touchgfx/lcd/LCD1DebugPrinter.hpp>
 
@@ -47,6 +47,10 @@ public:
     virtual void blitCopy(const uint8_t* sourceData, Bitmap::BitmapFormat sourceFormat, const Rect& source, const Rect& blitRect, uint8_t alpha, bool hasTransparentPixels);
 
     virtual uint16_t* copyFrameBufferRegionToMemory(const Rect& visRegion, const Rect& absRegion, const BitmapId bitmapId);
+
+    virtual Rect copyFrameBufferRegionToMemory(const Rect& visRegion, const Rect& absRegion, uint8_t* dst, int16_t dstWidth, int16_t dstHeight);
+
+    virtual void copyAreaFromTFTToClientBuffer(const Rect& region);
 
     virtual void fillRect(const Rect& rect, colortype color, uint8_t alpha = 255);
 
@@ -112,12 +116,12 @@ public:
      * included to allow function enableTextureMapperAll() to be called on any subclass of
      * LCD.
      */
-    void enableTextureMapperAll();
+    void enableTextureMapperAll() const;
 
 protected:
-    virtual void drawTextureMapScanLine(const DrawingSurface& dest, const Gradients& gradients, const Edge* leftEdge, const Edge* rightEdge, const TextureSurface& texture, const Rect& absoluteRect, const Rect& dirtyAreaAbsolute, RenderingVariant renderVariant, uint8_t alpha, uint16_t subDivisionSize)
+    virtual void drawTextureMapScanLine(const DrawingSurface& /*dest*/, const Gradients& /*gradients*/, const Edge* /*leftEdge*/, const Edge* /*rightEdge*/, const TextureSurface& /*texture*/, const Rect& /*absoluteRect*/, const Rect& /*dirtyAreaAbsolute*/, RenderingVariant /*renderVariant*/, uint8_t /*alpha*/, uint16_t /*subDivisionSize*/)
     {
-        assert(0 && "Texture mapping not supported for 1bpp");
+        assert(false && "Texture mapping not supported for 1bpp");
     }
 
     /**
@@ -179,7 +183,7 @@ protected:
      * @param      width          The width of area (in pixels).
      * @param      height         The height of area (in pixels).
      */
-    void copyRect(const uint8_t* srcAddress, uint16_t srcStride, uint8_t srcPixelOffset, uint8_t* RESTRICT dstAddress, uint16_t dstStride, uint8_t dstPixelOffset, uint16_t width, uint16_t height) const;
+    void copyRect(const uint8_t* srcAddress, int16_t srcStride, uint8_t srcPixelOffset, uint8_t* RESTRICT dstAddress, int16_t dstStride, uint8_t dstPixelOffset, int16_t width, int16_t height) const;
 
 private:
     class bwRLEdata
@@ -190,13 +194,14 @@ private:
         {
             init(src);
         }
+
         void init(const uint8_t* src)
         {
             data = src;
             rleByte = 0;
             firstHalfByte = true;
             color = ~0; // Will be flipped to 0 by first call to getNextLength() below
-            if (src != 0)
+            if (src)
             {
                 // Read two half-bytes ahead
                 thisHalfByte = getNextHalfByte();
@@ -204,11 +209,12 @@ private:
                 getNextLength();
             }
         }
-        void skipNext(uint32_t skip)
+
+        void skipNext(int32_t skip)
         {
             for (;;)
             {
-                if (length > skip) // is the current length enough?
+                if (length > skip) // Is the current length enough?
                 {
                     length -= skip; // Reduce the length
                     skip = 0;       // No more to skip
@@ -221,11 +227,13 @@ private:
                 }
             }
         }
+
         uint8_t getColor() const
         {
             return color;
         }
-        uint32_t getLength() const
+
+        int32_t getLength() const
         {
             return length;
         }
@@ -234,7 +242,7 @@ private:
         void getNextLength()
         {
             length = thisHalfByte; // Length is the next byte
-            // update read ahead buffer
+            // Update read ahead buffer
             thisHalfByte = nextHalfByte;
             nextHalfByte = getNextHalfByte();
             color = ~color; // Update the color of next run
@@ -252,24 +260,27 @@ private:
                 getNextLength();
             }
         }
+
         uint8_t getNextHalfByte()
         {
+            assert(data != 0 && "class bwRLEdata not properly initialized");
             if (firstHalfByte) // Start of new byte, read data from BW_RLE stream
             {
                 rleByte = *data++;
             }
-            uint8_t length = rleByte & 0xF; // Read lower half
-            rleByte >>= 4;                  // Shift upper half down to make it ready
-            firstHalfByte = !firstHalfByte; // Toggle 'start of byte'
-            return length;
+            const uint8_t len = rleByte & 0xF; // Read lower half
+            rleByte >>= 4;                     // Shift upper half down to make it ready
+            firstHalfByte = !firstHalfByte;    // Toggle 'start of byte'
+            return len;
         }
+
         const uint8_t* data;  // Pointer to compressed data (BW_RLE)
         uint8_t thisHalfByte; // The next half byte from the input
         uint8_t nextHalfByte; // The next half byte after 'thisHalfByte'
         uint8_t rleByte;      // Byte read from compressed data
         bool firstHalfByte;   // Are we about to process first half byte of rleByte?
         uint8_t color;        // Current color
-        uint32_t length;      // Number of pixels with the given color
+        int32_t length;       // Number of pixels with the given color
     };
 
     friend class PainterBWBitmap;

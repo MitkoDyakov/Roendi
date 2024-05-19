@@ -1,0 +1,270 @@
+{
+  "Application": {
+    "Screens": [
+      {
+        "Name": "volumeDemo",
+        "CanvasBufferSize": 3600,
+        "Components": [
+          {
+            "Type": "Image",
+            "Name": "background",
+            "Width": 240,
+            "Height": 240,
+            "RelativeFilename": "background.png"
+          },
+          {
+            "Type": "TextArea",
+            "Name": "volumeValueText",
+            "X": 73,
+            "Y": 91,
+            "Width": 95,
+            "Height": 61,
+            "TextId": "__SingleUse_J74R",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "Wildcard1": {
+              "TextId": "__SingleUse_5UIH",
+              "UseBuffer": true,
+              "BufferSize": 10
+            }
+          },
+          {
+            "Type": "TextArea",
+            "Name": "volumeText",
+            "X": 78,
+            "Y": 178,
+            "Width": 81,
+            "Height": 27,
+            "TextId": "__SingleUse_G6RH",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "AutoSize": true
+          },
+          {
+            "Type": "Circle",
+            "Name": "volumeMask",
+            "Width": 240,
+            "Height": 240,
+            "Color": {
+              "Red": 20,
+              "Green": 29,
+              "Blue": 44
+            },
+            "CenterX": 120,
+            "CenterY": 120,
+            "Radius": 109,
+            "LineWidth": 21,
+            "StartAngle": -14,
+            "EndAngle": -346,
+            "CapPrecision": "Butt"
+          },
+          {
+            "Type": "Circle",
+            "Name": "outterMask",
+            "Width": 240,
+            "Height": 240,
+            "CenterX": 120,
+            "CenterY": 120,
+            "Radius": 146,
+            "LineWidth": 53,
+            "StartAngle": 15,
+            "EndAngle": 381,
+            "CapPrecision": "Butt"
+          }
+        ],
+        "Interactions": []
+      },
+      {
+        "Name": "Menu",
+        "CanvasBufferSize": 3600,
+        "Components": [
+          {
+            "Type": "Image",
+            "Name": "background",
+            "X": 1,
+            "Y": 1,
+            "Width": 240,
+            "Height": 240,
+            "RelativeFilename": "bac.png"
+          },
+          {
+            "Type": "Circle",
+            "Name": "select",
+            "X": 60,
+            "Y": 1,
+            "Width": 123,
+            "Height": 27,
+            "Color": {
+              "Red": 161,
+              "Green": 85
+            },
+            "CenterX": 61,
+            "CenterY": 120,
+            "Radius": 115,
+            "LineWidth": 10,
+            "StartAngle": -30,
+            "EndAngle": 30,
+            "CapPrecision": "Butt"
+          },
+          {
+            "Type": "Circle",
+            "Name": "backlight",
+            "X": 121,
+            "Y": 1,
+            "Width": 120,
+            "Height": 120,
+            "Color": {
+              "Red": 255,
+              "Blue": 111
+            },
+            "CenterY": 120,
+            "Radius": 115,
+            "LineWidth": 10,
+            "StartAngle": 30,
+            "EndAngle": 90,
+            "CapPrecision": "Butt"
+          },
+          {
+            "Type": "Circle",
+            "Name": "lock",
+            "X": 174,
+            "Y": 121,
+            "Width": 67,
+            "Height": 106,
+            "Color": {
+              "Red": 30,
+              "Green": 181
+            },
+            "CenterX": -53,
+            "Radius": 115,
+            "LineWidth": 10,
+            "StartAngle": 90,
+            "EndAngle": 150,
+            "CapPrecision": "Butt"
+          },
+          {
+            "Type": "Circle",
+            "Name": "volume",
+            "X": 59,
+            "Y": 216,
+            "Width": 122,
+            "Height": 25,
+            "Color": {
+              "Green": 12,
+              "Blue": 235
+            },
+            "CenterX": 62,
+            "CenterY": -95,
+            "Radius": 115,
+            "LineWidth": 10,
+            "StartAngle": 150,
+            "EndAngle": 210,
+            "CapPrecision": "Butt"
+          },
+          {
+            "Type": "Circle",
+            "Name": "temp",
+            "X": 1,
+            "Y": 121,
+            "Width": 68,
+            "Height": 106,
+            "Color": {
+              "Red": 229,
+              "Green": 255
+            },
+            "CenterX": 120,
+            "Radius": 115,
+            "LineWidth": 10,
+            "StartAngle": 210,
+            "EndAngle": 270,
+            "CapPrecision": "Butt"
+          },
+          {
+            "Type": "Circle",
+            "Name": "music",
+            "Y": 1,
+            "Width": 71,
+            "Height": 120,
+            "Color": {
+              "Red": 255,
+              "Blue": 238
+            },
+            "CenterX": 121,
+            "CenterY": 120,
+            "Radius": 115,
+            "LineWidth": 10,
+            "StartAngle": 270,
+            "EndAngle": 330,
+            "CapPrecision": "Butt"
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textArea1",
+            "X": 107,
+            "Y": 12,
+            "Width": 27,
+            "Height": 87,
+            "TextId": "__SingleUse_0OF5",
+            "TextRotation": "270"
+          }
+        ],
+        "Interactions": []
+      }
+    ],
+    "CustomContainerDefinitions": [],
+    "Name": "MyApplication",
+    "Resolution": {
+      "Width": 240,
+      "Height": 240
+    },
+    "SelectedColorDepth": 16,
+    "StartupScreenName": "Menu",
+    "SelectedStartupLanguage": "GB",
+    "Skin": "Blue",
+    "TouchGfxPath": "../Middlewares/ST/touchgfx",
+    "UIPath": ".",
+    "AvailableColorDepths": [
+      16
+    ],
+    "AvailableLCDs": {
+      "16": "LCD16bpp"
+    },
+    "AvailableSections": [
+      "ExtFlashSection",
+      "IntFlashSection"
+    ],
+    "AvailableResolutions": [
+      {
+        "Width": 240,
+        "Height": 240
+      }
+    ],
+    "PhysicalButtons": [],
+    "FrameworkFeatures": {
+      "LCD16bpp": {
+        "Id": "LCD16bpp",
+        "IsEnabled": false
+      }
+    },
+    "GenerateAssetsCommand": "make -f simulator/gcc/Makefile assets -j8",
+    "PostGenerateCommand": "touchgfx update_project --project-file=simulator/msvs/Application.vcxproj",
+    "PostGenerateTargetCommand": "touchgfx update_project --project-file=../RotaryEncoderWithDisplay.ioc --platform=m4",
+    "CompileSimulatorCommand": "make -f simulator/gcc/Makefile -j8",
+    "RunSimulatorCommand": "build\\bin\\simulator.exe",
+    "LandscapeSkinX": 0,
+    "LandscapeSkinY": 0,
+    "PortraitSkinX": 0,
+    "PortraitSkinY": 0,
+    "DisplayOrientation": "Landscape",
+    "Family": "STM32L4"
+  },
+  "Version": "4.18.0"
+}

@@ -1,22 +1,20 @@
-# Copyright (c) 2018(-2021) STMicroelectronics.
+# Copyright (c) 2018(-2024) STMicroelectronics.
 # All rights reserved.
 #
-# This file is part of the TouchGFX 4.17.0 distribution.
+# This file is part of the TouchGFX 4.23.2 distribution.
 #
 # This software is licensed under terms that can be found in the LICENSE file in
 # the root directory of this software component.
 # If no LICENSE file comes with this software, it is provided AS-IS.
 #
 ###############################################################################/
-TextEntrySanitizer = Struct.new(:text_entries, :typographies, :framebuffer_bpp)
-
-$warning_prefix = "\nWARNING (TextConverter): "
+TextEntrySanitizer = Struct.new(:text_entries, :typographies, :languages, :framebuffer_bpp)
 
 class Sanitizer < TextEntrySanitizer
 
   def run
     [ RemoveDuplicateKeys,
-      RemoveIncompleteLanguages,
+      #      RemoveIncompleteLanguages,
       RemoveKeysWithMoreThanTwoSubstitutions,
       RemoveKeysWithDifferentNumberOfSubstitutions,
       RemoveTextEntriesWithInvalidTypography,
@@ -25,14 +23,13 @@ class Sanitizer < TextEntrySanitizer
       CheckSizeAndBpp,
       DowngradeFontsBitDepth
     ].each do |sanitizer|
-      sanitizer.new(text_entries, typographies, framebuffer_bpp).run
+      sanitizer.new(text_entries, typographies, languages, framebuffer_bpp).run
     end
   end
 end
 
 class RemoveDuplicateKeys < TextEntrySanitizer
   def run
-#        puts "Removing duplicate text ids"
     counts = Hash.new(0)
     counts = text_entries.inject(Hash.new(0)) do |h, entry|
       h[entry.cpp_text_id.upcase] = h[entry.cpp_text_id.upcase] + 1
@@ -41,7 +38,7 @@ class RemoveDuplicateKeys < TextEntrySanitizer
 
     text_entries.each do |text_entry|
       if counts[text_entry.cpp_text_id.upcase] > 1
-        raise "#{$warning_prefix} Duplicate key removed: #{text_entry.text_id}, yields cpp identifier #{text_entry.cpp_text_id.upcase}"
+        fail "ERROR: Duplicate key removed: #{text_entry.text_id}, yields cpp identifier #{text_entry.cpp_text_id.upcase}"
         text_entries.remove(text_entry)
       end
     end
@@ -50,14 +47,12 @@ end
 
 class RemoveIncompleteLanguages < TextEntrySanitizer
   def run
-#       puts "Removing incomplete languages"
-    languages = text_entries.languages
     languages.each do |language|
       text_entries_with_missing_translations = text_entries.select do |text_entry|
         text_entry.translation_in(language).empty?
       end
       text_entries_with_missing_translations.each do |text_entry|
-        raise "#{$warning_prefix} Language #{language} is missing translation for #{text_entry.text_id}"
+        fail "ERROR: Language #{language} is missing translation for #{text_entry.text_id}"
       end
       if text_entries_with_missing_translations.any?
         text_entries.remove_language(language)
@@ -68,27 +63,25 @@ end
 
 class RemoveKeysWithMoreThanTwoSubstitutions < TextEntrySanitizer
   def run
-#        puts "Removing text entries with more than two substitutions"
-    text_entries.languages.each do |language|
+    languages.each do |language|
       text_entries_with_more_than_two_substitutions = text_entries.select do |text_entry|
         text_entry.number_of_substitutions_in(language) > 2
       end
       text_entries_with_more_than_two_substitutions.each do |text_entry|
-        raise "#{$warning_prefix}  Text id #{text_entry.text_id} has #{text_entry.number_of_substitutions_in(language)} substitutions"
+        fail "ERROR: Text Id #{text_entry.text_id} has #{text_entry.number_of_substitutions_in(language)} substitutions"
         #text_entries.remove(text_entry)
       end
-    end
+    end if languages
   end
 end
 
 class RemoveKeysWithDifferentNumberOfSubstitutions < TextEntrySanitizer
   def run
-#        puts "Removing text entries with different number of substitutions"
     text_entries.each do |text_entry|
       translations = text_entry.translations
       number_of_substitutions_per_translation = translations.collect { |translation| translation.number_of_substitutions }
       if number_of_substitutions_per_translation.uniq.count > 1
-        raise "#{$warning_prefix} Text id #{text_entry.text_id} has different number of substitutions for some languages"
+        fail "ERROR: Text Id #{text_entry.text_id} has different number of substitutions for some languages"
         #text_entries.remove(text_entry)
       end
     end
@@ -97,12 +90,11 @@ end
 
 class RemoveTextEntriesWithInvalidTypography < TextEntrySanitizer
   def run
-#        puts "Removing text entries referring to non existing typographies"
     text_entries.each do |text_entry|
       non_existing_typographies = (text_entry.get_all_typographies - typographies.map( &:name )).compact;
 
       if non_existing_typographies.any?
-        raise "#{$warning_prefix} Text id #{text_entry.text_id} uses unknown typographies #{non_existing_typographies}"
+        fail "ERROR: Text Id #{text_entry.text_id} uses unknown typographies #{non_existing_typographies}"
         #text_entries.remove(text_entry)
       end
     end
@@ -111,12 +103,11 @@ end
 
 class RemoveTextEntriesWithInvalidAlignment < TextEntrySanitizer
   def run
-    #    puts "Removing text entries referring to invalid alignment"
     text_entries.each do |text_entry|
       alignments = text_entry.get_all_alignments_as_string
-      illegal_alignments = alignments.select { |a| !['LEFT', 'RIGHT', 'CENTER'].include?(a) }
+      illegal_alignments = alignments.uniq - ['LEFT', 'RIGHT', 'CENTER']
       if illegal_alignments.any?
-        raise "#{$warning_prefix} Text id #{text_entry.text_id} uses unknown alignments #{illegal_alignments}"
+        fail "ERROR: Text Id #{text_entry.text_id} uses unknown alignments #{illegal_alignments}"
         #text_entries.remove(text_entry)
       end
     end
@@ -125,12 +116,11 @@ end
 
 class RemoveTextEntriesWithInvalidDirection < TextEntrySanitizer
   def run
-    #    puts "Removing text entries referring to invalid direction"
     text_entries.each do |text_entry|
       directions = text_entry.get_all_directions_as_string
-      illegal_directions = directions.select { |d| !['LTR', 'RTL'].include?(d) }
+      illegal_directions = directions.uniq - ['LTR', 'RTL']
       if illegal_directions.any?
-        raise "#{$warning_prefix} Text id #{text_entry.text_id} uses unknown directions #{illegal_directions}"
+        fail "ERROR: Text Id '#{text_entry.text_id}' uses unknown directions #{illegal_directions}"
         #text_entries.remove(text_entry)
       end
     end
@@ -139,14 +129,13 @@ end
 
 class CheckSizeAndBpp < TextEntrySanitizer
   def run
-#        puts "Raise an error if typography size or bpp does have sane values"
     typographies.each do |typography|
-      if (not [1, 2, 4, 8].include?(typography.bpp))
-        raise "#{$warning_prefix} Typography named '#{typography.name}' has bpp value '#{typography.bpp}', which is not a valid value"
+      if ![1, 2, 4, 8].include?(typography.bpp)
+        fail "ERROR: Typography named '#{typography.name}' has bpp value '#{typography.bpp}', which is not a valid value"
       end
 
-      if ( (not typography.font_size.integer?) or (typography.font_size < 1) )
-        raise "#{$warning_prefix} Typography named '#{typography.name}' has font size value '#{typography.font_size}', which is not a valid value"
+      if !typography.font_size.integer? || typography.font_size < 1
+        fail "ERROR: Typography named '#{typography.name}' has font size value '#{typography.font_size}', which is not a valid value"
       end
     end
   end
@@ -154,7 +143,7 @@ end
 
 class DowngradeFontsBitDepth < TextEntrySanitizer
   def run
-    if (not framebuffer_bpp.nil?)
+    if !framebuffer_bpp.nil?
       m = framebuffer_bpp.match(/BPP(\d+)/)
       bpp = m.nil? ? 24 : m[1].to_i
       typographies.each do |typography|

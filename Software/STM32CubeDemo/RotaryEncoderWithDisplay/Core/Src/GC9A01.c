@@ -14,6 +14,7 @@
 #define COLOR_MODE__16_BIT  0x05
 #define COLOR_MODE__18_BIT  0x06
 #define MEM_WR_CONT         0x3C
+#define ENTER_SLEEP         0x10
 
 void GC9A01_set_reset(uint8_t val) 
 {
@@ -55,6 +56,11 @@ static void GC9A01_write_data(uint8_t *data, size_t len) {
 
 static inline void GC9A01_write_byte(uint8_t val) {
     GC9A01_write_data(&val, sizeof(val));
+}
+
+void GC9A01_sleep(void)
+{
+	GC9A01_write_command(ENTER_SLEEP);
 }
 
 void GC9A01_init(void) {

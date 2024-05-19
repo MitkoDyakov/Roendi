@@ -23,8 +23,6 @@
 #include "dma.h"
 #include "lptim.h"
 #include "quadspi.h"
-#include "spi.h"
-#include "tim.h"
 #include "usb_device.h"
 #include "gpio.h"
 #include "app_touchgfx.h"
@@ -36,6 +34,8 @@
 #include "usbd_customhid.h"
 #include "math.h"
 #include "defs.h"
+#include "spi.h"
+#include "tim.h"
 
 /* USER CODE END Includes */
 
@@ -51,8 +51,14 @@
 #define LEFT    (1u)
 #define RIGHT   (2u)
 
-#define INPUT_TIMEOUT        (1300u)   // around 2 sec
-#define DEMO_RUNNING_TIMEOUT (48000u)  // around 60 sec
+#define ENCODER_GOING_UP    (0u)
+#define ENCODER_GOING_DOWN  (1u)
+
+#define INPUT_TIMEOUT          (1300u)   // around 2 sec
+#define DEMO_RUNNING_TIMEOUT   (48000u)  // around 60 sec
+#define MAX_DISPLAY_BRIGHTNESS (65520u)
+#define MAX_ENCODER_CNT        (65535u)
+
 
 // for info
 // SELECTED_NONE           (0u)
@@ -72,12 +78,19 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+
+extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim6;
+extern TIM_HandleTypeDef htim7;
+
 extern USBD_HandleTypeDef hUsbDeviceFS;
 
-volatile uint8_t userSelection = 0;
-volatile uint8_t volume = 0;
-uint8_t updateScreen = 0;
-uint32_t lastInput = 0;
+volatile int32_t  volume       = 0;
+volatile uint8_t  updateFromPC = 0;
+volatile uint8_t  movement     = NONE;
+volatile uint32_t steps        = 0;
+
+volatile uint8_t userSelection;
 
 /* USER CODE END PV */
 
@@ -85,22 +98,20 @@ uint32_t lastInput = 0;
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void touchgfxSignalVSync(void);
-
-void homeScreen(uint8_t dir);
-void dimmerDemo(uint8_t dir);
-void lockDemo(uint8_t dir);
-void volumeDemo(uint8_t dir);
-void tempDemo(uint8_t dir);
-void playerDemo(uint8_t dir);
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
 // global variables for back light operation
-volatile uint32_t targetBacklight = 65520;       // 65520 is max brightness
-volatile uint8_t blacklightTransitionReady = 1;  // if this value is not 1 means the back light is in transition from one value to another
+volatile uint32_t targetBacklight           = 0;  // 65520 is max brightness
+volatile uint8_t  blacklightTransitionReady = 1;  // if this value is not 1 means the back light is in transition from one value to another
+
+#define UPMSG_LEN   (4u)
+uint8_t upmsg[UPMSG_LEN] = {'U','P','\r','\n'};
+
+#define DOWNMSG_LEN (6u)
+uint8_t downmsg[DOWNMSG_LEN] = {'D','O','W','N','\r','\n'};
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -129,6 +140,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		}
 	}
 }
+
 /* USER CODE END 0 */
 
 /**
@@ -140,11 +152,16 @@ int main(void)
   /* USER CODE BEGIN 1 */
 
   // this is for navigation
-  uint8_t selectedScreen = SELECTED_NONE;
-  uint8_t movement       = NONE;
-  int32_t difEncoder     = 0;
-  uint32_t newEncoderVal = 0;
-  uint32_t oldEncoderVal = hlptim1.Instance->CNT;
+  uint8_t  clearFlag          = 0;
+  uint8_t  i                  = 0;
+  uint8_t  tmp                = 0;
+  uint32_t countDif           = 0;
+  uint32_t currentEncoderVal  = 0;
+  uint32_t prevEncoderVal     = 0;
+  uint8_t timeout             = 0;
+  uint8_t rep[2];
+  rep[0] = 0x02;
+  rep[1] = 0;
 
   /* USER CODE END 1 */
 
@@ -183,6 +200,7 @@ int main(void)
   CSP_QSPI_EnableMemoryMappedMode();
 
   //for the back light PWM and dimming
+  TIM2->CCR1 = 0;
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
   HAL_TIM_Base_Start_IT(&htim7);
   TIM2->CCR1 = targetBacklight;
@@ -196,239 +214,210 @@ int main(void)
   // for the rotary encoder IP
   HAL_LPTIM_Encoder_Start_IT(&hlptim1, 0xffff);
 
+  //Some sketchy things to make to refresh the screen while the backlight is off
+  MX_TouchGFX_Process();
+
+  // turn the backlight on gradually
+  targetBacklight = MAX_DISPLAY_BRIGHTNESS;
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	 newEncoderVal = hlptim1.Instance->CNT;
+	 // get the latest value of the encoder
+	 currentEncoderVal = HAL_LPTIM_ReadCounter(&hlptim1);
 
-	 if(oldEncoderVal != newEncoderVal)
+	 // check if the user has turned the encoder
+	 if(prevEncoderVal != currentEncoderVal)
 	 {
-		 difEncoder = newEncoderVal - oldEncoderVal;
+		// get the difference between current counter value and the new counter value
+		if(currentEncoderVal > prevEncoderVal)
+		{
+			countDif = currentEncoderVal - prevEncoderVal;
+			movement = LEFT;
+		}else{
+			countDif = prevEncoderVal - currentEncoderVal;
+			movement = RIGHT;
+		}
 
-		 if((-2) == difEncoder )
-		 {
-			 oldEncoderVal = newEncoderVal;
-			 movement = RIGHT;
+		// here we can see if we have overflow of the counter or not
+		if(countDif > (MAX_ENCODER_CNT/2))
+		{
+			// correct for the over/under flow
+			countDif = MAX_ENCODER_CNT - countDif; // just subtract from max value
 
-		 }else if((2) == difEncoder)
-		 {
-			 oldEncoderVal = newEncoderVal;
-			 movement = LEFT;
+			if(LEFT == movement)
+			{
+				movement = RIGHT;
+			}else{
+				movement = LEFT;
+			}
+		}
 
-		 }else if((-2) > difEncoder)
-		 {
-			 oldEncoderVal = newEncoderVal;
-			 movement = LEFT;
+		steps = countDif / 2;
 
-		 }else if((2) < difEncoder)
-		 {
-			 oldEncoderVal = newEncoderVal;
-			 movement = RIGHT;
-		 }else{
-			 movement = NONE;
-		 }
+		if(0 != steps)
+		{
+			prevEncoderVal = currentEncoderVal;
+		}else{
+			movement = NONE;
+		}
 	 }else{
 		 movement = NONE;
 	 }
 
-	 switch(selectedScreen)
+	 switch(movement)
 	 {
-		 case SELECTED_NONE:
-			 homeScreen(movement);
-			 break;
-		 case SELECTED_BRIGHTNESS:
-			 dimmerDemo(movement);
-			 break;
-		 case SELECTED_LOCK:
-			 lockDemo(movement);
-			 break;
-		 case SELECTED_VOLUME:
-			 volumeDemo(movement);
-			 break;
-		 case SELECTED_TEMP:
-			 tempDemo(movement);
-			 break;
-		 case SELECTED_AUDIO:
-			 playerDemo(movement);
-			 break;
+		 case LEFT:
+				CDC_Transmit_FS(downmsg, DOWNMSG_LEN);
+				rep[1] = 0x40;
+				i = 0;
+
+				if(userSelection == 0)
+				{
+				    userSelection = 5;
+				}else{
+				    userSelection--;
+				}
+
+				while(i < steps)
+				{
+					if(1 == updateFromPC)
+					{
+						if(volume < 2)
+						{
+							break;
+						}
+
+						tmp = USBD_CUSTOM_HID_SendReport(&hUsbDeviceFS, rep, 2);
+
+						if(USBD_OK == tmp)
+						{
+							i++;
+							volume = volume - 2;
+						}
+
+						if(USBD_FAIL == tmp)
+						{
+						    timeout++;
+						    if(timeout > 10)
+						    {
+						        break;
+						    }
+						}else{
+						    timeout = 0;
+						}
+					}else{
+						tmp = USBD_CUSTOM_HID_SendReport(&hUsbDeviceFS, rep, 2);
+
+						if(USBD_OK == tmp)
+						{
+							i++;
+							volume--;
+						}
+
+                        if(USBD_FAIL == tmp)
+                        {
+                            timeout++;
+                            if(timeout > 10)
+                            {
+                                break;
+                            }
+                        }else{
+                            timeout = 0;
+                        }
+					}
+				}
+
+			    break;
+
+		 case RIGHT:
+				//volume up
+				CDC_Transmit_FS(upmsg, UPMSG_LEN);
+				rep[1] = 0x20;
+				i = 0;
+
+                if(userSelection == 5)
+                {
+                    userSelection = 0;
+                }else{
+                    userSelection++;
+                }
+
+				while(i < steps)
+				{
+					if(1 == updateFromPC)
+					{
+						tmp = USBD_CUSTOM_HID_SendReport(&hUsbDeviceFS, rep, 2);
+
+						if(USBD_OK == tmp)
+						{
+							i++;
+
+							if((volume + 2) > 100)
+							{
+								volume = 100;
+								break;
+							}else{
+								volume = volume + 2;
+							}
+						}
+
+                        if(USBD_FAIL == tmp)
+                        {
+                            timeout++;
+                            if(timeout > 10)
+                            {
+                                break;
+                            }
+                        }else{
+                            timeout = 0;
+                        }
+					}else{
+						tmp = USBD_CUSTOM_HID_SendReport(&hUsbDeviceFS, rep, 2);
+
+						if(USBD_OK == tmp)
+						{
+							i++;
+							volume++;
+						}
+
+                        if(USBD_FAIL == tmp)
+                        {
+                            timeout++;
+                            if(timeout > 10)
+                            {
+                                break;
+                            }
+                        }else{
+                            timeout = 0;
+                        }
+					}
+				}
+				break;
+
+		 case NONE:
+			 if(1 == clearFlag)
+			 {
+				rep[1] = 0x00;
+				USBD_CUSTOM_HID_SendReport(&hUsbDeviceFS, rep, 2);
+				clearFlag = 0;
+				break;
+			 }
+
 		 default:
-			 break;
+				rep[1] = 0x00;
+				USBD_CUSTOM_HID_SendReport(&hUsbDeviceFS, rep, 2);
+				break;
 	 }
     /* USER CODE END WHILE */
 
-	 MX_TouchGFX_Process();
+  MX_TouchGFX_Process();
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
-}
-
-void homeScreen(uint8_t dir)
-{
-	uint32_t now = HAL_GetTick();
-
-	switch(dir)
-	{
-		case LEFT:
-			lastInput = HAL_GetTick();
-
-			if(userSelection==0)
-			{
-				 userSelection=5;
-			}else{
-
-				 userSelection--;
-			}
-			break;
-
-		case RIGHT:
-			lastInput = HAL_GetTick();
-
-			userSelection++;
-			if(userSelection>5)
-			{
-
-				 userSelection = 0;
-			}
-			break;
-
-		case NONE:
-			if((now - lastInput) > INPUT_TIMEOUT )
-			{
-				updateScreen = 1;
-			}
-			break;
-
-		default:
-			break;
-	}
-}
-
-void dimmerDemo(uint8_t dir)
-{
-//	int32_t CH1_DC = 0;
-//	CH1_DC = 65535;
-//	TIM2->CCR1 = CH1_DC;
-
-	//	while(CH1_DC < 65535)
-	//	{
-	//		TIM2->CCR1 = CH1_DC;
-	//		CH1_DC += 70;
-	//		HAL_Delay(1);
-	//	}
-	//	//CH1_DC = 65535;
-	//	HAL_Delay(100);
-	//	while(CH1_DC > 0)
-	//	{
-	//		TIM2->CCR1 = CH1_DC;
-	//		CH1_DC -= 70;
-	//		HAL_Delay(1);
-	//	}
-	//
-}
-
-void lockDemo(uint8_t dir)
-{
-//	switch(dir)
-//	{
-//		case LEFT:
-//
-//			break;
-//
-//		case RIGHT:
-//
-//			break;
-//
-//		case NONE:
-//			break;
-//
-//		default:
-//			break;
-//	}
-}
-
-void volumeDemo(uint8_t dir)
-{
-//	uint8_t rep[2];
-//
-//	rep[0] = 0x02;
-//	rep[1] = 0x00;
-//
-//	switch(dir)
-//	{
-//		case LEFT:
-//			CDC_Transmit_FS("DOWN\r\n", 6);
-//			rep[1] = 0x20;
-//            USBD_CUSTOM_HID_SendReport(&hUsbDeviceFS, rep, 2);
-//
-//            if(volume > 0)
-//            {
-//            	volume--;
-//            }
-//
-//			break;
-//
-//		case RIGHT:
-//			CDC_Transmit_FS("UP\r\n", 4);
-//			rep[1] = 0x40;
-//			USBD_CUSTOM_HID_SendReport(&hUsbDeviceFS, rep, 2);
-//
-//            if(volume < 100)
-//            {
-//            	volume++;
-//            }
-//
-//			break;
-//
-//		case NONE:
-//			USBD_CUSTOM_HID_SendReport(&hUsbDeviceFS, rep, 2);
-//			break;
-//
-//		default:
-//			break;
-//	}
-}
-
-void tempDemo(uint8_t dir)
-{
-//	switch(dir)
-//	{
-//		case LEFT:
-//
-//			break;
-//
-//		case RIGHT:
-//
-//			break;
-//
-//		case NONE:
-//			break;
-//
-//		default:
-//			break;
-//	}
-}
-
-void playerDemo(uint8_t dir)
-{
-//	switch(dir)
-//	{
-//		case LEFT:
-//
-//			break;
-//
-//		case RIGHT:
-//
-//			break;
-//
-//		case NONE:
-//			break;
-//
-//		default:
-//			break;
-//	}
 }
 
 /**
@@ -515,4 +504,3 @@ void assert_failed(uint8_t *file, uint32_t line)
 }
 #endif /* USE_FULL_ASSERT */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,10 +18,10 @@
 #ifndef TOUCHGFX_TYPEDTEXT_HPP
 #define TOUCHGFX_TYPEDTEXT_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Font.hpp>
 #include <touchgfx/Texts.hpp>
 #include <touchgfx/Unicode.hpp>
+#include <touchgfx/hal/Types.hpp>
 
 namespace touchgfx
 {
@@ -56,7 +56,7 @@ public:
      *
      * @param  id (Optional) The identifier.
      */
-    explicit TypedText(const TypedTextId id = TYPED_TEXT_INVALID)
+    TypedText(const TypedTextId id = TYPED_TEXT_INVALID)
         : typedTextId(id)
     {
     }
@@ -83,7 +83,7 @@ public:
      */
     FORCE_INLINE_FUNCTION bool hasValidId() const
     {
-        return typedTextId != TYPED_TEXT_INVALID;
+        return typedTextId < numberOfTypedTexts;
     }
 
     /**
@@ -93,7 +93,8 @@ public:
      */
     FORCE_INLINE_FUNCTION const Unicode::UnicodeChar* getText() const
     {
-        assertValid();
+        assert(typedTexts != 0 && "TypedText database has not been initialized.");
+        assert(hasValidId() && "typedTextId larger than numberOfTypedTexts.");
         return texts->getText(typedTextId);
     }
 
@@ -104,7 +105,8 @@ public:
      */
     FORCE_INLINE_FUNCTION const Font* getFont() const
     {
-        assertValid();
+        assert(typedTexts != 0 && "TypedText database has not been initialized.");
+        assert(hasValidId() && "typedTextId larger than numberOfTypedTexts.");
         return fonts[typedTexts[typedTextId].fontIdx];
     }
 
@@ -115,7 +117,8 @@ public:
      */
     FORCE_INLINE_FUNCTION FontId getFontId() const
     {
-        assertValid();
+        assert(typedTexts != 0 && "TypedText database has not been initialized.");
+        assert(hasValidId() && "typedTextId larger than numberOfTypedTexts.");
         return typedTexts[typedTextId].fontIdx;
     }
 
@@ -126,7 +129,8 @@ public:
      */
     FORCE_INLINE_FUNCTION Alignment getAlignment() const
     {
-        assertValid();
+        assert(typedTexts != 0 && "TypedText database has not been initialized.");
+        assert(hasValidId() && "typedTextId larger than numberOfTypedTexts.");
         return typedTexts[typedTextId].alignment;
     }
 
@@ -137,7 +141,8 @@ public:
      */
     FORCE_INLINE_FUNCTION TextDirection getTextDirection() const
     {
-        assertValid();
+        assert(typedTexts != 0 && "TypedText database has not been initialized.");
+        assert(hasValidId() && "typedTextId larger than numberOfTypedTexts.");
         return typedTexts[typedTextId].direction;
     }
 
@@ -169,12 +174,6 @@ public:
     }
 
 private:
-    FORCE_INLINE_FUNCTION void assertValid() const
-    {
-        assert(typedTexts != 0 && "TypedText database has not been initialized.");
-        assert(typedTextId < numberOfTypedTexts && "typedTextId larger than numberOfTypedTexts.");
-    }
-
     TypedTextId typedTextId;
 
     static const TypedTextData* typedTexts;

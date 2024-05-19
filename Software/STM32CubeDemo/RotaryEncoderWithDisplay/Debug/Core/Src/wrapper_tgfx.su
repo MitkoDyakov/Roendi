@@ -1,3 +1,0 @@
-wrapper_tgfx.c:8:6:HAL_SPI_TxCpltCallback	0	static
-wrapper_tgfx.c:19:5:touchgfxDisplayDriverTransmitActive	0	static
-wrapper_tgfx.c:38:6:touchgfxDisplayDriverTransmitBlock	24	static

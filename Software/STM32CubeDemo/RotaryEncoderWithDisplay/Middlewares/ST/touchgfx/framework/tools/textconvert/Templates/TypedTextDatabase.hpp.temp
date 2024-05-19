@@ -4,8 +4,8 @@
 #ifndef TOUCHGFX_TYPEDTEXTDATABASE_HPP
 #define TOUCHGFX_TYPEDTEXTDATABASE_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/TypedText.hpp>
+#include <touchgfx/hal/Types.hpp>
 
 namespace TypedTextDatabase
 {

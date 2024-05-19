@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,10 +18,10 @@
 #ifndef TOUCHGFX_SNAPPER_HPP
 #define TOUCHGFX_SNAPPER_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Callback.hpp>
 #include <touchgfx/events/ClickEvent.hpp>
 #include <touchgfx/events/DragEvent.hpp>
+#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/mixins/Draggable.hpp>
 
 namespace touchgfx
@@ -127,6 +127,7 @@ private:
     GenericCallback<const DragEvent&>* dragAction;
     GenericCallback<>* snappedAction;
 };
-} //namespace touchgfx
+
+} // namespace touchgfx
 
 #endif // TOUCHGFX_SNAPPER_HPP

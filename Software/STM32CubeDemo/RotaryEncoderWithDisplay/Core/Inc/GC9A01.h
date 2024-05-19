@@ -17,6 +17,7 @@ void GC9A01_delay(uint16_t ms);
 void GC9A01_spi_tx(uint8_t *data, size_t len);
 void GC9A01_write_DMA(uint8_t *data, uint16_t len);
 void GC9A01_write_command(uint8_t cmd);
+void GC9A01_sleep(void);
 
 struct GC9A01_point {
     uint16_t X, Y;

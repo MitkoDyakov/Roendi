@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,9 +18,9 @@
 #ifndef TOUCHGFX_CONTAINER_HPP
 #define TOUCHGFX_CONTAINER_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Callback.hpp>
 #include <touchgfx/Drawable.hpp>
+#include <touchgfx/hal/Types.hpp>
 
 namespace touchgfx
 {
@@ -122,9 +122,22 @@ public:
      * @param       y    The y coordinate of the intersection.
      * @param [out] last out parameter in which the result is placed.
      *
-     * @see isVisible, isTouchable
+     * @see isVisible, isTouchable, getLastChildNear
      */
     virtual void getLastChild(int16_t x, int16_t y, Drawable** last);
+
+    /**
+     * Works similar to getLastChild() but also considers the current set finger size in HAL.
+     *
+     * @param       x                   The x coordinate of the intersection.
+     * @param       y                   The y coordinate of the intersection.
+     * @param [out] last                out parameter in which the result is placed.
+     * @param [out] fingerAdjustmentX   out parameter in which the finger adjustment x is placed.
+     * @param [out] fingerAdjustmentY   out parameter in which the finger adjustment y is placed.
+     *
+     * @see getLastChild, HAL::setFingerSize
+     */
+    virtual void getLastChildNear(int16_t x, int16_t y, Drawable** last, int16_t* fingerAdjustmentX, int16_t* fingerAdjustmentY);
 
     virtual void draw(const Rect& invalidatedArea) const;
 

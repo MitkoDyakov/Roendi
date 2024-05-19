@@ -4,22 +4,22 @@
 #include <fonts/ApplicationFontProvider.hpp>
 #include <fonts/GeneratedFont.hpp>
 #include <texts/TypedTextDatabase.hpp>
-<% if save_flashreader %>
+<% if save_flashreader? %>
 
 touchgfx::FlashDataReader* ApplicationFontProvider::fontFlashReader = 0;
 <% end %>
 
 touchgfx::Font* ApplicationFontProvider::getFont(touchgfx::FontId typography)
 {
-<% if typographies.empty? %>
+<% if @typographies.empty? %>
     return 0;
 <% else %>
     switch (typography)
     {
-<% typographies.each_with_index do |typography, index| %>
+<% @typographies.each_with_index do |typography, index| %>
     case Typography::<%= typography.name.upcase %>:
         // <%= typography.cpp_name %>_<%= typography.font_size %>_<%= typography.bpp %>bpp
-        return const_cast<touchgfx::Font*>(TypedTextDatabase::getFonts()[<%= font_index(index) %>]);
+        return const_cast<touchgfx::Font*>(TypedTextDatabase::getFonts()[<%= get_font_index(index) %>]);
 <% end %>
     default:
         return 0;

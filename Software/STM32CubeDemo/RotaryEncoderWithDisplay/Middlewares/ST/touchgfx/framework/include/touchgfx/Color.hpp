@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -28,180 +28,12 @@ class Color
 {
 public:
     /**
-     * Generates a color representation to be used on the LCD, based on 24 bit RGB values.
-     *
-     * @param  red   Value of the red part (0-255).
-     * @param  green Value of the green part (0-255).
-     * @param  blue  Value of the blue part (0-255).
-     *
-     * @return The color representation depending on LCD color format.
-     *
-     * @deprecated Please use getColorFromRGB(uint8_t,uint8_t,uint8_t)
-     */
-    FORCE_INLINE_FUNCTION static colortype getColorFrom24BitRGB(uint8_t red, uint8_t green, uint8_t blue)
-    {
-        return getColorFromRGB(red, green, blue);
-    }
-
-    /**
-     * Gets the red color part of a color.
-     *
-     * @param  color The color value.
-     *
-     * @return The red part of the color.
-     *
-     * @deprecated Use getRed(colortype)
-     */
-    FORCE_INLINE_FUNCTION static uint8_t getRedColor(colortype color)
-    {
-        return getRed(color);
-    }
-
-    /**
-     * Gets the green color part of a color.
-     *
-     * @param  color The color value.
-     *
-     * @return The green part of the color.
-     *
-     * @deprecated Use getGreen(colortype)
-     */
-    FORCE_INLINE_FUNCTION static uint8_t getGreenColor(colortype color)
-    {
-        return getGreen(color);
-    }
-
-    /**
-     * Gets the blue color part of a color.
-     *
-     * @param  color The color value.
-     *
-     * @return The blue part of the color.
-     *
-     * @deprecated Use getBlue(colortype)
-     */
-    FORCE_INLINE_FUNCTION static uint8_t getBlueColor(colortype color)
-    {
-        return getBlue(color);
-    }
-
-    /**
-     * Convert a given color from HSV (Hue, Saturation, Value) to RGB (Red, Green, Blue).
-     *
-     * @param       hue        The input Hue (0 to 255).
-     * @param       saturation The input Saturation (0 to 255).
-     * @param       value      The input Value (0 to 255).
-     * @param [out] red        The output Red (0 to 255).
-     * @param [out] green      The output Green (0 to 255).
-     * @param [out] blue       The output Blue (0 to 255).
-     *
-     * @note The conversion is an approximation.
-     *
-     * @deprecated Use getRGBFromHSV(uint8_t,uint8_t,uint8_t,uint8_t&,uint8_t&,uint8_t&)
-     */
-    FORCE_INLINE_FUNCTION static void getRGBFrom24BitHSV(uint8_t hue, uint8_t saturation, uint8_t value, uint8_t& red, uint8_t& green, uint8_t& blue)
-    {
-        getRGBFromHSV(hue, saturation, value, red, green, blue);
-    }
-
-    /**
-     * Convert a given color from RGB (Red, Green, Blue) to HSV (Hue, Saturation, Value).
-     *
-     * @param       red        The input Red.
-     * @param       green      The input Green.
-     * @param       blue       The input Blue.
-     * @param [out] hue        The output Hue.
-     * @param [out] saturation The output Saturation.
-     * @param [out] value      The output Value.
-     *
-     * @note The conversion is an approximation.
-     *
-     * @deprecated Use getHSVFromRGB(uint8_t,uint8_t,uint8_t,uint8_t&,uint8_t&,uint8_t&)
-     */
-    FORCE_INLINE_FUNCTION static void getHSVFrom24BitRGB(uint8_t red, uint8_t green, uint8_t blue, uint8_t& hue, uint8_t& saturation, uint8_t& value)
-    {
-        getHSVFromRGB(red, green, blue, hue, saturation, value);
-    }
-
-    /**
-     * Convert a given color from HSV (Hue, Saturation, Value) to RGB (Red, Green, Blue).
-     *
-     * @param       hue        The input Hue (0 to 255).
-     * @param       saturation The input Saturation (0 to 255).
-     * @param       luminance  The input Value (0 to 255).
-     * @param [out] red        The output Red (0 to 255).
-     * @param [out] green      The output Green (0 to 255).
-     * @param [out] blue       The output Blue (0 to 255).
-     *
-     * @note The conversion is an approximation.
-     * @deprecated Use getRGBFromHSL(uint8_t,uint8_t,uint8_t,uint8_t&,uint8_t&,uint8_t&)
-     */
-    FORCE_INLINE_FUNCTION static void getRGBFrom24BitHSL(uint8_t hue, uint8_t saturation, uint8_t luminance, uint8_t& red, uint8_t& green, uint8_t& blue)
-    {
-        getRGBFromHSL(hue, saturation, luminance, red, green, blue);
-    }
-
-    /**
-     * Convert a given color from RGB (Red, Green, Blue) to HSV (Hue, Saturation, Value).
-     *
-     * @param       red        The input Red (0 to 255).
-     * @param       green      The input Green (0 to 255).
-     * @param       blue       The input Blue (0 to 255).
-     * @param [out] hue        The output Hue (0 to 255).
-     * @param [out] saturation The output Saturation (0 to 255).
-     * @param [out] luminance  The output Value (0 to 255).
-     *
-     * @note The conversion is an approximation.
-     *
-     * @deprecated Use getHSLFrom24BitRGB(uint8_t,uint8_t,uint8_t,uint8_t&,uint8_t&,uint8_t&)
-     */
-    FORCE_INLINE_FUNCTION static void getHSLFrom24BitRGB(uint8_t red, uint8_t green, uint8_t blue, uint8_t& hue, uint8_t& saturation, uint8_t& luminance)
-    {
-        getHSLFromRGB(red, green, blue, hue, saturation, luminance);
-    }
-
-    /**
-     * Convert HSL (Hue, Saturation, Luminance) to HSV (Hue, Saturation, Value). The Hue is
-     * unaltered, the Saturation is changed and the Value is calculated.
-     *
-     * @param          hue        The hue (0 to 255).
-     * @param [in,out] saturation The saturation (0 to 255).
-     * @param          luminance  The luminance (0 to 255).
-     * @param [out]    value      The value (0 to 255).
-     *
-     * @deprecated Use getHSVFromHSL(uint8_t,uint8_t,int8_t,uint8_t&,uint8_t&,uint8_t&)
-     */
-    FORCE_INLINE_FUNCTION static void getHSVFromHSL(uint8_t hue, uint8_t& saturation, uint8_t luminance, uint8_t& value)
-    {
-        value = luminance + LCD::div255(saturation * MIN(luminance, 255 - luminance));
-        saturation = value == 0 ? 0 : 510 - ((luminance * 510) / value);
-    }
-
-    /**
-     * Convert HSV (Hue, Saturation, Value) to HSL (Hue, Saturation, Luminance). The Hue is
-     * unaltered, the Saturation is changed and the Luminance is calculated.
-     *
-     * @param          hue        The hue (0 to 255).
-     * @param [in,out] saturation The saturation (0 to 255).
-     * @param          value      The value (0 to 255).
-     * @param [out]    luminance  The luminance (0 to 255).
-     *
-     * @deprecated Use getHSLFromHSV(uint8_t,uint8_t,int8_t,uint8_t&,uint8_t&,uint8_t&)
-     */
-    FORCE_INLINE_FUNCTION static void getHSLFromHSV(uint8_t hue, uint8_t& saturation, uint8_t value, uint8_t& luminance)
-    {
-        uint16_t luminance2 = (value * (510 - saturation)) / 255;
-        luminance = luminance2 >> 1;
-        saturation = (luminance == 0 || luminance == 255) ? 0 : (uint8_t)(((value * 2 - luminance2) * 255) / MIN(luminance2, 510 - luminance2));
-    }
-
-    /**
      * Generates a color representation to be used on the LCD, based on 24 bit RGB values. The
      * embedded alpha value is set to 255.
      *
-     * @param  red   Value of the red part (0-255).
-     * @param  green Value of the green part (0-255).
-     * @param  blue  Value of the blue part (0-255).
+     * @param  red   Value of the red part (0 to 255).
+     * @param  green Value of the green part (0 to 255).
+     * @param  blue  Value of the blue part (0 to 255).
      *
      * @return The color representation depending on LCD color format.
      */
@@ -215,7 +47,7 @@ public:
      *
      * @param  color The color value.
      *
-     * @return The red part of the color.
+     * @return The red part of the color (0 to 255).
      */
     FORCE_INLINE_FUNCTION static uint8_t getRed(colortype color)
     {
@@ -227,7 +59,7 @@ public:
      *
      * @param  color The color value.
      *
-     * @return The green part of the color.
+     * @return The green part of the color (0 to 255).
      */
     FORCE_INLINE_FUNCTION static uint8_t getGreen(colortype color)
     {
@@ -239,7 +71,7 @@ public:
      *
      * @param  color The color value.
      *
-     * @return The blue part of the color.
+     * @return The blue part of the color (0 to 255).
      */
     FORCE_INLINE_FUNCTION static uint8_t getBlue(colortype color)
     {
@@ -278,22 +110,34 @@ public:
         switch (region)
         {
         case 0:
-            red = value, green = t, blue = p;
+            red = value;
+            green = t;
+            blue = p;
             break;
         case 1:
-            red = q, green = value, blue = p;
+            red = q;
+            green = value;
+            blue = p;
             break;
         case 2:
-            red = p, green = value, blue = t;
+            red = p;
+            green = value;
+            blue = t;
             break;
         case 3:
-            red = p, green = q, blue = value;
+            red = p;
+            green = q;
+            blue = value;
             break;
         case 4:
-            red = t, green = p, blue = value;
+            red = t;
+            green = p;
+            blue = value;
             break;
         default:
-            red = value, green = p, blue = q;
+            red = value;
+            green = p;
+            blue = q;
             break;
         }
     }
@@ -301,12 +145,12 @@ public:
     /**
      * Convert a given color from RGB (Red, Green, Blue) to HSV (Hue, Saturation, Value).
      *
-     * @param       red            The input Red.
-     * @param       green          The input Green.
-     * @param       blue           The input Blue.
-     * @param [out] hue            The output Hue.
-     * @param [out] saturation The output Saturation.
-     * @param [out] value          The output Value.
+     * @param       red        The input Red (0 to 255).
+     * @param       green      The input Green (0 to 255).
+     * @param       blue       The input Blue (0 to 255).
+     * @param [out] hue        The output Hue (0 to 255).
+     * @param [out] saturation The output Saturation (0 to 255).
+     * @param [out] value      The output Value (0 to 255).
      *
      * @note The conversion is an approximation.
      */
@@ -371,7 +215,22 @@ public:
     {
         uint8_t red, green, blue;
         getRGBFromHSV(hue, saturation, value, red, green, blue);
-        return getColorFrom24BitRGB(red, green, blue);
+        return getColorFromRGB(red, green, blue);
+    }
+
+    /**
+     * Split a given colortype color to its RGB (Red, Green, Blue) components.
+     *
+     * @param       color  The input color.
+     * @param [out] red    The output Red (0 to 255).
+     * @param [out] green  The output Green (0 to 255).
+     * @param [out] blue   The output Blue (0 to 255).
+     */
+    FORCE_INLINE_FUNCTION static void getRGBFromColor(colortype color, uint8_t& red, uint8_t& green, uint8_t& blue)
+    {
+        red = getRed(color);
+        green = getGreen(color);
+        blue = getBlue(color);
     }
 
     /**
@@ -477,7 +336,7 @@ public:
     {
         uint8_t red, green, blue;
         getRGBFromHSL(hue, saturation, luminance, red, green, blue);
-        return getColorFrom24BitRGB(red, green, blue);
+        return getColorFromRGB(red, green, blue);
     }
 
     /**
@@ -492,7 +351,7 @@ public:
      */
     FORCE_INLINE_FUNCTION static void getHSLFromColor(colortype color, uint8_t& hue, uint8_t& saturation, uint8_t& luminance)
     {
-        getHSLFrom24BitRGB(getRed(color), getGreen(color), getBlue(color), hue, saturation, luminance);
+        getHSLFromRGB(getRed(color), getGreen(color), getBlue(color), hue, saturation, luminance);
     }
 
     /**
@@ -502,7 +361,7 @@ public:
      *
      * @param  color The color value in RGB565.
      *
-     * @return The red part of the color.
+     * @return The red part of the color (0 to 255).
      */
     FORCE_INLINE_FUNCTION static uint8_t getRedFromRGB565(uint16_t color)
     {
@@ -517,7 +376,7 @@ public:
      *
      * @param  color The color value in RGB565.
      *
-     * @return The green part of the color.
+     * @return The green part of the color (0 to 255).
      */
     FORCE_INLINE_FUNCTION static uint8_t getGreenFromRGB565(uint16_t color)
     {
@@ -532,7 +391,7 @@ public:
      *
      * @param  color The color value in RGB565.
      *
-     * @return The blue part of the color.
+     * @return The blue part of the color (0 to 255).
      */
     FORCE_INLINE_FUNCTION static uint8_t getBlueFromRGB565(uint16_t color)
     {

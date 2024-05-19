@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -13,7 +13,7 @@
 /**
  * @file touchgfx/widgets/graph/GraphWrapAndClear.hpp
  *
- * Declares the touchgfx::DataGraphWrapAndClear and touchgfx::GraphWrapAndClear classes.
+ * Declares the touchgfx::GraphWrapAndClearData and touchgfx::GraphWrapAndClear classes.
  */
 #ifndef TOUCHGFX_GRAPHWRAPANDCLEAR_HPP
 #define TOUCHGFX_GRAPHWRAPANDCLEAR_HPP
@@ -24,22 +24,30 @@
 namespace touchgfx
 {
 /**
- * The DataGraphWrapAndClear will show new points progressing across the graph. Once the graph is
- * filled, the next point added will cause the graph to be cleared and a new graph will slowly
- * be created as new values are added.
+ * The GraphWrapAndClearData will show new points progressing across the graph. Once the graph
+ * is filled, the next point added will cause the graph to be cleared and a new graph will
+ * slowly be created as new values are added.
  */
-class DataGraphWrapAndClear : public AbstractDataGraphWithY
+class GraphWrapAndClearData : public DynamicDataGraph
 {
 public:
     /**
-     * Initializes a new instance of the DataGraphWrapAndOverwrite class.
+     * Initializes a new instance of the GraphWrapAndOverwriteData class.
      *
      * @param      capacity The capacity.
      * @param [in] values   Pointer to memory with room for capacity elements of type T.
      */
-    DataGraphWrapAndClear(int16_t capacity, int* values);
+    GraphWrapAndClearData(int16_t capacity, int* values)
+        : DynamicDataGraph(capacity, values)
+    {
+    }
 
-    virtual int32_t indexToGlobalIndex(int16_t index) const;
+    virtual void clear();
+
+    virtual int32_t indexToGlobalIndex(int16_t index) const
+    {
+        return (this->dataCounter - this->usedCapacity) + index;
+    }
 
 protected:
     virtual void beforeAddValue();
@@ -48,21 +56,23 @@ protected:
 };
 
 /**
- * The GraphWrapAndClear will show new points progressing across the graph. Once the graph is filled,
- * the next point added will cause the graph to be cleared and a new graph will slowly be
- * created as new values are added.
+ * The GraphWrapAndClear will show new points progressing across the graph. Once the graph is
+ * filled, the next point added will cause the graph to be cleared and a new graph will slowly
+ * be created as new values are added.
+ *
+ * @tparam CAPACITY The maximum number of data points on the graph.
  */
 template <int16_t CAPACITY>
-class GraphWrapAndClear : public DataGraphWrapAndClear
+class GraphWrapAndClear : public GraphWrapAndClearData
 {
 public:
     GraphWrapAndClear()
-        : DataGraphWrapAndClear(CAPACITY, yValues)
+        : GraphWrapAndClearData(CAPACITY, y)
     {
     }
 
 private:
-    int yValues[CAPACITY];
+    int y[CAPACITY];
 };
 
 } // namespace touchgfx

@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -13,8 +13,8 @@
 #ifndef TOUCHGFX_JSMOCHELPER_HPP
 #define TOUCHGFX_JSMOCHELPER_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Drawable.hpp>
+#include <touchgfx/hal/Types.hpp>
 
 /// @cond
 namespace touchgfx
@@ -181,6 +181,7 @@ private:
 };
 
 } // namespace touchgfx
+
 /// @endcond
 
 #endif // TOUCHGFX_JSMOCHELPER_HPP

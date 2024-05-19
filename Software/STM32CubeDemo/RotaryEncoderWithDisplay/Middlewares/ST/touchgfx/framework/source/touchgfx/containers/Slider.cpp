@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -10,13 +10,9 @@
 *
 *******************************************************************************/
 
-#include <touchgfx/hal/Types.hpp>
-#include <touchgfx/Bitmap.hpp>
 #include <touchgfx/Drawable.hpp>
-#include <touchgfx/containers/Container.hpp>
+#include <touchgfx/Utils.hpp>
 #include <touchgfx/containers/Slider.hpp>
-#include <touchgfx/events/ClickEvent.hpp>
-#include <touchgfx/events/DragEvent.hpp>
 
 namespace touchgfx
 {
@@ -25,7 +21,7 @@ Slider::Slider()
       sliderOrientation(HORIZONTAL),
       currentValue(0),
       valueRangeMin(0),
-      valueRangeMax(1),
+      valueRangeMax(100),
       background(),
       backgroundSelected(),
       indicator(),
@@ -48,7 +44,7 @@ Slider::Slider()
     Container::add(indicator);
 
     // Default value range
-    Slider::setValueRange(0, 100);
+    Slider::updateIndicatorPosition(indicatorMinPosition);
 }
 
 void Slider::setBitmaps(const Bitmap& sliderBackground, const Bitmap& sliderBackgroundSelected, const Bitmap& indicatorBitmap)
@@ -57,10 +53,19 @@ void Slider::setBitmaps(const Bitmap& sliderBackground, const Bitmap& sliderBack
            sliderBackground.getHeight() == sliderBackgroundSelected.getHeight() &&
            "Slider::setBitmaps - background and backgroundFilled must have same dimensions");
 
+    // Invalidate before and after in case size changes from previous bitmaps
+    background.invalidate(); // Redraw slider
+    indicator.invalidate();  // Redraw indicator
+
     background.setBitmap(sliderBackground);
     backgroundSelected.setBitmap(sliderBackgroundSelected);
     indicator.setBitmap(indicatorBitmap);
     backgroundSelectedViewPort.setWidthHeight(backgroundSelected);
+
+    setValue(currentValue); // Update size of backgroundSelectedViewPort
+
+    background.invalidate(); // Redraw slider
+    indicator.invalidate();  // Redraw indicator
 }
 
 void Slider::setBitmaps(const BitmapId sliderBackground, const BitmapId sliderBackgroundSelected, const BitmapId indicatorBitmap)
@@ -68,24 +73,24 @@ void Slider::setBitmaps(const BitmapId sliderBackground, const BitmapId sliderBa
     setBitmaps(Bitmap(sliderBackground), Bitmap(sliderBackgroundSelected), Bitmap(indicatorBitmap));
 }
 
-void Slider::setupHorizontalSlider(uint16_t backgroundX, uint16_t backgroundY, uint16_t indicatorY, uint16_t indicatorMinX, uint16_t indicatorMaxX)
+void Slider::setupHorizontalSlider(int16_t backgroundX, int16_t backgroundY, int16_t indicatorY, int16_t indicatorMinX, int16_t indicatorMaxX)
 {
     assert(indicatorMinX < indicatorMaxX && "Slider::setupHorizontalSlider - indicatorMinX must be smaller than indicatorMaxX");
 
     sliderOrientation = HORIZONTAL;
 
     background.setXY(backgroundX, backgroundY);
-    backgroundSelectedViewPort.setXY(backgroundX, backgroundY);
+    backgroundSelectedViewPort.setPosition(background);
     backgroundSelected.setXY(0, 0);
     indicator.setY(indicatorY);
 
-    uint16_t backgroundWidth = backgroundX + static_cast<uint16_t>(background.getWidth());
-    uint16_t indicatorWidth = indicatorMaxX + static_cast<uint16_t>(indicator.getWidth());
-    int16_t newWidth = static_cast<int16_t>(MAX(backgroundWidth, indicatorWidth));
+    const int16_t backgroundWidth = backgroundX + background.getWidth();
+    const int16_t indicatorWidth = indicatorMaxX + indicator.getWidth();
+    const int16_t newWidth = MAX(backgroundWidth, indicatorWidth);
 
-    uint16_t backgroundHeight = backgroundY + static_cast<uint16_t>(background.getHeight());
-    uint16_t indicatorHeight = indicatorY + static_cast<uint16_t>(indicator.getHeight());
-    int16_t newHeight = static_cast<int16_t>(MAX(backgroundHeight, indicatorHeight));
+    const int16_t backgroundHeight = backgroundY + background.getHeight();
+    const int16_t indicatorHeight = indicatorY + indicator.getHeight();
+    const int16_t newHeight = MAX(backgroundHeight, indicatorHeight);
 
     indicatorMinPosition = indicatorMinX;
     indicatorMaxPosition = indicatorMaxX;
@@ -95,23 +100,23 @@ void Slider::setupHorizontalSlider(uint16_t backgroundX, uint16_t backgroundY, u
     setValue(currentValue);
 }
 
-void Slider::setupVerticalSlider(uint16_t backgroundX, uint16_t backgroundY, uint16_t indicatorX, uint16_t indicatorMinY, uint16_t indicatorMaxY)
+void Slider::setupVerticalSlider(int16_t backgroundX, int16_t backgroundY, int16_t indicatorX, int16_t indicatorMinY, int16_t indicatorMaxY)
 {
     assert(indicatorMinY < indicatorMaxY && "Slider::setupVerticalSlider - indicatorMinY must be smaller than indicatorMaxY");
 
     sliderOrientation = VERTICAL;
 
     background.setXY(backgroundX, backgroundY);
-    backgroundSelectedViewPort.setXY(backgroundX, backgroundY);
+    backgroundSelectedViewPort.setPosition(background);
     indicator.setX(indicatorX);
 
-    uint16_t backgroundWidth = backgroundX + static_cast<uint16_t>(background.getWidth());
-    uint16_t indicatorWidth = indicatorX + static_cast<uint16_t>(indicator.getWidth());
-    int16_t newWidth = static_cast<int16_t>(MAX(backgroundWidth, indicatorWidth));
+    const int16_t backgroundWidth = backgroundX + background.getWidth();
+    const int16_t indicatorWidth = indicatorX + indicator.getWidth();
+    const int16_t newWidth = MAX(backgroundWidth, indicatorWidth);
 
-    uint16_t backgroundHeight = backgroundY + static_cast<uint16_t>(background.getHeight());
-    uint16_t indicatorHeight = indicatorMaxY + static_cast<uint16_t>(indicator.getHeight());
-    int16_t newHeight = static_cast<int16_t>(MAX(backgroundHeight, indicatorHeight));
+    const int16_t backgroundHeight = backgroundY + background.getHeight();
+    const int16_t indicatorHeight = indicatorMaxY + indicator.getHeight();
+    const int16_t newHeight = MAX(backgroundHeight, indicatorHeight);
 
     indicatorMinPosition = indicatorMinY;
     indicatorMaxPosition = indicatorMaxY;
@@ -121,7 +126,7 @@ void Slider::setupVerticalSlider(uint16_t backgroundX, uint16_t backgroundY, uin
     setValue(currentValue);
 }
 
-void Slider::setValue(int value)
+void Slider::setValue(int16_t value)
 {
     updateIndicatorPosition(valueToPosition(value));
 }
@@ -136,14 +141,7 @@ void Slider::handleClickEvent(const ClickEvent& event)
             startValueCallback->execute(*this, currentValue);
         }
 
-        if (sliderOrientation == HORIZONTAL)
-        {
-            updateIndicatorPosition(event.getX() - getIndicatorRadius());
-        }
-        else
-        {
-            updateIndicatorPosition(event.getY() - getIndicatorRadius());
-        }
+        updateIndicatorPosition((sliderOrientation == HORIZONTAL ? event.getX() : event.getY()) - getIndicatorRadius());
 
         // Communicate the stop value if a listener is registered
         if ((event.getType() == ClickEvent::RELEASED) && (stopValueCallback != 0) && stopValueCallback->isValid())
@@ -155,63 +153,23 @@ void Slider::handleClickEvent(const ClickEvent& event)
 
 void Slider::handleDragEvent(const DragEvent& event)
 {
-    if (sliderOrientation == HORIZONTAL)
-    {
-        updateIndicatorPosition(event.getNewX() - getIndicatorRadius());
-    }
-    else
-    {
-        updateIndicatorPosition(event.getNewY() - getIndicatorRadius());
-    }
+    updateIndicatorPosition((sliderOrientation == HORIZONTAL ? event.getNewX() : event.getNewY()) - getIndicatorRadius());
 }
 
 int16_t Slider::valueToPosition(int value) const
 {
     value = MIN(valueRangeMax, value);
     value = MAX(value, valueRangeMin);
-
-    int coordinateOffset = ((value - valueRangeMin) * (getIndicatorPositionRangeSize() + 1)) / getValueRangeSize();
-
-    int result = indicatorMinPosition + coordinateOffset;
-
-    if (sliderOrientation == VERTICAL)
-    {
-        // Vertical slider grows as the position decreases so invert the coordinate
-        result = indicatorMinPosition + (indicatorMaxPosition - result);
-    }
-
-    return result;
+    const int16_t relativePosition = muldiv(value - valueRangeMin, getIndicatorPositionRangeSize(), getValueRangeSize());
+    return sliderOrientation == VERTICAL ? indicatorMaxPosition - relativePosition : indicatorMinPosition + relativePosition;
 }
 
 int Slider::positionToValue(int16_t position) const
 {
-    int result;
-
-    if (position == indicatorMinPosition)
-    {
-        // Ensure that min coordinate always results in min value
-        result = valueRangeMin;
-    }
-    else if (position == indicatorMaxPosition)
-    {
-        // Ensure that max coordinate always results in max value
-        result = valueRangeMax;
-    }
-    else
-    {
-        int rounding = getIndicatorPositionRangeSize() / 2;
-        int valueOffset = (((position - indicatorMinPosition) * getValueRangeSize()) + rounding) / getIndicatorPositionRangeSize();
-
-        result = valueRangeMin + valueOffset;
-    }
-
-    if (sliderOrientation == VERTICAL)
-    {
-        // Vertical slider grows as the position decreases so invert the value
-        result = valueRangeMin + (valueRangeMax - result);
-    }
-
-    return result;
+    position = MIN(indicatorMaxPosition, position);
+    position = MAX(position, indicatorMinPosition);
+    const int16_t relativePosition = sliderOrientation == VERTICAL ? indicatorMaxPosition - position : position - indicatorMinPosition;
+    return valueRangeMin + muldiv(relativePosition, getValueRangeSize(), getIndicatorPositionRangeSize());
 }
 
 void Slider::updateIndicatorPosition(int16_t position)
@@ -233,7 +191,7 @@ void Slider::updateIndicatorPosition(int16_t position)
         indicator.moveTo(indicator.getX(), position);
 
         backgroundSelectedViewPort.invalidate();
-        int16_t newViewPortHeight = background.getRect().bottom() - (position + getIndicatorRadius());
+        const int16_t newViewPortHeight = background.getRect().bottom() - (position + getIndicatorRadius());
         backgroundSelectedViewPort.setPosition(backgroundSelectedViewPort.getX(), position + getIndicatorRadius(), backgroundSelectedViewPort.getWidth(), newViewPortHeight);
         backgroundSelected.setY(-(backgroundSelected.getHeight() - newViewPortHeight));
         backgroundSelectedViewPort.invalidate();
@@ -248,23 +206,12 @@ void Slider::updateIndicatorPosition(int16_t position)
     }
 }
 
-uint16_t Slider::getIndicatorRadius() const
+int16_t Slider::getIndicatorRadius() const
 {
-    uint16_t result;
-
-    if (sliderOrientation == HORIZONTAL)
-    {
-        result = indicator.getWidth() / 2;
-    }
-    else
-    {
-        result = indicator.getHeight() / 2;
-    }
-
-    return result;
+    return (sliderOrientation == HORIZONTAL ? indicator.getWidth() : indicator.getHeight()) / 2;
 }
 
-void Slider::setValueRange(int minValue, int maxValue, int newValue)
+void Slider::setValueRange(int16_t minValue, int16_t maxValue, int16_t newValue)
 {
     assert(minValue < maxValue && "Slider::setValueRange - minValue must be smaller than maxValue");
 
@@ -274,19 +221,9 @@ void Slider::setValueRange(int minValue, int maxValue, int newValue)
     setValue(newValue);
 }
 
-void Slider::setValueRange(int minValue, int maxValue)
+void Slider::setValueRange(int16_t minValue, int16_t maxValue)
 {
-    int newValue = currentValue;
-
-    if (currentValue < minValue)
-    {
-        newValue = minValue;
-    }
-    else if (currentValue > maxValue)
-    {
-        newValue = maxValue;
-    }
-
+    const int16_t newValue = currentValue < minValue ? minValue : (currentValue > maxValue ? maxValue : currentValue);
     setValueRange(minValue, maxValue, newValue);
 }
 

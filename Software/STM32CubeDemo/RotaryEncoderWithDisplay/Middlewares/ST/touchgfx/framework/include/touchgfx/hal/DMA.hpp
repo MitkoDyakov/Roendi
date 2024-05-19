@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -19,9 +19,9 @@
 #ifndef TOUCHGFX_DMA_HPP
 #define TOUCHGFX_DMA_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/hal/Atomic.hpp>
 #include <touchgfx/hal/BlitOp.hpp>
+#include <touchgfx/hal/Types.hpp>
 
 namespace touchgfx
 {
@@ -177,6 +177,28 @@ public:
         return isAllowed;
     }
 
+    /**
+     * Sets whether or not a DMA operation is reserved by rendering. Used to allow/disallow
+     * other users of DMA2D whom are drawing into the framebuffer, e.g. video thread.
+     *
+     * @param  reserved true if DMA is reserved by rendering.
+     */
+    void setReserved(bool reserved)
+    {
+        isReserved = reserved;
+    }
+
+    /**
+     * Gets whether a DMA operation is reserved by rendering. Used to allow/disallow
+     * other users of DMA2D whom are drawing into the framebuffer, e.g. video thread.
+     *
+     * @return true if DMA is reserved by rendering, false if not.
+     */
+    bool getReserved() const
+    {
+        return isReserved;
+    }
+
     /** Signals that DMA transfers can start. If any elements are in the queue, start it. */
     virtual void start();
 
@@ -209,7 +231,7 @@ public:
      *
      * @return a DMAType value of the concrete DMA_Interface implementation.
      */
-    virtual DMAType getDMAType(void)
+    virtual DMAType getDMAType()
     {
         return DMA_TYPE_GENERIC;
     }
@@ -282,9 +304,10 @@ protected:
      */
     virtual void waitForFrameBufferSemaphore();
 
-    DMA_Queue& queue;        ///< Reference to the DMA queue
-    bool isRunning;          ///< true if a DMA transfer is currently ongoing.
-    volatile bool isAllowed; ///< true if DMA transfers are currently allowed.
+    DMA_Queue& queue;         ///< Reference to the DMA queue
+    bool isRunning;           ///< true if a DMA transfer is currently ongoing.
+    volatile bool isAllowed;  ///< true if DMA transfers are currently allowed.
+    volatile bool isReserved; ///< true if DMA is reserved for for HW rendering
 };
 
 } // namespace touchgfx

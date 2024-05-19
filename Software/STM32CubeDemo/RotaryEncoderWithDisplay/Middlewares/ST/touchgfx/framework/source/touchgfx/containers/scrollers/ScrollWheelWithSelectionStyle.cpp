@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -10,10 +10,6 @@
 *
 *******************************************************************************/
 
-#include <touchgfx/hal/Types.hpp>
-#include <touchgfx/Callback.hpp>
-#include <touchgfx/containers/scrollers/DrawableList.hpp>
-#include <touchgfx/containers/scrollers/ScrollWheelBase.hpp>
 #include <touchgfx/containers/scrollers/ScrollWheelWithSelectionStyle.hpp>
 
 namespace touchgfx
@@ -21,8 +17,8 @@ namespace touchgfx
 ScrollWheelWithSelectionStyle::ScrollWheelWithSelectionStyle()
     : ScrollWheelBase(),
       drawablesInFirstList(0),
-      list1(),
-      list2(),
+      listCenter(),
+      listAfter(),
       extraSizeBeforeSelectedItem(0),
       extraSizeAfterSelectedItem(0),
       marginBeforeSelectedItem(0),
@@ -32,8 +28,8 @@ ScrollWheelWithSelectionStyle::ScrollWheelWithSelectionStyle()
       originalUpdateDrawableCallback(0),
       originalUpdateCenterDrawableCallback(0)
 {
-    ScrollWheelBase::add(list2);
-    ScrollWheelBase::add(list1); // Put center list at top of the first/last list.
+    ScrollWheelBase::add(listAfter);
+    ScrollWheelBase::add(listCenter); // Put center list at top of the first/last list.
 }
 
 void ScrollWheelWithSelectionStyle::setWidth(int16_t width)
@@ -57,16 +53,16 @@ void ScrollWheelWithSelectionStyle::setHeight(int16_t height)
 void ScrollWheelWithSelectionStyle::setHorizontal(bool horizontal)
 {
     ScrollWheelBase::setHorizontal(horizontal);
-    list1.setHorizontal(horizontal);
-    list2.setHorizontal(horizontal);
+    listCenter.setHorizontal(horizontal);
+    listAfter.setHorizontal(horizontal);
     refreshDrawableListsLayout();
 }
 
 void ScrollWheelWithSelectionStyle::setCircular(bool circular)
 {
     ScrollWheelBase::setCircular(circular);
-    list1.setCircular(circular);
-    list2.setCircular(circular);
+    listCenter.setCircular(circular);
+    listAfter.setCircular(circular);
 }
 
 void ScrollWheelWithSelectionStyle::setNumberOfItems(int16_t numberOfItems)
@@ -74,8 +70,8 @@ void ScrollWheelWithSelectionStyle::setNumberOfItems(int16_t numberOfItems)
     if (numberOfItems != getNumberOfItems())
     {
         ScrollWheelBase::setNumberOfItems(numberOfItems);
-        list1.setNumberOfItems(numberOfItems);
-        list2.setNumberOfItems(numberOfItems);
+        listCenter.setNumberOfItems(numberOfItems);
+        listAfter.setNumberOfItems(numberOfItems);
     }
 }
 
@@ -129,8 +125,8 @@ void ScrollWheelWithSelectionStyle::setSelectedItemPosition(int16_t offset, int1
 void ScrollWheelWithSelectionStyle::setDrawableSize(int16_t drawableSize, int16_t drawableMargin)
 {
     ScrollWheelBase::setDrawableSize(drawableSize, drawableMargin);
-    list1.setDrawableSize(drawableSize, drawableMargin);
-    list2.setDrawableSize(drawableSize, drawableMargin);
+    listCenter.setDrawableSize(drawableSize, drawableMargin);
+    listAfter.setDrawableSize(drawableSize, drawableMargin);
 
     // Resize the three lists
     setSelectedItemOffset(distanceBeforeAlignedItem);
@@ -158,47 +154,47 @@ void ScrollWheelWithSelectionStyle::setDrawables(DrawableListItemsInterface& dra
 void ScrollWheelWithSelectionStyle::setOffset(int32_t offset)
 {
     ScrollWheelBase::setOffset(offset);
-    list1.setOffset((distanceBeforeAlignedItem - (distanceBeforeAlignedItem - extraSizeBeforeSelectedItem)) + offset);
-    list2.setOffset((distanceBeforeAlignedItem - (distanceBeforeAlignedItem + itemSize + extraSizeAfterSelectedItem + marginAfterSelectedItem)) + offset);
+    listCenter.setOffset((distanceBeforeAlignedItem - (distanceBeforeAlignedItem - extraSizeBeforeSelectedItem)) + offset);
+    listAfter.setOffset((distanceBeforeAlignedItem - (distanceBeforeAlignedItem + itemSize + extraSizeAfterSelectedItem + marginAfterSelectedItem)) + offset);
 }
 
 void ScrollWheelWithSelectionStyle::itemChanged(int itemIndex)
 {
     ScrollWheelBase::itemChanged(itemIndex);
-    list1.itemChanged(itemIndex);
-    list2.itemChanged(itemIndex);
+    listCenter.itemChanged(itemIndex);
+    listAfter.itemChanged(itemIndex);
 }
 
 void ScrollWheelWithSelectionStyle::refreshDrawableListsLayout()
 {
     if (drawables != 0 && centerDrawables != 0)
     {
-        int32_t currentOffset = getOffset();
+        const int32_t currentOffset = getOffset();
 
-        int16_t list1Pos = distanceBeforeAlignedItem - extraSizeBeforeSelectedItem;
-        int16_t list2Pos = distanceBeforeAlignedItem + itemSize + (extraSizeAfterSelectedItem + marginAfterSelectedItem);
-        int16_t list0Size = list1Pos - marginBeforeSelectedItem;
-        int16_t list1Size = itemSize + extraSizeBeforeSelectedItem + extraSizeAfterSelectedItem;
+        const int16_t listCenterPos = distanceBeforeAlignedItem - extraSizeBeforeSelectedItem;
+        const int16_t listAfterPos = distanceBeforeAlignedItem + itemSize + (extraSizeAfterSelectedItem + marginAfterSelectedItem);
+        const int16_t listBeforeSize = listCenterPos - marginBeforeSelectedItem;
+        const int16_t listCenterSize = itemSize + extraSizeBeforeSelectedItem + extraSizeAfterSelectedItem;
 
         if (getHorizontal())
         {
-            int16_t list2Size = getWidth() - list2Pos;
-            list.setPosition(0, 0, list0Size, getHeight());
-            list1.setPosition(list1Pos, 0, list1Size, getHeight());
-            list2.setPosition(list2Pos, 0, list2Size, getHeight());
+            const int16_t listAfterSize = getWidth() - listAfterPos;
+            list.setPosition(0, 0, listBeforeSize, getHeight());
+            listCenter.setPosition(listCenterPos, 0, listCenterSize, getHeight());
+            listAfter.setPosition(listAfterPos, 0, listAfterSize, getHeight());
         }
         else
         {
-            int16_t list2Size = getHeight() - list2Pos;
-            list.setPosition(0, 0, getWidth(), list0Size);
-            list1.setPosition(0, list1Pos, getWidth(), list1Size);
-            list2.setPosition(0, list2Pos, getWidth(), list2Size);
+            const int16_t listAfterSize = getHeight() - listAfterPos;
+            list.setPosition(0, 0, getWidth(), listBeforeSize);
+            listCenter.setPosition(0, listCenterPos, getWidth(), listCenterSize);
+            listAfter.setPosition(0, listAfterPos, getWidth(), listAfterSize);
         }
 
         list.setDrawables(*drawables, 0, *originalUpdateDrawableCallback);
         drawablesInFirstList = list.getNumberOfDrawables();
-        list1.setDrawables(*centerDrawables, 0, *originalUpdateCenterDrawableCallback);
-        list2.setDrawables(*drawables, drawablesInFirstList, *originalUpdateDrawableCallback);
+        listCenter.setDrawables(*centerDrawables, 0, *originalUpdateCenterDrawableCallback);
+        listAfter.setDrawables(*drawables, drawablesInFirstList, *originalUpdateDrawableCallback);
 
         setOffset(keepOffsetInsideLimits(currentOffset, 0));
     }

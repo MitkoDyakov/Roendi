@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -37,80 +37,56 @@ struct Cell
     /**
      * Sets all the Cell parameters.
      *
-     * @param  _x     The x coordinate.
-     * @param  _y     The y coordinate.
-     * @param  _cover The cover.
-     * @param  _area  The area.
+     * @param  cellX     The x coordinate.
+     * @param  cellY     The y coordinate.
+     * @param  cellCover The cover.
+     * @param  cellArea  The area.
      */
-    void set(int _x, int _y, int _cover, int _area)
+    FORCE_INLINE_FUNCTION void set(int cellX, int cellY, int cellCover, int cellArea)
     {
-        setCoord(_x, _y);
-        setCover(_cover, _area);
+        setCoord(cellX, cellY);
+        setCover(cellCover, cellArea);
     }
 
     /**
      * Sets the coordinate of the Cell.
      *
-     * @param  _x The Cell's x coordinate.
-     * @param  _y The Cell's y coordinate.
+     * @param  cellX The Cell's x coordinate.
+     * @param  cellY The Cell's y coordinate.
      */
-    void setCoord(int _x, int _y)
+    FORCE_INLINE_FUNCTION void setCoord(int cellX, int cellY)
     {
-        x = int16_t(_x);
-        y = int16_t(_y);
+        x = (int16_t)cellX;
+        y = (int16_t)cellY;
     }
 
     /**
      * Sets the cover of area cell.
      *
-     * @param  _cover The cover.
-     * @param  _area  The area.
+     * @param  cellCover The cover.
+     * @param  cellArea  The area.
      */
-    void setCover(int _cover, int _area)
+    FORCE_INLINE_FUNCTION void setCover(int cellCover, int cellArea)
     {
-        cover = _cover;
-        area = _area;
+        cover = cellCover;
+        area = cellArea;
     }
 
     /**
      * Adds a cover to a Cell.
      *
-     * @param  _cover The cover to add to the Cell.
-     * @param  _area  The area to add to the Cell.
+     * @param  cellCover The cover to add to the Cell.
+     * @param  cellArea  The area to add to the Cell.
      */
-    void addCover(int _cover, int _area)
+    FORCE_INLINE_FUNCTION void addCover(int cellCover, int cellArea)
     {
-        cover += _cover;
-        area += _area;
-    }
-
-    /**
-     * Packed coordinates of the Cell. By packing the x coordinate and y coordinate into one int,
-     * it is possible to sort Cells using a single comparison.
-     *
-     * @return The packed coordinates with y in the high part and x in the low part.
-     */
-    FORCE_INLINE_FUNCTION int packedCoord() const
-    {
-        return packedCoord(x, y);
-    }
-
-    /**
-     * Packed x,y coordinates. By packing the x coordinate and y coordinate into one int, it is
-     * possible to sort Cells using a single comparison.
-     *
-     * @param  x The x coordinate.
-     * @param  y The y coordinate.
-     *
-     * @return The packed coordinates with y in the high part and x in the low part.
-     */
-    FORCE_INLINE_FUNCTION static int packedCoord(int16_t x, int16_t y)
-    {
-        return (y << 16) + x;
+        cover += cellCover;
+        area += cellArea;
     }
 }; // struct Cell
 
 } // namespace touchgfx
+
 /// @endcond
 
 #endif // TOUCHGFX_CELL_HPP

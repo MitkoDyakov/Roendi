@@ -20,24 +20,13 @@
     <ClCompile Include="..\..\gui\src\common\FrontendApplication.cpp"/>
     <ClCompile Include="..\..\generated\gui_generated\src\common\FrontendApplicationBase.cpp"/>
     <ClCompile Include="..\..\gui\src\model\Model.cpp"/>
-    <ClCompile Include="..\..\gui\src\brightnessdemo_screen\brightnessDemoPresenter.cpp"/>
-    <ClCompile Include="..\..\gui\src\brightnessdemo_screen\brightnessDemoView.cpp"/>
-    <ClCompile Include="..\..\generated\gui_generated\src\brightnessdemo_screen\brightnessDemoViewBase.cpp"/>
-    <ClCompile Include="..\..\gui\src\homeschreen_screen\homeSchreenPresenter.cpp"/>
-    <ClCompile Include="..\..\gui\src\homeschreen_screen\homeSchreenView.cpp"/>
-    <ClCompile Include="..\..\generated\gui_generated\src\homeschreen_screen\homeSchreenViewBase.cpp"/>
     <ClCompile Include="..\..\gui\src\volumedemo_screen\volumeDemoPresenter.cpp"/>
     <ClCompile Include="..\..\gui\src\volumedemo_screen\volumeDemoView.cpp"/>
     <ClCompile Include="..\..\generated\gui_generated\src\volumedemo_screen\volumeDemoViewBase.cpp"/>
-    <ClCompile Include="..\..\gui\src\lock_screen\LockPresenter.cpp"/>
-    <ClCompile Include="..\..\gui\src\lock_screen\LockView.cpp"/>
-    <ClCompile Include="..\..\generated\gui_generated\src\lock_screen\LockViewBase.cpp"/>
-    <ClCompile Include="..\..\gui\src\audio_screen\AudioPresenter.cpp"/>
-    <ClCompile Include="..\..\gui\src\audio_screen\AudioView.cpp"/>
-    <ClCompile Include="..\..\generated\gui_generated\src\audio_screen\AudioViewBase.cpp"/>
-    <ClCompile Include="..\..\gui\src\temp_screen\TempPresenter.cpp"/>
-    <ClCompile Include="..\..\gui\src\temp_screen\TempView.cpp"/>
-    <ClCompile Include="..\..\generated\gui_generated\src\temp_screen\TempViewBase.cpp"/>
+    <ClCompile Include="..\..\gui\src\menu_screen\MenuPresenter.cpp"/>
+    <ClCompile Include="..\..\gui\src\menu_screen\MenuView.cpp"/>
+    <ClCompile Include="..\..\generated\gui_generated\src\menu_screen\MenuViewBase.cpp"/>
+    <ClCompile Include="..\..\generated\simulator\src\video\SoftwareMJPEGDecoder.cpp"/>
   </ItemGroup>
   <ItemGroup>
     <None Include="$(ApplicationRoot)\assets\texts\texts.xlsx"/>
@@ -184,26 +173,16 @@
     <ClInclude Include="..\..\generated\gui_generated\include\gui_generated\common\FrontendHeapBase.hpp"/>
     <ClInclude Include="..\..\gui\include\gui\model\Model.hpp"/>
     <ClInclude Include="..\..\gui\include\gui\model\ModelListener.hpp"/>
-    <ClInclude Include="..\..\gui\include\gui\screen_screen\screenView.hpp"/>
     <ClInclude Include="..\..\generated\gui_generated\include\gui_generated\common\SimConstants.hpp"/>
-    <ClInclude Include="..\..\gui\include\gui\brightnessdemo_screen\brightnessDemoPresenter.hpp"/>
-    <ClInclude Include="..\..\gui\include\gui\brightnessdemo_screen\brightnessDemoView.hpp"/>
-    <ClInclude Include="..\..\generated\gui_generated\include\gui_generated\brightnessdemo_screen\brightnessDemoViewBase.hpp"/>
-    <ClInclude Include="..\..\gui\include\gui\homeschreen_screen\homeSchreenPresenter.hpp"/>
-    <ClInclude Include="..\..\gui\include\gui\homeschreen_screen\homeSchreenView.hpp"/>
-    <ClInclude Include="..\..\generated\gui_generated\include\gui_generated\homeschreen_screen\homeSchreenViewBase.hpp"/>
     <ClInclude Include="..\..\gui\include\gui\volumedemo_screen\volumeDemoPresenter.hpp"/>
     <ClInclude Include="..\..\gui\include\gui\volumedemo_screen\volumeDemoView.hpp"/>
     <ClInclude Include="..\..\generated\gui_generated\include\gui_generated\volumedemo_screen\volumeDemoViewBase.hpp"/>
-    <ClInclude Include="..\..\gui\include\gui\lock_screen\LockPresenter.hpp"/>
-    <ClInclude Include="..\..\gui\include\gui\lock_screen\LockView.hpp"/>
-    <ClInclude Include="..\..\generated\gui_generated\include\gui_generated\lock_screen\LockViewBase.hpp"/>
-    <ClInclude Include="..\..\gui\include\gui\audio_screen\AudioPresenter.hpp"/>
-    <ClInclude Include="..\..\gui\include\gui\audio_screen\AudioView.hpp"/>
-    <ClInclude Include="..\..\generated\gui_generated\include\gui_generated\audio_screen\AudioViewBase.hpp"/>
-    <ClInclude Include="..\..\gui\include\gui\temp_screen\TempPresenter.hpp"/>
-    <ClInclude Include="..\..\gui\include\gui\temp_screen\TempView.hpp"/>
-    <ClInclude Include="..\..\generated\gui_generated\include\gui_generated\temp_screen\TempViewBase.hpp"/>
+    <ClInclude Include="..\..\gui\include\gui\menu_screen\MenuPresenter.hpp"/>
+    <ClInclude Include="..\..\gui\include\gui\menu_screen\MenuView.hpp"/>
+    <ClInclude Include="..\..\generated\gui_generated\include\gui_generated\menu_screen\MenuViewBase.hpp"/>
+    <ClInclude Include="..\..\generated\simulator\include\simulator\video\DirectFrameBufferVideoController.hpp"/>
+    <ClInclude Include="..\..\generated\simulator\include\simulator\video\MJPEGDecoder.hpp"/>
+    <ClInclude Include="..\..\generated\simulator\include\simulator\video\SoftwareMJPEGDecoder.hpp"/>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="$(ApplicationRoot)\generated\simulator\touchgfx.rc"/>

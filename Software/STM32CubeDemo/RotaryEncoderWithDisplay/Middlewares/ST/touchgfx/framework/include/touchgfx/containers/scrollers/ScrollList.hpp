@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,11 +18,11 @@
 #ifndef TOUCHGFX_SCROLLLIST_HPP
 #define TOUCHGFX_SCROLLLIST_HPP
 
-#include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Callback.hpp>
 #include <touchgfx/containers/scrollers/DrawableList.hpp>
 #include <touchgfx/containers/scrollers/ScrollBase.hpp>
 #include <touchgfx/events/ClickEvent.hpp>
+#include <touchgfx/hal/Types.hpp>
 
 namespace touchgfx
 {
@@ -36,6 +36,12 @@ class ScrollList : public ScrollBase
 {
 public:
     ScrollList();
+
+    virtual void setWidth(int16_t width);
+
+    virtual void setHeight(int16_t height);
+
+    virtual void setDrawableSize(int16_t drawableSize, int16_t drawableMargin);
 
     /**
      * Setup a list of drawables and provide a function to call to update a given Drawable

@@ -1,8 +1,8 @@
 /******************************************************************************
-* Copyright (c) 2018(-2021) STMicroelectronics.
+* Copyright (c) 2018(-2024) STMicroelectronics.
 * All rights reserved.
 *
-* This file is part of the TouchGFX 4.17.0 distribution.
+* This file is part of the TouchGFX 4.23.2 distribution.
 *
 * This software is licensed under terms that can be found in the LICENSE file in
 * the root directory of this software component.
@@ -18,7 +18,9 @@
 #ifndef TOUCHGFX_PAINTERRGB565_HPP
 #define TOUCHGFX_PAINTERRGB565_HPP
 
+#include <platform/driver/lcd/LCD16bpp.hpp>
 #include <touchgfx/hal/Types.hpp>
+#include <touchgfx/widgets/canvas/AbstractPainterColor.hpp>
 #include <touchgfx/widgets/canvas/AbstractPainterRGB565.hpp>
 
 namespace touchgfx
@@ -29,7 +31,7 @@ namespace touchgfx
  *
  * @see AbstractPainter
  */
-class PainterRGB565 : public AbstractPainterRGB565
+class PainterRGB565 : public AbstractPainterRGB565, public AbstractPainterColor
 {
 public:
     /**
@@ -38,37 +40,27 @@ public:
      * @param  color (Optional) the color, default is black.
      */
     PainterRGB565(colortype color = 0)
-        : AbstractPainterRGB565(), painterColor(0)
+        : AbstractPainterRGB565(), AbstractPainterColor(color)
     {
-        setColor(color);
     }
 
-    /**
-     * Sets color and alpha to use when drawing the CanvasWidget.
-     *
-     * @param  color The color.
-     */
-    void setColor(colortype color)
+    virtual void setColor(colortype color)
     {
-        painterColor = color;
+        AbstractPainterColor::setColor(color);
+        color565 = LCD16bpp::getNativeColor(painterColor);
     }
 
-    /**
-     * Gets the current color.
-     *
-     * @return The color.
-     */
-    colortype getColor() const
-    {
-        return painterColor;
-    }
+    virtual void paint(uint8_t* destination, int16_t offset, int16_t widgetX, int16_t widgetY, int16_t count, uint8_t alpha) const;
 
-    virtual void render(uint8_t* ptr, int x, int xAdjust, int y, unsigned count, const uint8_t* covers);
+    virtual void tearDown() const;
+
+    virtual HAL::RenderingMethod getRenderingMethod() const
+    {
+        return HAL::getInstance()->getDMAType() == DMA_TYPE_CHROMART ? HAL::HARDWARE : HAL::SOFTWARE;
+    }
 
 protected:
-    virtual bool renderNext(uint8_t& red, uint8_t& green, uint8_t& blue, uint8_t& alpha);
-
-    colortype painterColor; ///< The color
+    uint16_t color565; ///< The native color in 565 format (for speed reasons)
 };
 
 } // namespace touchgfx
